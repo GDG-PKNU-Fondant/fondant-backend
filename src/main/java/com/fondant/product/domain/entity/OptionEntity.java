@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Table(name="option")
 public class OptionEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
