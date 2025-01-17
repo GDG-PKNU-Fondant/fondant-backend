@@ -1,6 +1,7 @@
 package com.fondant.product.domain.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
@@ -14,13 +15,16 @@ public class OptionEntity {
     @Column(name="option_id")
     private Long id;
 
-    @Column(name="productId",nullable = false)
+    @NotNull
+    @Column(name="productId")
     private Long productId;
 
-    @Column(name="name",nullable = false)
+    @NotNull
+    @Column(name="name")
     private String name;
 
-    @Column(name="price",nullable = false)
+    @NotNull
+    @Column(name="price")
     private int price;
 
     @Builder

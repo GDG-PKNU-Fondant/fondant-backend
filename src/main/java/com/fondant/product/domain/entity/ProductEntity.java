@@ -1,6 +1,7 @@
 package com.fondant.product.domain.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
@@ -15,28 +16,36 @@ public class ProductEntity {
     @Column(name="product_id")
     private Long id;
 
+    @NotNull
     @Column(name="name",nullable = false)
     private String name;
 
-    @Column(name="description",nullable = false)
+    @NotNull
+    @Column(name="description")
     private String description;
 
-    @Column(name="thumbnail",nullable = false)
+    @NotNull
+    @Column(name="thumbnail")
     private String thumbnail;
 
-    @Column(name="price",nullable = false)
+    @NotNull
+    @Column(name="price")
     private String price;
 
-    @Column(name="market_id",nullable = false)
+    @NotNull
+    @Column(name="market_id")
     private Long marketId;
 
-    @Column(name="start_date",nullable = false)
+    @NotNull
+    @Column(name="start_date")
     private LocalDate startDate;
 
-    @Column(name="maxCount",nullable = false)
+    @NotNull
+    @Column(name="maxCount")
     private int maxCount;
 
-    @Column(name="discount rate",nullable = false)
+    @NotNull
+    @Column(name="discount rate")
     private double discountRate;
 
     @Builder

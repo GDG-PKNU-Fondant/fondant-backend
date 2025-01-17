@@ -1,6 +1,7 @@
 package com.fondant.product.domain.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
@@ -14,11 +15,13 @@ public class CategoryEntity {
     @Column(name="category_id")
     private Long id;
 
-    @Column(name="category_type",nullable = false)
+    @NotNull
+    @Column(name="category_type")
     @Enumerated(EnumType.STRING)
     private CategoryType categoryType;
 
-    @Column(name="product_id",nullable = false)
+    @NotNull
+    @Column(name="product_id")
     private Long productId;
 
     @Builder
