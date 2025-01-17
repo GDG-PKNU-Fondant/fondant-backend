@@ -15,11 +15,6 @@ public class DeliveryAddressEntity {
     private Long id;
 
     @NotNull
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
-    private UserEntity user;
-
-    @NotNull
     @Column(name="delivery_address")
     private String deliveryAddress;
 
@@ -45,7 +40,6 @@ public class DeliveryAddressEntity {
     @Builder
     public DeliveryAddressEntity(Long id, UserEntity user, String deliveryAddress, Boolean isPrimary, String postCode, String alias, String receiverName, String receiverPhoneNumber){
         this.id = id;
-        this.user = user;
         this.deliveryAddress = deliveryAddress;
         this.primary = isPrimary;
         this.postCode = postCode;
