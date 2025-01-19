@@ -3,7 +3,7 @@ package com.fondant.global.dto;
 public record ResponseDto<D>(
         String code,
         String message,
-        D data
+        D response
 ) {
     private static final String SUCCESS_CODE = "SUCCESS";
 
