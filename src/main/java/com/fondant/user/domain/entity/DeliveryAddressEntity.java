@@ -38,8 +38,7 @@ public class DeliveryAddressEntity {
     private String receiverPhoneNumber;
 
     @Builder
-    public DeliveryAddressEntity(Long id, UserEntity user, String deliveryAddress, Boolean isPrimary, String postCode, String alias, String receiverName, String receiverPhoneNumber){
-        this.id = id;
+    public DeliveryAddressEntity(UserEntity user, String deliveryAddress, Boolean isPrimary, String postCode, String alias, String receiverName, String receiverPhoneNumber){
         this.deliveryAddress = deliveryAddress;
         this.primary = isPrimary;
         this.postCode = postCode;

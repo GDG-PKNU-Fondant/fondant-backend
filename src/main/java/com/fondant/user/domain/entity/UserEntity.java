@@ -58,8 +58,7 @@ public class UserEntity {
     private Gender gender;
 
     @Builder
-    public UserEntity(Long id, SNSType snsType, String name, String phoneNumber, String email, Date birth, String nickname, String profileUrl, LocalDate createAt, Gender gender) {
-        this.id = id;
+    public UserEntity(SNSType snsType, String name, String phoneNumber, String email, Date birth, String nickname, String profileUrl, LocalDate createAt, Gender gender) {
         this.snsType = snsType;
         this.name = name;
         this.phoneNumber = phoneNumber;
