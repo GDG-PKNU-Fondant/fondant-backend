@@ -22,15 +22,15 @@ public class MarketEntity {
 
     @NotNull
     @Column(name="total_sales", nullable = false)
-    private Long totalSales = 0L;
+    private Long totalSales;
 
     @NotNull
     @Column(name="total_reviews", nullable = false)
-    private Long totalReviews = 0L;
+    private Long totalReviews;
 
     @NotNull
     @Column(name="create_at", nullable = false)
-    private LocalDate createAt = LocalDate.now();
+    private LocalDate createAt;
 
     @Column(name="update_at")
     private LocalDate updateAt;
@@ -48,17 +48,17 @@ public class MarketEntity {
 
     @NotNull
     @Column(name="delivery_fee", nullable = false)
-    private long deliveryFee = 0L;
+    private long deliveryFee;
 
     @Builder MarketEntity(String name, Long totalSales, Long totalReviews, LocalDate createAt, LocalDate updateAt, String description, String thumbnail, String background, long deliveryFee) {
         this.name = name;
-        this.totalSales = totalSales;
-        this.totalReviews = totalReviews;
-        this.createAt = createAt;
+        this.totalSales = 0L;
+        this.totalReviews = 0L;
+        this.createAt = LocalDate.now();
         this.updateAt = updateAt;
         this.description = description;
         this.thumbnail = thumbnail;
         this.background = background;
-        this.deliveryFee = deliveryFee;
+        this.deliveryFee = 0L;
     }
 }
