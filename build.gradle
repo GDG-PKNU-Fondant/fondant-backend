@@ -1,0 +1,109 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '3.4.1'
+	id 'io.spring.dependency-management' version '1.1.7'
+	id 'org.asciidoctor.jvm.convert' version "3.3.2"
+}
+
+group = 'com.fondant'
+version = '0.0.1-SNAPSHOT'
+
+configurations {
+	asciidoctorExtensions
+}
+
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(17)
+	}
+}
+
+configurations {
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
+	//SPRING_SECURITY
+	implementation "org.springframework.boot:spring-boot-starter-security"
+
+	//SPRING_REST_DOCS
+	asciidoctorExtensions 'org.springframework.restdocs:spring-restdocs-asciidoctor'
+	testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
+
+	//JWT
+	implementation 'io.jsonwebtoken:jjwt-api:0.12.3'
+	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.3'
+	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.3'
+
+	//VALIDATION
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+	//POSTGRESQL
+	runtimeOnly 'org.postgresql:postgresql'
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+
+	//LOMBOK
+	compileOnly 'org.projectlombok:lombok'
+	annotationProcessor 'org.projectlombok:lombok'
+
+	//QUERY_DSL
+	implementation "com.querydsl:querydsl-jpa:5.0.0:jakarta"
+	implementation "com.querydsl:querydsl-core:5.0.0"
+	annotationProcessor "com.querydsl:querydsl-apt:5.0.0:jakarta"
+	annotationProcessor "jakarta.persistence:jakarta.persistence-api"
+	annotationProcessor "jakarta.annotation:jakarta.annotation-api"
+
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+
+def querydslDir = "build/generated/querydsl"
+
+sourceSets {
+	main.java.srcDirs += [querydslDir]
+}
+
+tasks.withType(JavaCompile) {
+	options.getGeneratedSourceOutputDirectory().set(file(querydslDir))
+}
+
+clean.doLast {
+	file(querydslDir).deleteDir()
+}
+
+
+ext {
+	snippetsDir = file('build/generated-snippets')
+}
+
+test {
+	outputs.dir snippetsDir
+}
+
+asciidoctor {
+	inputs.dir snippetsDir
+	dependsOn test
+	configurations 'asciidoctorExtensions'
+}
+
+bootJar {
+	dependsOn asciidoctor
+	copy {
+		from("${asciidoctor.outputDir}")
+		into 'src/main/resources/static/docs'
+	}
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}
