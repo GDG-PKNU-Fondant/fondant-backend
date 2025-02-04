@@ -1,4 +1,4 @@
-package com.fondant.user.jwt.dto;
+package com.fondant.infra.jwt.dto;
 
 import lombok.Builder;
 

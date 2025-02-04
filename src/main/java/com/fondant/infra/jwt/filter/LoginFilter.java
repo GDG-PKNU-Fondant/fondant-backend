@@ -1,6 +1,9 @@
-package com.fondant.user.jwt;
+package com.fondant.infra.jwt.filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fondant.infra.jwt.application.JWTUtil;
+import com.fondant.infra.jwt.domain.entity.RefreshEntity;
+import com.fondant.infra.jwt.domain.repository.RefreshRepository;
 import com.fondant.user.application.dto.CustomUserDetails;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.Cookie;
@@ -17,6 +20,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
@@ -26,11 +30,13 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     private final AuthenticationManager authenticationManager;
     private final JWTUtil jwtUtil;
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private RefreshRepository refreshRepository;
 
-    public LoginFilter(AuthenticationManager authenticationManager, JWTUtil jwtUtil) {
+    public LoginFilter(AuthenticationManager authenticationManager, JWTUtil jwtUtil, RefreshRepository refreshRepository) {
         super.setRequiresAuthenticationRequestMatcher(new AntPathRequestMatcher("/api/user/login", "POST"));
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
+        this.refreshRepository = refreshRepository;
     }
 
     @Override
@@ -68,13 +74,27 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
         String role = auth.getAuthority();
 
-        String accessToken = jwtUtil.generateToken("access", userId, role, 60 * 10L);
-        String refreshToken = jwtUtil.generateToken("refresh", userId, role, 60 * 60 * 24L);
+        String accessToken = jwtUtil.generateToken("access", userId, role, 60 * 10 * 1000L);
+        String refreshToken = jwtUtil.generateToken("refresh", userId, role, 60 * 60 * 24 * 1000L);
+
+        addRefreshEntity(userId, refreshToken);
 
         PrintWriter writer = response.getWriter();
         writer.print("access: " + accessToken);
         response.addCookie(createCookie("refresh", refreshToken));
         response.setStatus(HttpStatus.OK.value());
+    }
+
+    private void addRefreshEntity(String userId, String refresh) {
+        LocalDateTime date = jwtUtil.getExpiration(refresh);
+
+        RefreshEntity refreshEntity = RefreshEntity.builder()
+                .userId(userId)
+                .refresh(refresh)
+                .expires(date)
+                .build();
+
+        refreshRepository.save(refreshEntity);
     }
 
     @Override

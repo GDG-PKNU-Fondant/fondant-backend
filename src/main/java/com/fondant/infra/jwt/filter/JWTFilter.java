@@ -1,7 +1,8 @@
-package com.fondant.user.jwt;
+package com.fondant.infra.jwt.filter;
 
+import com.fondant.infra.jwt.application.JWTUtil;
 import com.fondant.user.application.dto.CustomUserDetails;
-import com.fondant.user.jwt.dto.JWTUserDTO;
+import com.fondant.infra.jwt.dto.JWTUserDTO;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
