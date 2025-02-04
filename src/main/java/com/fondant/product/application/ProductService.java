@@ -1,9 +1,11 @@
 package com.fondant.product.application;
 
 import com.fondant.global.dto.PageInfo;
+import com.fondant.global.exception.ApiException;
 import com.fondant.product.application.dto.ProductInfo;
 import com.fondant.product.domain.entity.ProductEntity;
 import com.fondant.product.domain.repository.ProductRepository;
+import com.fondant.product.exception.ProductError;
 import com.fondant.product.presentation.dto.response.ProductsResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -25,6 +27,10 @@ public class ProductService {
     @Transactional(readOnly = true)
     public ProductsResponse getProductsByMarketAndCategoryId(Long marketId, Long categoryId, Pageable pageable) {
         Page<ProductEntity> products = productRepository.findProductsByMarketAndCategory(marketId,categoryId,pageable);
+
+        if(products.isEmpty()){
+            throw new ApiException(ProductError.NO_PRODUCTS_FOUND);
+        }
 
         return ProductsResponse.builder()
                 .pageInfo(PageInfo.of(products.getNumber(), products.getTotalPages()))
