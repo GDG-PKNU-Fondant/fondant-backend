@@ -1,7 +1,7 @@
 package com.fondant.user.application;
 
 import com.fondant.user.application.dto.CustomUserDetails;
-import com.fondant.user.jwt.dto.JWTUserDTO;
+import com.fondant.infra.jwt.dto.JWTUserDTO;
 import com.fondant.user.domain.repository.UserRepository;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

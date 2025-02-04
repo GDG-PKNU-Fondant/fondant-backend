@@ -1,6 +1,6 @@
 package com.fondant.user.application.dto;
 
-import com.fondant.user.jwt.dto.JWTUserDTO;
+import com.fondant.infra.jwt.dto.JWTUserDTO;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
