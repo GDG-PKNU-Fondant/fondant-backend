@@ -42,13 +42,4 @@ public class MarketService {
                         .build())
                 .toList();
     }
-
-    private MarketInfo convertToDto(MarketEntity market) {
-        return MarketInfo.builder()
-                .id(market.getId())
-                .name(market.getName())
-                .description(market.getDescription())
-                .thumbnail(market.getThumbnail())
-                .build();
-    }
 }
