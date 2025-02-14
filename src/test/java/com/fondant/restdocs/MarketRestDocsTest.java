@@ -48,7 +48,7 @@ public class MarketRestDocsTest {
     private MarketEntity market2;
     private CategoryEntity category;
 
-    private static final String BASE_URL = "/api/market";
+    private static final String BASE_URL = "/api/markets";
 
     @BeforeEach
     void setUp() {
@@ -83,7 +83,7 @@ public class MarketRestDocsTest {
 
     @Test
     void getMarketsByCategory() throws Exception {
-        mockMvc.perform(get(BASE_URL + "/{categoryId}", category.getId())
+        mockMvc.perform(get(BASE_URL + "/categories/{categoryId}", category.getId())
                         .param("page", "0")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
