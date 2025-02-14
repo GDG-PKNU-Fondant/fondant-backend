@@ -2,10 +2,17 @@ package com.fondant.product.application;
 
 import com.fondant.global.dto.PageInfo;
 import com.fondant.global.exception.ApiException;
+import com.fondant.product.application.dto.OptionInfo;
 import com.fondant.product.application.dto.ProductInfo;
+import com.fondant.product.domain.entity.ImageType;
+import com.fondant.product.domain.entity.OptionEntity;
 import com.fondant.product.domain.entity.ProductEntity;
+import com.fondant.product.domain.entity.ProductImageEntity;
+import com.fondant.product.domain.repository.OptionRepository;
+import com.fondant.product.domain.repository.ProductImageRepository;
 import com.fondant.product.domain.repository.ProductRepository;
 import com.fondant.product.exception.ProductError;
+import com.fondant.product.presentation.dto.response.ProductDetailResponse;
 import com.fondant.product.presentation.dto.response.ProductsResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -18,10 +25,14 @@ import java.util.List;
 @Service
 public class ProductService {
     private final ProductRepository productRepository;
+    private final ProductImageRepository productImageRepository;
+    private final OptionRepository optionRepository;
 
     @Autowired
-    public ProductService(ProductRepository productRepository) {
+    public ProductService(ProductRepository productRepository, ProductImageRepository productImageRepository, OptionRepository optionRepository) {
         this.productRepository = productRepository;
+        this.productImageRepository = productImageRepository;
+        this.optionRepository = optionRepository;
     }
 
     @Transactional(readOnly = true)
@@ -55,5 +66,32 @@ public class ProductService {
     private int getDiscountedPrice(int price, double discountRate) {
         double appliedRate = 1.0 - discountRate;
         return (int) Math.floor(price * appliedRate + 0.5);
+    }
+
+    public ProductDetailResponse getProductDetail(Long productId) {
+        ProductEntity product = getProductById(productId);
+        return ProductDetailResponse.builder()
+                .photos(getImageUrlsByProductIdAndType(productId,ImageType.PRODUCT_PHOTO))
+                .name(product.getName())
+                .options(getOptionInfos(productId))
+                .description(product.getDescription())
+                .detailPages(getImageUrlsByProductIdAndType(productId,ImageType.DETAIL_PAGE))
+                .build();
+    }
+
+    private List<String> getImageUrlsByProductIdAndType(Long productId,ImageType imageType){
+        return productImageRepository.findByProductIdAndImageType(productId,imageType)
+                .stream().map(ProductImageEntity::getImageUrl).toList();
+    }
+
+    private List<OptionInfo> getOptionInfos(Long productId){
+         List<OptionEntity> options = optionRepository.findByProductId(productId);
+         return options.stream().map(option->
+                 new OptionInfo(option.getId(),option.getName(),option.getPrice()))
+                 .toList();
+    }
+
+    private ProductEntity getProductById(Long productId){
+        return productRepository.findById(productId).orElseThrow();
     }
 }

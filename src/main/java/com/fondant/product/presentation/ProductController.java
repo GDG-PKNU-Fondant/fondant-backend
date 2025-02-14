@@ -3,6 +3,7 @@ package com.fondant.product.presentation;
 import com.fondant.global.dto.ResponseDto;
 import com.fondant.global.dto.SuccessMessage;
 import com.fondant.product.application.ProductService;
+import com.fondant.product.presentation.dto.response.ProductDetailResponse;
 import com.fondant.product.presentation.dto.response.ProductsResponse;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -30,5 +31,12 @@ public class ProductController {
 
         return ResponseEntity.ok(ResponseDto.ofSuccess(SuccessMessage.OPERATION_SUCCESS,
                 productService.getProductsByMarketAndCategoryId(marketId,categoryId,pageable)));
+    }
+
+    @GetMapping("/{productId}")
+    public ResponseEntity<ResponseDto<ProductDetailResponse>> getProductDetail(
+            @PathVariable(name="productId") Long productId) {
+        return ResponseEntity.ok(ResponseDto.ofSuccess(SuccessMessage.OPERATION_SUCCESS,
+                productService.getProductDetail(productId)));
     }
 }
