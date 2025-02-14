@@ -1,0 +1,30 @@
+= API 문서
+Fondant Backend Team
+2025-01-26
+:toc: left
+:toclevels: 2
+:source-highlighter: highlightjs
+:sectlinks:
+
+== Market API
+
+=== 1. 카테고리별 마켓 목록 조회
+
+==== HTTP request
+
+include::{snippets}/markets/get-markets-by-category/http-request.adoc[]
+
+==== Path Parameters
+
+include::{snippets}/markets/get-markets-by-category/path-parameters.adoc[]
+
+==== Query parameters
+include::{snippets}/markets/get-markets-by-category/query-parameters.adoc[]
+
+==== HTTP response
+
+include::{snippets}/markets/get-markets-by-category/http-response.adoc[]
+
+==== response body
+
+include::{snippets}/markets/get-markets-by-category/response-fields.adoc[]
