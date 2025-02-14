@@ -5,7 +5,7 @@ import com.fondant.market.application.dto.MarketInfo;
 import com.fondant.market.domain.entity.MarketEntity;
 import com.fondant.market.domain.repository.MarketRepository;
 import com.fondant.market.presentation.dto.response.MarketsResponse;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -14,13 +14,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class MarketService {
-    private final MarketRepository marketRepository;
 
-    @Autowired
-    public MarketService(MarketRepository marketRepository) {
-        this.marketRepository = marketRepository;
-    }
+    private final MarketRepository marketRepository;
 
     @Transactional(readOnly = true)
     public MarketsResponse getMarketsByCategoryId(Long categoryId, Pageable pageable) {
