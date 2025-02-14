@@ -1,5 +1,6 @@
 package com.fondant.market.application;
 
+import com.fondant.global.config.PageConfig;
 import com.fondant.global.dto.PageInfo;
 import com.fondant.market.application.dto.MarketInfo;
 import com.fondant.market.domain.entity.MarketEntity;
@@ -18,10 +19,13 @@ import java.util.List;
 public class MarketService {
 
     private final MarketRepository marketRepository;
+    private final PageConfig pageConfig;
 
     @Transactional(readOnly = true)
     public MarketsResponse getMarketsByCategoryId(Long categoryId, Pageable pageable) {
-        Page<MarketEntity> markets = marketRepository.findMarketsByCategory(categoryId,pageable);
+
+        Pageable effectivePageable = (pageable == null) ? pageConfig.defaultPageable() : pageable;
+        Page<MarketEntity> markets = this.marketRepository.findMarketsByCategory(categoryId, effectivePageable);
 
         return MarketsResponse.builder()
                 .pageInfo(PageInfo.of(markets.getNumber(), markets.getTotalPages()))
