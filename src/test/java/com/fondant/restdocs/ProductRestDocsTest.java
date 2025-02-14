@@ -2,9 +2,9 @@ package com.fondant.restdocs;
 
 
 import com.fondant.market.domain.entity.MarketEntity;
-import com.fondant.product.domain.entity.CategoryEntity;
-import com.fondant.product.domain.entity.ProductCategoryEntity;
-import com.fondant.product.domain.entity.ProductEntity;
+import com.fondant.product.domain.entity.*;
+import com.fondant.product.domain.repository.OptionRepository;
+import com.fondant.product.domain.repository.ProductImageRepository;
 import com.fondant.product.domain.repository.ProductRepository;
 import com.fondant.test.repository.CategoryTestRepository;
 import com.fondant.test.repository.MarketTestRepository;
@@ -51,6 +51,12 @@ public class ProductRestDocsTest {
     @Autowired
     private ProductCategoryTestRepository productCategoryRepository;
 
+    @Autowired
+    private ProductImageRepository productImageRepository;
+
+    @Autowired
+    private OptionRepository optionRepository;
+
     private MarketEntity market;
     private CategoryEntity category1;
     private CategoryEntity category2;
@@ -58,6 +64,9 @@ public class ProductRestDocsTest {
     private ProductCategoryEntity categoryProduct2;
     private ProductEntity product1;
     private ProductEntity product2;
+    private ProductImageEntity productImage1;
+    private ProductImageEntity productImage2;
+    private OptionEntity option1;
 
     private static final String BASE_URL = "/api/product";
 
@@ -103,6 +112,25 @@ public class ProductRestDocsTest {
                 .product(product1)
                 .category(category1)
                 .build());
+
+        productImage1 = productImageRepository.save(ProductImageEntity.builder()
+                .productId(product1.getId())
+                .imageUrl("test-image.png")
+                .imageType(ImageType.PRODUCT_PHOTO)
+                .build());
+
+        productImage2 = productImageRepository.save(ProductImageEntity.builder()
+                .productId(product1.getId())
+                .imageUrl("test-detail-page.png")
+                .imageType(ImageType.DETAIL_PAGE)
+                .build());
+
+        option1 = optionRepository.save(
+                 OptionEntity.builder()
+                 .name("3개 세트")
+                 .productId(product1.getId())
+                 .price(20000)
+                 .build());
     }
 
     public static FieldDescriptor[] commonResponseFields() {
@@ -120,7 +148,7 @@ public class ProductRestDocsTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andDo(document("products/get-products-by-market-and-category",
-                        preprocessRequest(prettyPrint()),  // 요청 JSON 정렬
+                        preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint()),
                         pathParameters(
                                 parameterWithName("marketId").description("조회할 마켓의 ID"),
@@ -142,6 +170,32 @@ public class ProductRestDocsTest {
                                 fieldWithPath("products[].thumbnailUrl").description("상품 썸네일 URL"),
                                 fieldWithPath("products[].discountRate").description("상품 할인율"),
                                 fieldWithPath("products[].discountPrice").description("상품 할인 후 가격")
+                        })));
+    }
+
+    @Test
+    void getProductDetails() throws Exception {
+        mockMvc.perform(get(BASE_URL + "/{productId}", product1.getId())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andDo(document("products/get-product-details",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+                        pathParameters(
+                                parameterWithName("productId").description("조회할 상품의 ID")
+                        ),
+                        responseFields(
+                                commonResponseFields()
+                        ).andWithPrefix("response.", new FieldDescriptor[] {
+                                fieldWithPath("photos").description("상품 사진 URL 목록"),
+                                fieldWithPath("photos[].").description("상품 사진 개별 URL"),
+                                fieldWithPath("name").description("상품 이름"),
+                                fieldWithPath("options").description("상품 옵션 목록").optional(),
+                                fieldWithPath("options[].id").description("옵션 ID").optional(),
+                                fieldWithPath("options[].name").description("옵션 이름").optional(),
+                                fieldWithPath("options[].price").description("옵션 가격").optional(),
+                                fieldWithPath("description").description("상품 설명"),
+                                fieldWithPath("detailPages").description("상품 상세 페이지 이미지 URL 목록"),
                         })));
     }
 }

@@ -29,3 +29,22 @@ include::{snippets}/products/get-products-by-market-and-category/http-response.a
 
 include::{snippets}/products/get-products-by-market-and-category/response-fields.adoc[]
 
+=== 2. 상품 상세 조회
+
+==== HTTP request
+
+include::{snippets}/products/get-product-details/http-request.adoc[]
+
+==== Path Parameters
+
+include::{snippets}/products/get-product-details/path-parameters.adoc[]
+
+
+==== HTTP response
+
+include::{snippets}/products/get-product-details/http-response.adoc[]
+
+==== response body
+
+include::{snippets}/products/get-product-details/response-fields.adoc[]
+
