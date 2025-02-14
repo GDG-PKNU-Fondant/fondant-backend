@@ -80,18 +80,24 @@ public class ProductService {
     }
 
     private List<String> getImageUrlsByProductIdAndType(Long productId,ImageType imageType){
-        return productImageRepository.findByProductIdAndImageType(productId,imageType)
+        return productImageRepository.findByProductIdAndImageType(productId, imageType)
                 .stream().map(ProductImageEntity::getImageUrl).toList();
     }
 
     private List<OptionInfo> getOptionInfos(Long productId){
          List<OptionEntity> options = optionRepository.findByProductId(productId);
+
+        if (options.isEmpty()) {
+            throw new ApiException(ProductError.OPTION_NOT_FOUND);
+        }
+
          return options.stream().map(option->
                  new OptionInfo(option.getId(),option.getName(),option.getPrice()))
                  .toList();
     }
 
-    private ProductEntity getProductById(Long productId){
-        return productRepository.findById(productId).orElseThrow();
+    private ProductEntity getProductById(Long productId) {
+        return productRepository.findById(productId)
+                .orElseThrow(() -> new ApiException(ProductError.PRODUCT_NOT_FOUND));
     }
 }
