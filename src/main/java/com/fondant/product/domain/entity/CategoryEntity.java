@@ -2,9 +2,7 @@ package com.fondant.product.domain.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -13,20 +11,15 @@ public class CategoryEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name="category_id")
+    @Getter
     private Long id;
 
     @NotNull
-    @Column(name="category_type")
-    @Enumerated(EnumType.STRING)
-    private CategoryType categoryType;
-
-    @NotNull
-    @Column(name="product_id")
-    private Long productId;
+    @Column(name="name")
+    private String name;
 
     @Builder
-    public CategoryEntity(CategoryType categoryType, Long productId) {
-        this.categoryType = categoryType;
-        this.productId = productId;
+    public CategoryEntity(String name) {
+        this.name = name;
     }
 }
