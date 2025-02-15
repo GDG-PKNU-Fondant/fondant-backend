@@ -1,9 +1,9 @@
 package com.fondant.infra.jwt.filter;
 
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fondant.infra.jwt.application.JWTUtil;
 import com.fondant.infra.jwt.domain.repository.RefreshRepository;
-import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.*;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -11,6 +11,11 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.web.filter.GenericFilterBean;
 
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.HashMap;
+import java.util.Map;
+
+import static org.springframework.scheduling.config.TaskExecutionOutcome.Status.SUCCESS;
 
 public class CustomLogoutFilter extends GenericFilterBean {
 
@@ -24,7 +29,7 @@ public class CustomLogoutFilter extends GenericFilterBean {
 
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
-        doFilter((HttpServletRequest) servletRequest, (HttpServletResponse)servletResponse, filterChain);
+        doFilter((HttpServletRequest) servletRequest, (HttpServletResponse) servletResponse, filterChain);
     }
 
     private void doFilter(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws IOException, ServletException {
@@ -56,10 +61,9 @@ public class CustomLogoutFilter extends GenericFilterBean {
             return;
         }
 
-        if (jwtUtil.isTokenExpired(refresh)){
+        if (jwtUtil.isTokenExpired(refresh)) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
         }
-        System.out.println(refresh);
 
         String type = jwtUtil.getType(refresh);
 
@@ -68,7 +72,7 @@ public class CustomLogoutFilter extends GenericFilterBean {
             return;
         }
 
-        if(!refreshRepository.existsByRefresh(refresh)) {
+        if (!refreshRepository.existsByRefresh(refresh)) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             return;
         }
@@ -78,8 +82,19 @@ public class CustomLogoutFilter extends GenericFilterBean {
         Cookie cookie = new Cookie("refresh", null);
         cookie.setMaxAge(0);
         cookie.setPath("/");
+
+        Map<String, Object> responseBody = new HashMap<>();
+        Map<String, Object> innerResponse = new HashMap<>();
+
+        responseBody.put("code", SUCCESS);
+        responseBody.put("message", "요청이 성공적으로 처리되었습니다.");
+        responseBody.put("response", innerResponse);
+
+        response.setContentType("application/json");
+        PrintWriter writer = response.getWriter();
+        writer.print(new ObjectMapper().writeValueAsString(responseBody));
+
         response.addCookie(cookie);
         response.setStatus(HttpServletResponse.SC_OK);
-
     }
 }

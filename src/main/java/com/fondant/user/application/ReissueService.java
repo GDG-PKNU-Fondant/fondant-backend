@@ -1,5 +1,6 @@
 package com.fondant.user.application;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fondant.infra.jwt.application.JWTUtil;
 import com.fondant.infra.jwt.domain.entity.RefreshEntity;
 import com.fondant.infra.jwt.domain.repository.RefreshRepository;
@@ -10,10 +11,15 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.HashMap;
+import java.util.Map;
+
+import static org.springframework.scheduling.config.TaskExecutionOutcome.Status.SUCCESS;
 
 @Service
 public class ReissueService {
@@ -30,14 +36,14 @@ public class ReissueService {
         String refresh = null;
         Cookie[] cookies = request.getCookies();
 
-        for (Cookie cookie : cookies) {
-            if (cookie.getName().equals("refresh")) {
-                refresh = cookie.getValue();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (cookie.getName().equals("refresh")) {
+                    refresh = cookie.getValue();
+                }
             }
-        }
-
-        if (refresh == null) {
-            return new ResponseEntity<>("리프레쉬 토큰이 존재하지 않습니다.", HttpStatus.BAD_REQUEST);
+        } else {
+            return new ResponseEntity<>("리프레쉬 토큰이 쿠키에 존재하지 않습니다.", HttpStatus.BAD_REQUEST);
         }
 
         try {
@@ -48,25 +54,36 @@ public class ReissueService {
 
         String type = jwtUtil.getType(refresh);
 
-        if (!type.equals("refresh")) {
+        if (type == null || !type.equals("refresh")) {
             return new ResponseEntity<>("유효하지 않은 토큰입니다.", HttpStatus.BAD_REQUEST);
         }
 
-        if (!refreshRepository.existsByRefresh(refresh)){
+        if (!refreshRepository.existsByRefresh(refresh)) {
             return new ResponseEntity<>("존재하지 않는 토큰입니다.", HttpStatus.BAD_REQUEST);
         }
 
         String userId = jwtUtil.getUserIdFromToken(refresh);
         String role = jwtUtil.getUserRoleFromToken(refresh);
 
-        String newAccess = jwtUtil.generateToken("access", userId, role, 60 * 10L);
-        String newRefresh = jwtUtil.generateToken("refresh", userId, role, 60 * 60 * 24L);
+        String newAccess = jwtUtil.generateToken("access", userId, role, 60 * 10 * 1000L);
+        String newRefresh = jwtUtil.generateToken("refresh", userId, role, 60 * 60 * 24 * 1000L);
 
         refreshRepository.deleteByRefresh(refresh);
-        addRefreshEntity(userId, newRefresh, 60 * 60 * 24L);
+        addRefreshEntity(userId, newRefresh, 60 * 60 * 24 * 1000L);
 
+        Map<String, Object> responseBody = new HashMap<>();
+        Map<String, Object> innerResponse = new HashMap<>();
+
+        innerResponse.put("accessToken", newAccess);
+
+        responseBody.put("code", SUCCESS);
+        responseBody.put("message", "요청이 성공적으로 처리되었습니다.");
+        responseBody.put("response", innerResponse);
+
+        response.setContentType("application/json");
         PrintWriter writer = response.getWriter();
-        writer.print("access: " + newAccess);
+        writer.print(new ObjectMapper().writeValueAsString(responseBody));
+
         response.addCookie(createCookie("refresh", newRefresh));
 
         return new ResponseEntity<>(HttpStatus.OK);
