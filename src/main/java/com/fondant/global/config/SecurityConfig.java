@@ -6,6 +6,9 @@ import com.fondant.infra.jwt.application.JWTUtil;
 import com.fondant.infra.jwt.filter.LoginFilter;
 
 import com.fondant.infra.jwt.domain.repository.RefreshRepository;
+import com.fondant.infra.oauth2.application.CustomOAuth2UserService;
+import com.fondant.infra.oauth2.application.CustomSuccessHandler;
+import com.fondant.user.domain.repository.UserRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -13,6 +16,7 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -28,12 +32,20 @@ public class SecurityConfig {
     private final AuthenticationConfiguration authenticationConfiguration;
     private final JWTUtil jwtUtil;
     private final RefreshRepository refreshRepository;
+    private final CustomOAuth2UserService customOAuth2UserService;
+    private final UserRepository userRepository;
+    private final CustomSuccessHandler customSuccessHandler;
 
 
-    public SecurityConfig(AuthenticationConfiguration authenticationConfiguration, JWTUtil jwtUtil, RefreshRepository refreshRepository) {
+    public SecurityConfig(AuthenticationConfiguration authenticationConfiguration, JWTUtil jwtUtil,
+                          RefreshRepository refreshRepository, CustomOAuth2UserService customOAuth2UserService, UserRepository userRepository, CustomSuccessHandler customSuccessHandler) {
+
         this.authenticationConfiguration = authenticationConfiguration;
         this.jwtUtil = jwtUtil;
         this.refreshRepository = refreshRepository;
+        this.customOAuth2UserService = customOAuth2UserService;
+        this.userRepository = userRepository;
+        this.customSuccessHandler = customSuccessHandler;
     }
 
     @Bean
@@ -55,7 +67,7 @@ public class SecurityConfig {
                 .cors((cors) -> cors
                         .configurationSource(request -> {
                             CorsConfiguration configration = new CorsConfiguration();
-                            configration.setAllowedOrigins(Collections.singletonList("http://localhost:3000"));
+                            configration.setAllowedOrigins(Collections.singletonList("http://localhost:8080"));
                             configration.setAllowedMethods(Collections.singletonList("*"));
                             configration.setAllowCredentials(true);
                             configration.setAllowedHeaders(Collections.singletonList("*"));
@@ -68,13 +80,19 @@ public class SecurityConfig {
                 .formLogin(AbstractHttpConfigurer::disable);
 
         http
+                .oauth2Login((oauth2) -> oauth2
+                        .userInfoEndpoint((userInfoEndpointConfig) -> userInfoEndpointConfig
+                                .userService(customOAuth2UserService))
+                        .successHandler(customSuccessHandler));
+
+        http
                 .authorizeHttpRequests((auth) -> auth
-                        .requestMatchers("/api/user/join", "/api/user/login", "/api/user/reissue").permitAll()
+                        .requestMatchers("/api/user/join", "/api/user/login", "/api/user/reissue", "/login/oauth2/code/**").permitAll()
                         .requestMatchers("/admin").hasRole("ADMIN")
                         .anyRequest().authenticated());
 
         http
-                .addFilterBefore(new JWTFilter(jwtUtil), LoginFilter.class);
+                .addFilterBefore(new JWTFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class);
 
         http
                 .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil, refreshRepository), UsernamePasswordAuthenticationFilter.class);
