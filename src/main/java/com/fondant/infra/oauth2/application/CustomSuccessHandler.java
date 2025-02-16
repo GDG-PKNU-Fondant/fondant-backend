@@ -57,18 +57,17 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         Map<String, Object> innerResponse = new HashMap<>();
 
         innerResponse.put("accessToken", accessToken);
-        innerResponse.put("redirectUrl", "http://localhost:8080/api/user/my");
 
         responseBody.put("code", SUCCESS);
+        if (customUserDetails.getProvider().equals(SNSType.NAVER.toString())) {
+            responseBody.put("isPhoneVerificationRequired", "false");
+        } else {
+            responseBody.put("isPhoneVerificationRequired", "true");
+        }
         responseBody.put("message", "요청이 성공적으로 처리되었습니다.");
         responseBody.put("response", innerResponse);
 
         response.addCookie(createCookie("refresh", refreshToken));
-        if (customUserDetails.getProvider().equals(SNSType.NAVER.toString())) {
-            response.addCookie(createCookie("isPhoneVerificationRequired", "false"));
-        } else {
-            response.addCookie(createCookie("isPhoneVerificationRequired", "true"));
-        }
 
         response.setContentType("application/json");
         response.setStatus(HttpStatus.OK.value());
