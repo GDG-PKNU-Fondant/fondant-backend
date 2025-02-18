@@ -9,7 +9,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 @Bean
-@Target({ElementType.PARAMETER, ElementType.TYPE})
+@Target({ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
 @AuthenticationPrincipal
 public @interface CurrentUser {
