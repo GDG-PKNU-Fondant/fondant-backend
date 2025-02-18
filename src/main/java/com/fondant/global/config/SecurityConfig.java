@@ -3,9 +3,8 @@ package com.fondant.global.config;
 import com.fondant.infra.jwt.filter.CustomLogoutFilter;
 import com.fondant.infra.jwt.filter.JWTFilter;
 import com.fondant.infra.jwt.application.JWTUtil;
-import com.fondant.infra.jwt.filter.LoginFilter;
-
 import com.fondant.infra.jwt.domain.repository.RefreshRepository;
+import com.fondant.infra.jwt.filter.LoginFilter;
 import com.fondant.infra.oauth2.application.CustomOAuth2UserService;
 import com.fondant.infra.oauth2.application.CustomSuccessHandler;
 import com.fondant.user.domain.repository.UserRepository;
@@ -16,7 +15,6 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -33,7 +31,6 @@ public class SecurityConfig {
     private final JWTUtil jwtUtil;
     private final RefreshRepository refreshRepository;
     private final CustomOAuth2UserService customOAuth2UserService;
-    private final UserRepository userRepository;
     private final CustomSuccessHandler customSuccessHandler;
 
 
@@ -44,7 +41,6 @@ public class SecurityConfig {
         this.jwtUtil = jwtUtil;
         this.refreshRepository = refreshRepository;
         this.customOAuth2UserService = customOAuth2UserService;
-        this.userRepository = userRepository;
         this.customSuccessHandler = customSuccessHandler;
     }
 
@@ -87,8 +83,8 @@ public class SecurityConfig {
 
         http
                 .authorizeHttpRequests((auth) -> auth
-                        .requestMatchers("/api/user/join", "/api/user/login", "/api/user/reissue", "/login/oauth2/code/**").permitAll()
-                        .requestMatchers("/admin").hasRole("ADMIN")
+                        .requestMatchers("/api/user/reissue", "/login/oauth2/code/**").permitAll()
+                        .requestMatchers("/api/user/join", "/api/user/login","/admin").hasRole("ADMIN")
                         .anyRequest().authenticated());
 
         http

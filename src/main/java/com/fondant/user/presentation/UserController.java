@@ -1,16 +1,12 @@
 package com.fondant.user.presentation;
 
-import ch.qos.logback.core.model.Model;
 import com.fondant.user.application.ReissueService;
 import com.fondant.user.application.UserService;
-import com.fondant.user.presentation.dto.request.JoinRequest;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.io.IOException;
@@ -27,16 +23,11 @@ public class UserController {
         this.reissueService = reissueService;
     }
 
-    @GetMapping("/my")
-    public ResponseEntity<String> my() {
-        return ResponseEntity.ok("굿.");
-    }
-
-    @PostMapping("/join")
-    public ResponseEntity<String> join(@RequestBody JoinRequest joinRequest) {
-        userService.joinUser(joinRequest);
-        return ResponseEntity.ok("회원가입이 완료되었습니다.");
-    }
+//    @PostMapping("/join")
+//    public ResponseEntity<String> join(@RequestBody JoinRequest joinRequest) {
+//        userService.joinUser(joinRequest);
+//        return ResponseEntity.ok("회원가입이 완료되었습니다.");
+//    }
 
     @PostMapping("/reissue")
     public ResponseEntity<?> reissue(HttpServletRequest request, HttpServletResponse response) throws IOException {

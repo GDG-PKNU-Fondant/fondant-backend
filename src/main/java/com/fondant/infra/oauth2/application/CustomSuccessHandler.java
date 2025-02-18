@@ -11,13 +11,11 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
-
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.*;
@@ -57,13 +55,13 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         Map<String, Object> innerResponse = new HashMap<>();
 
         innerResponse.put("accessToken", accessToken);
+        if (customUserDetails.getProvider().equals(SNSType.NAVER.toString())) {
+            innerResponse.put("isPhoneVerificationRequired", "false");
+        } else {
+            innerResponse.put("isPhoneVerificationRequired", "true");
+        }
 
         responseBody.put("code", SUCCESS);
-        if (customUserDetails.getProvider().equals(SNSType.NAVER.toString())) {
-            responseBody.put("isPhoneVerificationRequired", "false");
-        } else {
-            responseBody.put("isPhoneVerificationRequired", "true");
-        }
         responseBody.put("message", "요청이 성공적으로 처리되었습니다.");
         responseBody.put("response", innerResponse);
 
