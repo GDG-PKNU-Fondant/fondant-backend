@@ -96,7 +96,7 @@ public class ProductService {
                  .toList();
     }
 
-    private ProductEntity getProductById(Long productId) {
+    public ProductEntity getProductById(Long productId) {
         return productRepository.findById(productId)
                 .orElseThrow(() -> new ApiException(ProductError.PRODUCT_NOT_FOUND));
     }
