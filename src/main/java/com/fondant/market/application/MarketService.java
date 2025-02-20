@@ -58,9 +58,6 @@ public class MarketService {
                 .description(market.getDescription())
                 .thumbnail(market.getThumbnail())
                 .background(market.getBackground())
-                .totalSales(market.getTotalSales())
-                .totalReviews(market.getTotalReviews())
-                .deliveryFee(market.getDeliveryFee())
                 .build();
     }
 }

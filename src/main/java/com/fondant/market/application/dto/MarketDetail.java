@@ -9,10 +9,7 @@ public record MarketDetail(
         String name,
         String description,
         String thumbnail,
-        String background,
-        Long totalSales,
-        Long totalReviews,
-        Long deliveryFee
+        String background
 ) {
     public static MarketDetail of(MarketEntity market) {
         return MarketDetail.builder()
@@ -21,9 +18,6 @@ public record MarketDetail(
                 .description(market.getDescription())
                 .thumbnail(market.getThumbnail())
                 .background(market.getBackground())
-                .totalSales(market.getTotalSales())
-                .totalReviews(market.getTotalReviews())
-                .deliveryFee(market.getDeliveryFee())
                 .build();
     }
 }

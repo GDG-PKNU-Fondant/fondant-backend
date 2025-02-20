@@ -129,10 +129,7 @@ public class MarketRestDocsTest {
                                 fieldWithPath("name").description("마켓 이름"),
                                 fieldWithPath("description").description("마켓 한줄 소개"),
                                 fieldWithPath("thumbnail").description("마켓 썸네일 이미지 URL"),
-                                fieldWithPath("background").description("마켓 배경 이미지 URL"),
-                                fieldWithPath("totalSales").description("마켓의 총 판매량"),
-                                fieldWithPath("totalReviews").description("마켓의 총 리뷰 수"),
-                                fieldWithPath("deliveryFee").description("마켓의 배달비")
+                                fieldWithPath("background").description("마켓 배경 이미지 URL")
                         })));
     }
 }
