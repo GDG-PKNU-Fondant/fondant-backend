@@ -4,6 +4,7 @@ import com.fondant.global.config.PageConfig;
 import com.fondant.global.dto.ResponseDto;
 import com.fondant.global.dto.SuccessMessage;
 import com.fondant.market.application.MarketService;
+import com.fondant.market.application.dto.MarketDetail;
 import com.fondant.market.presentation.dto.response.MarketsResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -19,8 +20,9 @@ public class MarketController {
     private final PageConfig pageConfig;
 
     @GetMapping("/{marketId}")
-    public ResponseEntity<Object> getMarket(@PathVariable long marketId) {
-        return ResponseEntity.ok(null);
+    public ResponseEntity<ResponseDto<MarketDetail>> getMarket(@PathVariable long marketId) {
+        MarketDetail marketDetail = marketService.getMarketById(marketId);
+        return ResponseEntity.ok(ResponseDto.ofSuccess(SuccessMessage.OPERATION_SUCCESS, marketDetail));
     }
 
     @GetMapping("/categories/{categoryId}")
