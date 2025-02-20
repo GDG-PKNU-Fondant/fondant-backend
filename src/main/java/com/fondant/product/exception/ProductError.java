@@ -10,7 +10,8 @@ public enum ProductError implements ErrorCode {
     NO_PRODUCTS_FOUND(HttpStatus.NO_CONTENT, "해당 마켓/카테고리에 상품이 없습니다.", "NO_PRODUCTS_FOUND"),
     INVALID_MARKET_ID(HttpStatus.BAD_REQUEST, "유효하지 않은 marketId입니다.", "INVALID_MARKET_ID"),
     INVALID_CATEGORY_ID(HttpStatus.BAD_REQUEST, "유효하지 않은 categoryId입니다.", "INVALID_CATEGORY_ID"),
-    INVALID_PAGE_NUMBER(HttpStatus.BAD_REQUEST, "페이지 번호는 0 이상이어야 합니다.", "INVALID_PAGE_NUMBER");
+    INVALID_PAGE_NUMBER(HttpStatus.BAD_REQUEST, "페이지 번호는 0 이상이어야 합니다.", "INVALID_PAGE_NUMBER"),
+    OPTION_NOT_FOUND(HttpStatus.NOT_FOUND,"해당 상품의 옵션을 찾을 수 없습니다.", "OPTION_NOT_FOUND"),;
 
     private final HttpStatus httpStatus;
     private final String message;
