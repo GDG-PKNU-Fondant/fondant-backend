@@ -110,4 +110,29 @@ public class MarketRestDocsTest {
                                 fieldWithPath("markets[].totalReviews").description("마켓의 총 리뷰 수")
                         })));
     }
+
+    @Test
+    void getMarketById() throws Exception {
+        mockMvc.perform(get(BASE_URL + "/{marketId}", market1.getId())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andDo(document("markets/get-market-by-id",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+                        pathParameters(
+                                parameterWithName("marketId").description("조회할 마켓 ID")
+                        ),
+                        responseFields(
+                                commonResponseFields()
+                        ).andWithPrefix("response.", new FieldDescriptor[]{
+                                fieldWithPath("id").description("마켓 ID"),
+                                fieldWithPath("name").description("마켓 이름"),
+                                fieldWithPath("description").description("마켓 한줄 소개"),
+                                fieldWithPath("thumbnail").description("마켓 썸네일 이미지 URL"),
+                                fieldWithPath("background").description("마켓 배경 이미지 URL"),
+                                fieldWithPath("totalSales").description("마켓의 총 판매량"),
+                                fieldWithPath("totalReviews").description("마켓의 총 리뷰 수"),
+                                fieldWithPath("deliveryFee").description("마켓의 배달비")
+                        })));
+    }
 }

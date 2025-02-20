@@ -28,3 +28,21 @@ include::{snippets}/markets/get-markets-by-category/http-response.adoc[]
 ==== response body
 
 include::{snippets}/markets/get-markets-by-category/response-fields.adoc[]
+
+=== 2. 마켓 상세 조회
+
+==== HTTP request
+
+include::{snippets}/markets/get-market-by-id/http-request.adoc[]
+
+==== Path Parameters
+
+include::{snippets}/markets/get-market-by-id/path-parameters.adoc[]
+
+==== HTTP response
+
+include::{snippets}/markets/get-market-by-id/http-response.adoc[]
+
+==== response body
+
+include::{snippets}/markets/get-market-by-id/response-fields.adoc[]
