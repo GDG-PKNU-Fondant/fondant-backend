@@ -8,7 +8,6 @@ import com.fondant.infra.jwt.filter.LoginFilter;
 import com.fondant.infra.oauth2.application.CustomOAuth2UserService;
 import com.fondant.infra.oauth2.application.CustomSuccessHandler;
 import com.fondant.user.domain.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -34,6 +33,7 @@ public class SecurityConfig {
     private final CustomOAuth2UserService customOAuth2UserService;
     private final CustomSuccessHandler customSuccessHandler;
 
+
     public SecurityConfig(AuthenticationConfiguration authenticationConfiguration, JWTUtil jwtUtil,
                           RefreshRepository refreshRepository, CustomOAuth2UserService customOAuth2UserService, UserRepository userRepository, CustomSuccessHandler customSuccessHandler) {
 
@@ -43,9 +43,6 @@ public class SecurityConfig {
         this.customOAuth2UserService = customOAuth2UserService;
         this.customSuccessHandler = customSuccessHandler;
     }
-    
-    @Value("{cors.allowed-origins}")
-    private String allowedOrigins;
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
@@ -65,14 +62,14 @@ public class SecurityConfig {
         http
                 .cors((cors) -> cors
                         .configurationSource(request -> {
-                            CorsConfiguration configuration = new CorsConfiguration();
-                            configuration.setAllowedOrigins(Collections.singletonList(allowedOrigins));
-                            configuration.setAllowedMethods(Collections.singletonList("*"));
-                            configuration.setAllowCredentials(true);
-                            configuration.setAllowedHeaders(Collections.singletonList("*"));
-                            configuration.setMaxAge(3600L);
-                            configuration.setExposedHeaders(Collections.singletonList("Authorization"));
-                            return configuration;
+                            CorsConfiguration configration = new CorsConfiguration();
+                            configration.setAllowedOrigins(Collections.singletonList("http://localhost:8080"));
+                            configration.setAllowedMethods(Collections.singletonList("*"));
+                            configration.setAllowCredentials(true);
+                            configration.setAllowedHeaders(Collections.singletonList("*"));
+                            configration.setMaxAge(3600L);
+                            configration.setExposedHeaders(Collections.singletonList("Authorization"));
+                            return configration;
                         }));
 
         http

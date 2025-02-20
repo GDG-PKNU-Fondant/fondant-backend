@@ -1,6 +1,5 @@
 package com.fondant.user.application;
 
-import com.fondant.infra.oauth2.dto.OAuth2UserDTO;
 import com.fondant.user.presentation.dto.request.JoinRequest;
 import com.fondant.user.domain.entity.SNSType;
 import com.fondant.user.domain.entity.UserEntity;

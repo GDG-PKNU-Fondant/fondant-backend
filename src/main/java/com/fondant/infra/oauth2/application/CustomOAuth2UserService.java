@@ -46,9 +46,6 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
         Optional<UserEntity> extraData = userRepository.findByEmail(oAuth2Response.getEmail());
 
-        System.out.println(oAuth2Response.getEmail());
-
-
         if (extraData.isPresent()) {
             if (registrationId.equals("naver")) {
                 UserEntity updatedUser = extraData.get().toBuilder()

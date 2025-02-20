@@ -41,7 +41,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
         UserEntity user = userEntity.orElseThrow(() -> new UsernameNotFoundException("유저가 존재하지 않습니다."));
 
-        String userId = userEntity.get().getId().toString();
+        Long userId = userEntity.get().getId();
 
         Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
         Iterator<? extends GrantedAuthority> iterator = authorities.iterator();

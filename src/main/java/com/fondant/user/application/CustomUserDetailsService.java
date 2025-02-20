@@ -23,7 +23,7 @@ public class CustomUserDetailsService implements UserDetailsService {
 
         JWTUserDTO userData = userRepository.findByEmail(userEmail)
                 .map(user -> JWTUserDTO.builder()
-                        .userId(String.valueOf(user.getId()))
+                        .userId(user.getId())
                         .userEmail(user.getEmail())
                         .password(user.getPassword())
                         .role(user.getRole().name())

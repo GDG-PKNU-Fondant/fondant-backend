@@ -19,8 +19,9 @@ public class JWTUtil {
         this.secretKey = new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), Jwts.SIG.HS256.key().build().getAlgorithm());
     }
 
-    public String getUserIdFromToken(String token) {
-        return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().get("userId").toString();
+    public Long getUserIdFromToken(String token) {
+        Number userId = (Number) Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().get("userId");
+        return userId.longValue();
     }
 
     public String getUserRoleFromToken(String token) {
@@ -46,7 +47,7 @@ public class JWTUtil {
                 .toInstant().atZone(ZoneId.of("Asia/Seoul")).toLocalDateTime();
     }
 
-    public String generateToken(String type,String userId, String role, Long expiredMs) {
+    public String generateToken(String type,Long userId, String role, Long expiredMs) {
         return Jwts.builder()
                 .claim("type",type)
                 .claim("userId", userId)

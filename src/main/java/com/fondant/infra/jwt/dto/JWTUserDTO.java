@@ -6,7 +6,7 @@ import lombok.Builder;
 public record JWTUserDTO(
         String userEmail,
         String password,
-        String userId,
+        Long userId,
         String role
 ) {
 }

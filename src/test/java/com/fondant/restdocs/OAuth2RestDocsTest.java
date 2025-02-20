@@ -3,10 +3,8 @@ package com.fondant.restdocs;
 import com.fondant.global.config.SecurityConfig;
 import com.fondant.infra.jwt.application.JWTUtil;
 import com.fondant.infra.jwt.domain.repository.RefreshRepository;
-import com.fondant.infra.oauth2.dto.NaverResponse;
 import com.fondant.user.domain.entity.UserRole;
 import jakarta.servlet.http.Cookie;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,7 +59,7 @@ public class OAuth2RestDocsTest {
     void reissueAccessToken() throws Exception {
 
         //given
-        String refreshToken = jwtUtil.generateToken("refresh", String.valueOf(1), UserRole.USER.toString(), 24 * 24 * 1000L);
+        String refreshToken = jwtUtil.generateToken("refresh", 1L, UserRole.USER.toString(), 24 * 24 * 1000L);
         Cookie cookie = new Cookie("refresh", refreshToken);
         cookie.setMaxAge(24 * 60 * 60);
         cookie.setPath("/");
@@ -97,7 +95,7 @@ public class OAuth2RestDocsTest {
     @DisplayName("API - 로그아웃")
     void logout() throws Exception {
         //given
-        String refreshToken = jwtUtil.generateToken("refresh", String.valueOf(1), UserRole.USER.toString(), 24 * 24 * 1000L);
+        String refreshToken = jwtUtil.generateToken("refresh",1L, UserRole.USER.toString(), 24 * 24 * 1000L);
 
         Cookie cookie = new Cookie("refresh", refreshToken);
         cookie.setMaxAge(24 * 60 * 60);

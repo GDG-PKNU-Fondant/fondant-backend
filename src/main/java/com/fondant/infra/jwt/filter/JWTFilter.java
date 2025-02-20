@@ -54,7 +54,7 @@ public class JWTFilter extends OncePerRequestFilter {
             return;
         }
 
-        String userId = jwtUtil.getUserIdFromToken(accessToken);
+        Long userId = jwtUtil.getUserIdFromToken(accessToken);
         String role = jwtUtil.getUserRoleFromToken(accessToken);
 
         JWTUserDTO user = JWTUserDTO.builder()

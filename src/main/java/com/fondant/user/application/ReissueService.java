@@ -62,7 +62,7 @@ public class ReissueService {
             return new ResponseEntity<>("존재하지 않는 토큰입니다.", HttpStatus.BAD_REQUEST);
         }
 
-        String userId = jwtUtil.getUserIdFromToken(refresh);
+        Long userId = jwtUtil.getUserIdFromToken(refresh);
         String role = jwtUtil.getUserRoleFromToken(refresh);
 
         String newAccess = jwtUtil.generateToken("access", userId, role, 60 * 10 * 1000L);
@@ -99,7 +99,7 @@ public class ReissueService {
         return cookie;
     }
 
-    private void addRefreshEntity(String userId, String refresh, Long expiredMs) {
+    private void addRefreshEntity(Long userId, String refresh, Long expiredMs) {
         LocalDateTime date = LocalDateTime.now().plusSeconds(expiredMs).atZone(ZoneId.systemDefault()).toLocalDateTime();
 
         RefreshEntity refreshEntity = RefreshEntity.builder()
