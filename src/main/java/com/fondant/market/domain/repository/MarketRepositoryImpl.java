@@ -31,7 +31,7 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
                 .join(marketCategory.market, market)
                 .join(marketCategory.category, category)
                 .where(category.id.eq(categoryId))
-                .offset(pageable.getOffset()) // 페이지네이션 적용
+                .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
 
