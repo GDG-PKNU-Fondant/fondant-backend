@@ -2,10 +2,12 @@ package com.fondant.market.application;
 
 import com.fondant.global.config.PageConfig;
 import com.fondant.global.dto.PageInfo;
+import com.fondant.global.exception.ApiException;
 import com.fondant.market.application.dto.MarketDetail;
 import com.fondant.market.application.dto.MarketInfo;
 import com.fondant.market.domain.entity.MarketEntity;
 import com.fondant.market.domain.repository.MarketRepository;
+import com.fondant.market.exception.MarketError;
 import com.fondant.market.presentation.dto.response.MarketsResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -23,8 +25,16 @@ public class MarketService {
 
     @Transactional(readOnly = true)
     public MarketsResponse getMarketsByCategoryId(Long categoryId, Pageable pageable) {
+        if (categoryId == null || categoryId <= 0) {
+            throw new ApiException(MarketError.INVALID_CATEGORY_ID);
+        }
+
         Pageable effectivePageable = (pageable == null) ? pageConfig.defaultPageable() : pageable;
-        Page<MarketEntity> markets = this.marketRepository.findMarketsByCategory(categoryId, effectivePageable);
+        Page<MarketEntity> markets = marketRepository.findMarketsByCategory(categoryId, effectivePageable);
+
+        if (markets.isEmpty()) {
+            throw new ApiException(MarketError.NO_MARKETS_FOUND);
+        }
 
         return MarketsResponse.builder()
                 .pageInfo(PageInfo.of(markets.getNumber(), markets.getTotalPages()))
@@ -34,8 +44,12 @@ public class MarketService {
 
     @Transactional(readOnly = true)
     public MarketDetail getMarketById(Long marketId) {
+        if (marketId == null || marketId <= 0) {
+            throw new ApiException(MarketError.INVALID_MARKET_ID);
+        }
+
         MarketEntity market = marketRepository.findById(marketId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 마켓을 찾을 수 없습니다. ID: " + marketId));
+                .orElseThrow(() -> new ApiException(MarketError.MARKET_NOT_FOUND));
 
         return convertToDetailDto(market);
     }
