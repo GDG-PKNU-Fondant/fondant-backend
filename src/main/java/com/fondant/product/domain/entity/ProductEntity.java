@@ -1,9 +1,11 @@
 package com.fondant.product.domain.entity;
 
+import com.fondant.market.domain.entity.MarketEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
@@ -11,6 +13,7 @@ import java.time.LocalDate;
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name="product")
+@Getter
 public class ProductEntity {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name="product_id")
@@ -30,11 +33,11 @@ public class ProductEntity {
 
     @NotNull
     @Column(name="price")
-    private String price;
+    private int price;
 
-    @NotNull
-    @Column(name="market_id")
-    private Long marketId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name="market_id")
+    private MarketEntity market;
 
     @NotNull
     @Column(name="start_date")
@@ -49,12 +52,12 @@ public class ProductEntity {
     private double discountRate;
 
     @Builder
-    public ProductEntity(String name, String description, String thumbnail, String price, Long marketId, LocalDate startDate, int maxCount) {
+    public ProductEntity(String name, String description, String thumbnail, int price, MarketEntity market, LocalDate startDate, int maxCount) {
         this.name = name;
         this.description = description;
         this.thumbnail = thumbnail;
         this.price = price;
-        this.marketId = marketId;
+        this.market = market;
         this.startDate = startDate;
         this.maxCount = maxCount;
         this.discountRate = 0.0;
