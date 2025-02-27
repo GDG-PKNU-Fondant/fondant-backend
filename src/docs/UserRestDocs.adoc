@@ -1,48 +1,48 @@
-// = API 문서
-// Fondant Backend Team
-// 2025-02-16
-// :toc: left
-// :toclevels: 2
-// :source-highlighter: highlightjs
-// :sectlinks:
-//
-// == User API
-// === 1. Access Token 재발급
-//
-// ==== HTTP Request
-//
-// include::{snippets}/user/reissue-access-and-refresh-token/http-request.adoc[]
-//
-// ==== Request Cookie
-//
-// include::{snippets}/user/reissue-access-and-refresh-token/request-cookies.adoc[]
-//
-// ==== HTTP Response
-//
-// include::{snippets}/user/reissue-access-and-refresh-token/http-response.adoc[]
-//
-// ==== Response Cookie
-//
-// include::{snippets}/user/reissue-access-and-refresh-token/request-cookies.adoc[]
-//
-// ==== Response Body
-//
-// include::{snippets}/user/reissue-access-and-refresh-token/response-fields.adoc[]
-//
-// === 2. 로그아웃
-//
-// ==== HTTP Request
-//
-// include::{snippets}/user/logout/http-request.adoc[]
-//
-// ==== Request Cookie
-//
-// include::{snippets}/user/logout/request-cookies.adoc[]
-//
-// ==== HTTP Response
-//
-// include::{snippets}/user/logout/http-response.adoc[]
-//
-// ==== Response Body
-//
-// include::{snippets}/user/logout/response-fields.adoc[]
+= API 문서
+Fondant Backend Team
+2025-02-16
+:toc: left
+:toclevels: 2
+:source-highlighter: highlightjs
+:sectlinks:
+
+== User API
+=== 1. Access Token 재발급
+
+==== HTTP Request
+
+include::{snippets}/user/reissue-access-and-refresh-token/http-request.adoc[]
+
+==== Request Cookie
+
+include::{snippets}/user/reissue-access-and-refresh-token/request-cookies.adoc[]
+
+==== HTTP Response
+
+include::{snippets}/user/reissue-access-and-refresh-token/http-response.adoc[]
+
+==== Response Cookie
+
+include::{snippets}/user/reissue-access-and-refresh-token/request-cookies.adoc[]
+
+==== Response Body
+
+include::{snippets}/user/reissue-access-and-refresh-token/response-fields.adoc[]
+
+=== 2. 로그아웃
+
+==== HTTP Request
+
+include::{snippets}/user/logout/http-request.adoc[]
+
+==== Request Cookie
+
+include::{snippets}/user/logout/request-cookies.adoc[]
+
+==== HTTP Response
+
+include::{snippets}/user/logout/http-response.adoc[]
+
+==== Response Body
+
+include::{snippets}/user/logout/response-fields.adoc[]
