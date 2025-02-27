@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.sql.Date;
@@ -17,6 +18,7 @@ import java.util.List;
 public class UserEntity {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name="user_id")
+    @Getter
     private Long id;
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)

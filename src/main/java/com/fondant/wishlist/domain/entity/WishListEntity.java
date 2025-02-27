@@ -4,6 +4,7 @@ import com.fondant.product.domain.entity.ProductEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
@@ -20,6 +21,7 @@ public class WishListEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="product_id")
+    @Getter
     private ProductEntity product;
 
     @Builder

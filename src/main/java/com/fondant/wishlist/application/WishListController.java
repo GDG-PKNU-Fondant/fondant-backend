@@ -2,15 +2,20 @@ package com.fondant.wishlist.application;
 
 import com.fondant.global.dto.ResponseDto;
 import com.fondant.global.dto.SuccessMessage;
+import com.fondant.product.presentation.dto.response.ProductsResponse;
+import com.fondant.wishlist.application.dto.request.WishListRegistRequest;
 import com.fondant.wishlist.presentation.WishListService;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/wishlist")
 public class WishListController {
+    private static int PAGE_SIZE = 10;
+
     private final WishListService wishListService;
 
     public WishListController(WishListService wishListService) {
@@ -18,11 +23,20 @@ public class WishListController {
     }
 
     @PostMapping("")
-    public ResponseDto<Void> registerWishlist(
-            @RequestParam Long userId,/*토큰(로그인) 로직 완료 시 토큰으로 받도록 수정 예정*/
-            @RequestParam Long productId
+    public ResponseEntity<ResponseDto<Void>> registerWishlist(
+            @RequestBody WishListRegistRequest request
+            ){
+        wishListService.registerWishList(request.userId(), request.productId());
+        return ResponseEntity.ok(ResponseDto.ofSuccess(SuccessMessage.CREATE_SUCCESS));
+    }
+
+    @GetMapping("")
+    public ResponseEntity<ResponseDto<ProductsResponse>> getWishLists(
+            @RequestParam Long userId,
+            @RequestParam(name="page") int page
     ){
-        wishListService.registerWishList(userId, productId);
-        return ResponseDto.ofSuccess(SuccessMessage.CREATE_SUCCESS);
+        Pageable pageable = PageRequest.of(page, PAGE_SIZE);
+        return ResponseEntity.ok(ResponseDto.ofSuccess(SuccessMessage.OPERATION_SUCCESS,
+                wishListService.getWishList(userId,pageable)));
     }
 }

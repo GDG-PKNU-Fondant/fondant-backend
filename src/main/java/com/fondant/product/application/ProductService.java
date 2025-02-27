@@ -49,7 +49,7 @@ public class ProductService {
                 .build();
     }
 
-    private List<ProductInfo> getProductInfos(List<ProductEntity> products) {
+    public List<ProductInfo> getProductInfos(List<ProductEntity> products) {
         return products.stream()
                 .map(product->
                         ProductInfo.builder()
