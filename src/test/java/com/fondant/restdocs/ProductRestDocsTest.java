@@ -66,6 +66,7 @@ public class ProductRestDocsTest {
     private ProductEntity product2;
     private ProductImageEntity productImage1;
     private ProductImageEntity productImage2;
+    private ProductImageEntity productDetail1;
     private OptionEntity option1;
 
     private static final String BASE_URL = "/api/product";
@@ -117,12 +118,21 @@ public class ProductRestDocsTest {
                 .productId(product1.getId())
                 .imageUrl("test-image.png")
                 .imageType(ImageType.PRODUCT_PHOTO)
+                .imgOrder(1)
                 .build());
 
         productImage2 = productImageRepository.save(ProductImageEntity.builder()
                 .productId(product1.getId())
+                .imageUrl("test-image.png")
+                .imageType(ImageType.PRODUCT_PHOTO)
+                .imgOrder(2)
+                .build());
+
+        productDetail1 = productImageRepository.save(ProductImageEntity.builder()
+                .productId(product1.getId())
                 .imageUrl("test-detail-page.png")
                 .imageType(ImageType.DETAIL_PAGE)
+                .imgOrder(1)
                 .build());
 
         option1 = optionRepository.save(
@@ -187,15 +197,18 @@ public class ProductRestDocsTest {
                         responseFields(
                                 commonResponseFields()
                         ).andWithPrefix("response.", new FieldDescriptor[] {
-                                fieldWithPath("photos").description("상품 사진 URL 목록"),
-                                fieldWithPath("photos[].").description("상품 사진 개별 URL"),
+                                fieldWithPath("photos").description("상품 사진 정보 목록"),
+                                fieldWithPath("photos[].imgUrl").description("상품 사진 개별 URL"),
+                                fieldWithPath("photos[].imgOrder").description("상품 사진 순서"),
                                 fieldWithPath("name").description("상품 이름"),
                                 fieldWithPath("options").description("상품 옵션 목록").optional(),
                                 fieldWithPath("options[].id").description("옵션 ID").optional(),
                                 fieldWithPath("options[].name").description("옵션 이름").optional(),
                                 fieldWithPath("options[].price").description("옵션 가격").optional(),
                                 fieldWithPath("description").description("상품 설명"),
-                                fieldWithPath("detailPages").description("상품 상세 페이지 이미지 URL 목록"),
+                                fieldWithPath("detailPages").description("상품 상세 페이지 이미지 정보 목록"),
+                                fieldWithPath("detailPages[].imgUrl").description("상품 상세 페이지 이미지 URL"),
+                                fieldWithPath("detailPages[].imgOrder").description("상품 상세 페이지 이미지 순서"),
                                 fieldWithPath("basePrice").description("상품 기본 가격 (옵션 가격 추가 전)"),
                         })));
     }
