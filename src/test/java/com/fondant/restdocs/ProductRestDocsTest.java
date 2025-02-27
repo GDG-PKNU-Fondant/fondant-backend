@@ -196,6 +196,7 @@ public class ProductRestDocsTest {
                                 fieldWithPath("options[].price").description("옵션 가격").optional(),
                                 fieldWithPath("description").description("상품 설명"),
                                 fieldWithPath("detailPages").description("상품 상세 페이지 이미지 URL 목록"),
+                                fieldWithPath("basePrice").description("상품 기본 가격 (옵션 가격 추가 전)"),
                         })));
     }
 }

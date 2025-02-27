@@ -11,6 +11,7 @@ public record ProductDetailResponse(
         String name,
         List<OptionInfo> options,
         String description,
-        List<String> detailPages
+        List<String> detailPages,
+        int basePrice
 ) {
 }

@@ -76,6 +76,7 @@ public class ProductService {
                 .options(getOptionInfos(productId))
                 .description(product.getDescription())
                 .detailPages(getImageUrlsByProductIdAndType(productId,ImageType.DETAIL_PAGE))
+                .basePrice(product.getPrice())
                 .build();
     }
 
