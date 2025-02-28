@@ -11,6 +11,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/markets")
@@ -34,5 +36,10 @@ public class MarketController {
 
         return ResponseEntity.ok(ResponseDto.ofSuccess(SuccessMessage.OPERATION_SUCCESS,
                 marketService.getMarketsByCategoryId(categoryId, effectivePageable)));
+    }
+
+    @GetMapping("/top10")
+    public ResponseEntity<List<MarketsResponse>> getTop10MarketsByPopularity() {
+        return ResponseEntity.ok(marketService.getTop10MarketsByPopularity());
     }
 }
