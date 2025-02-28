@@ -8,6 +8,7 @@ import com.fondant.infra.jwt.filter.LoginFilter;
 import com.fondant.infra.oauth2.application.CustomOAuth2UserService;
 import com.fondant.infra.oauth2.application.CustomSuccessHandler;
 import com.fondant.user.domain.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -54,6 +55,9 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
+    @Value("${spring.cors.allowed-origins}")
+    private String allowedOrigins;
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -63,7 +67,7 @@ public class SecurityConfig {
                 .cors((cors) -> cors
                         .configurationSource(request -> {
                             CorsConfiguration configration = new CorsConfiguration();
-                            configration.setAllowedOrigins(Collections.singletonList("http://localhost:8080"));
+                            configration.setAllowedOrigins(Collections.singletonList(allowedOrigins));
                             configration.setAllowedMethods(Collections.singletonList("*"));
                             configration.setAllowCredentials(true);
                             configration.setAllowedHeaders(Collections.singletonList("*"));
