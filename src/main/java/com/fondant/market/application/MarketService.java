@@ -15,6 +15,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -54,6 +55,19 @@ public class MarketService {
         return convertToDetailDto(market);
     }
 
+    @Transactional(readOnly = true)
+    public List<MarketsResponse> getTop10MarketsByPopularity() {
+        List<MarketEntity> markets = marketRepository.findTop10MarketsByPopularity();
+
+        if (markets == null || markets.isEmpty()) {
+            throw new ApiException(MarketError.NO_MARKETS_FOUND);
+        }
+
+        return List.of(MarketsResponse.builder()
+                .markets(convertToMarketInfos(markets))
+                .build());
+    }
+
     private List<MarketInfo> getMarketInfos(List<MarketEntity> markets) {
         return markets.stream()
                 .map(market -> MarketInfo.builder()
@@ -73,5 +87,16 @@ public class MarketService {
                 .thumbnail(market.getThumbnail())
                 .background(market.getBackground())
                 .build();
+    }
+
+    private List<MarketInfo> convertToMarketInfos(List<MarketEntity> markets) {
+        return markets.stream()
+                .map(market -> MarketInfo.builder()
+                        .id(market.getId())
+                        .name(market.getName())
+                        .description(market.getDescription())
+                        .thumbnail(market.getThumbnail())
+                        .build())
+                .toList();
     }
 }
