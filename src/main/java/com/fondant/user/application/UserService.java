@@ -66,7 +66,7 @@ public class UserService {
 
         userRepository.save(userEntity);
     }
-
+    
     @Transactional
     public UserEntity joinUser(JoinRequest request) {
 

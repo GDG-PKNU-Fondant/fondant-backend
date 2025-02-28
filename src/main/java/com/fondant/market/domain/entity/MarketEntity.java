@@ -2,12 +2,12 @@ package com.fondant.market.domain.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
+
 import java.time.LocalDate;
 
+@ToString
+@Getter
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name="market")
@@ -15,7 +15,6 @@ public class MarketEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name="market_id")
-    @Getter
     private Long id;
 
     @NotNull
@@ -52,7 +51,8 @@ public class MarketEntity {
     @Column(name="delivery_fee", nullable = false)
     private long deliveryFee;
 
-    @Builder MarketEntity(String name, Long totalSales, Long totalReviews, LocalDate createAt, LocalDate updateAt, String description, String thumbnail, String background, long deliveryFee) {
+    @Builder
+    MarketEntity(String name, Long totalSales, Long totalReviews, LocalDate createAt, LocalDate updateAt, String description, String thumbnail, String background, long deliveryFee) {
         this.name = name;
         this.totalSales = 0L;
         this.totalReviews = 0L;
@@ -63,4 +63,5 @@ public class MarketEntity {
         this.background = background;
         this.deliveryFee = 0L;
     }
+
 }
