@@ -13,7 +13,7 @@ import com.fondant.user.domain.repository.UserRepository;
 import com.fondant.user.presentation.dto.request.UserUpdateRequest;
 import com.fondant.user.presentation.dto.response.DeliveryAddressResponse;
 import com.fondant.user.presentation.dto.response.UserResponse;
-import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-@Slf4j
 public class UserService {
 
     private final UserRepository userRepository;
@@ -32,7 +31,7 @@ public class UserService {
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
     @Autowired
-    public UserService(UserRepository userRepository, BCryptPasswordEncoder bCryptPasswordEncoder) throws Exception {
+    public UserService(UserRepository userRepository, BCryptPasswordEncoder bCryptPasswordEncoder) {
         this.userRepository = userRepository;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
     }
@@ -97,7 +96,7 @@ public class UserService {
 
         return userRepository.save(userEntity);
     }
-
+  
     @Transactional
     public List<DeliveryAddressResponse> getDeliveryAddress(Long userId){
         UserEntity user = userRepository.findById(userId)
