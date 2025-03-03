@@ -23,19 +23,19 @@ public class DeliveryAddressController {
         this.userService = userService;
     }
 
-    @GetMapping("/")
+    @GetMapping("")
     public ResponseEntity<ResponseDto<List<DeliveryAddressResponse>>> getDeliveryAddress(@CurrentUser CustomUserDetails user) {
         return ResponseEntity.ok(ResponseDto.ofSuccess(SuccessMessage.OPERATION_SUCCESS,
                 userService.getDeliveryAddress(user.getUserId())));
     }
 
-    @PostMapping("/")
+    @PostMapping("")
     public ResponseEntity<ResponseDto<Void>> addDeliveryAddress(@CurrentUser CustomUserDetails user, @RequestBody DeliveryAddressAddRequest request) {
         userService.addDeliveryAddress(user.getUserId(), request);
         return ResponseEntity.ok(ResponseDto.ofSuccess(SuccessMessage.OPERATION_SUCCESS));
     }
 
-    @PatchMapping("/")
+    @PatchMapping("")
     public ResponseEntity<ResponseDto<Void>> updateDeliveryAddress(@CurrentUser CustomUserDetails user, @RequestBody DeliveryAddressUpdateRequest request) {
         userService.updateDeliveryAddress(user.getUserId(), request);
         return ResponseEntity.ok(ResponseDto.ofSuccess(SuccessMessage.OPERATION_SUCCESS));
