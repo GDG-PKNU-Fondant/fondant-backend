@@ -14,6 +14,8 @@ import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
 
 @Service
 public class SmsVerificationService {
@@ -29,13 +31,13 @@ public class SmsVerificationService {
 
     private final SmsVerificationRepository smsVerificationRepository;
 
-    LocalDateTime now = LocalDateTime.now();
-
     public SmsVerificationService(SmsVerificationRepository smsVerificationRepository) {
         this.smsVerificationRepository = smsVerificationRepository;
     }
 
     public void sendMessage(String phoneNumber) throws Exception {
+
+        LocalDateTime now = LocalDateTime.now();
 
         if (phoneNumber == null || phoneNumber.isEmpty()) {
             throw new ApiException(UserError.ADDRESS_NOT_FOUND);
@@ -75,20 +77,23 @@ public class SmsVerificationService {
 
     public void verifyCode(String phoneNumber, String code){
 
-        smsVerificationRepository.deleteByExpiresAtBefore(now);
+        LocalDateTime now = LocalDateTime.now();
 
-        SmsVerificationEntity entity = smsVerificationRepository.findByPhoneNumber(phoneNumber)
-                .orElseThrow(() -> new ApiException(UserError.VERIFICATION_NOT_FOUND));
+        String purePhoneNumber = removeHyphens(phoneNumber);
 
-        if (entity.getExpiresAt().isBefore(LocalDateTime.now())) {
+        List<Optional<SmsVerificationEntity>> entityList = smsVerificationRepository.findByPhoneNumber(purePhoneNumber);
+
+        SmsVerificationEntity verificationEntity = entityList.isEmpty() ? null : entityList.get(entityList.size() - 1).get();
+
+        if (verificationEntity.getExpiresAt().isBefore(now)) {
             throw new ApiException(UserError.VERIFICATION_IS_EXPIRED);
         }
 
-        if (!entity.getVerificationCode().equals(code)) {
+        if (!verificationEntity.getVerificationCode().equals(code)) {
             throw new ApiException(UserError.VERIFICATION_NOT_MATCH);
         }
 
-        smsVerificationRepository.delete(entity);
+        smsVerificationRepository.delete(verificationEntity);
     }
 
     public String removeHyphens(String phoneNumber) {
