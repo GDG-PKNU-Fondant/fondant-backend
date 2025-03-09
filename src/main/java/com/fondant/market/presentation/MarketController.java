@@ -42,4 +42,14 @@ public class MarketController {
     public ResponseEntity<List<MarketsResponse>> getTop10MarketsByPopularity() {
         return ResponseEntity.ok(marketService.getTop10MarketsByPopularity());
     }
+
+    @GetMapping("/top5")
+    public ResponseEntity<MarketsResponse> getTop5MarketsByPopularity() {
+        return ResponseEntity.ok(marketService.getTop5MarketsByPopularity());
+    }
+
+    @GetMapping("/top30")
+    public ResponseEntity<MarketsResponse> getTop30MarketsByPopularity() {
+        return ResponseEntity.ok(marketService.getTop30MarketsByPopularity());
+    }
 }
