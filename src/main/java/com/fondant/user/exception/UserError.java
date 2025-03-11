@@ -13,15 +13,14 @@ public enum UserError implements ErrorCode {
     SMS_SEND_FAILED(HttpStatus.INTERNAL_SERVER_ERROR,"SMS 전송에 실패했습니다.", "SMS_SEND_FAILED");
 
     private final HttpStatus httpStatus;
-    private String message;
-    private String errorCode;
+    private final String message;
+    private final String errorCode;
 
     UserError(final HttpStatus httpStatus, final String message, final String errorCode) {
         this.httpStatus = httpStatus;
         this.message = message;
         this.errorCode = errorCode;
     }
-
 
     @Override
     public HttpStatus getHttpStatus() {
@@ -37,5 +36,4 @@ public enum UserError implements ErrorCode {
     public String getErrorCode() {
         return this.errorCode;
     }
-
 }
