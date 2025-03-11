@@ -9,7 +9,6 @@ import net.nurigo.sdk.message.exception.NurigoMessageNotReceivedException;
 import net.nurigo.sdk.message.model.Message;
 import net.nurigo.sdk.message.service.DefaultMessageService;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
@@ -77,15 +76,13 @@ public class SmsVerificationService {
 
     public void verifyCode(String phoneNumber, String code){
 
-        LocalDateTime now = LocalDateTime.now();
-
         String purePhoneNumber = removeHyphens(phoneNumber);
 
         List<Optional<SmsVerificationEntity>> entityList = smsVerificationRepository.findByPhoneNumber(purePhoneNumber);
 
         SmsVerificationEntity verificationEntity = entityList.isEmpty() ? null : entityList.get(entityList.size() - 1).get();
 
-        if (verificationEntity.getExpiresAt().isBefore(now)) {
+        if (verificationEntity.getExpiresAt().isBefore(LocalDateTime.now())) {
             throw new ApiException(UserError.VERIFICATION_IS_EXPIRED);
         }
 
@@ -93,11 +90,10 @@ public class SmsVerificationService {
             throw new ApiException(UserError.VERIFICATION_NOT_MATCH);
         }
 
-        smsVerificationRepository.delete(verificationEntity);
+        smsVerificationRepository.deleteByPhoneNumber(purePhoneNumber);
     }
 
     public String removeHyphens(String phoneNumber) {
         return phoneNumber.replace("-", "");
     }
-
 }
