@@ -55,16 +55,18 @@ public class MarketService {
     }
 
     @Transactional(readOnly = true)
-    public List<MarketsResponse> getTop10MarketsByPopularity() {
-        List<MarketEntity> markets = marketRepository.findTop10MarketsByPopularity();
+    public MarketsResponse getTop10MarketsByPopularity(Pageable pageable) {
+        Pageable effectivePageable = (pageable == null) ? pageConfig.defaultPageable() : pageable;
+        Page<MarketEntity> markets = marketRepository.findTop10MarketsByPopularity(effectivePageable);
 
         if (markets == null || markets.isEmpty()) {
             throw new ApiException(MarketError.NO_MARKETS_FOUND);
         }
 
-        return List.of(MarketsResponse.builder()
-                .markets(convertToMarketInfos(markets))
-                .build());
+        return MarketsResponse.builder()
+                .pageInfo(PageInfo.of(markets.getNumber(), markets.getTotalPages()))
+                .markets(getMarketInfos(markets.getContent()))
+                .build();
     }
 
     @Transactional(readOnly = true)

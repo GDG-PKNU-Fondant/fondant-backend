@@ -58,7 +58,7 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
     }
 
     @Override
-    public List<MarketEntity> findTop10MarketsByPopularity() {
+    public Page<MarketEntity> findTop10MarketsByPopularity(Pageable pageable) {
         QMarketEntity market = QMarketEntity.marketEntity;
 
         NumberExpression<Double> popularityScore = market.totalSales
@@ -77,7 +77,7 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
             throw new ApiException(MarketError.NO_MARKETS_FOUND);
         }
 
-        return markets;
+        return new PageImpl<>(markets, pageable, markets.size());
     }
 
     @Override

@@ -9,7 +9,8 @@ import java.util.List;
 
 public interface MarketRepositoryCustom {
     Page<MarketEntity> findMarketsByCategory(Long categoryId, Pageable pageable);
-    List<MarketEntity> findTop10MarketsByPopularity();
+
+    Page<MarketEntity> findTop10MarketsByPopularity(Pageable pageable);
 
     List<MarketEntity> findTop5MarketsByPopularity();
 

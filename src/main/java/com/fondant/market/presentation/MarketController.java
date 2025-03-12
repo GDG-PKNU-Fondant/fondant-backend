@@ -39,8 +39,13 @@ public class MarketController {
     }
 
     @GetMapping("/top10")
-    public ResponseEntity<List<MarketsResponse>> getTop10MarketsByPopularity() {
-        return ResponseEntity.ok(marketService.getTop10MarketsByPopularity());
+    public ResponseEntity<ResponseDto<MarketsResponse>> getTop10MarketsByPopularity(
+            @RequestParam(required = false) Pageable pageable) {
+
+        Pageable effectivePageable = (pageable == null) ? pageConfig.defaultPageable() : pageable;
+
+        return ResponseEntity.ok(ResponseDto.ofSuccess(SuccessMessage.OPERATION_SUCCESS,
+                marketService.getTop10MarketsByPopularity(effectivePageable)));
     }
 
     @GetMapping("/top5")
