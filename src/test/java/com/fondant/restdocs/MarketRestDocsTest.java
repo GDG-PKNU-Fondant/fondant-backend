@@ -226,4 +226,35 @@ public class MarketRestDocsTest {
                                 fieldWithPath("markets[].totalReviews").description("총 리뷰 개수")
                         })));
     }
+
+    @Test
+    void getRandomTop5MarketsByCategory() throws Exception {
+        mockMvc.perform(get(BASE_URL + "/{categoryId}/top5", category2.getId())
+                        .param("page", "0")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andDo(document("markets/get-random-top5-markets-by-category",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+                        pathParameters(
+                                parameterWithName("categoryId").description("조회할 카테고리 ID")
+                        ),
+                        queryParameters(
+                                parameterWithName("page").description("페이지 번호 (0부터 시작)")
+                        ),
+                        responseFields(
+                                commonResponseFields()
+                        ).andWithPrefix("response.", new FieldDescriptor[]{
+                                fieldWithPath("pageInfo").description("페이지 정보"),
+                                fieldWithPath("pageInfo.currentPage").description("현재 페이지"),
+                                fieldWithPath("pageInfo.totalPage").description("전체 페이지"),
+                                fieldWithPath("markets").description("마켓 목록"),
+                                fieldWithPath("markets[].id").description("마켓 ID"),
+                                fieldWithPath("markets[].name").description("마켓 이름"),
+                                fieldWithPath("markets[].description").description("마켓 한줄 소개"),
+                                fieldWithPath("markets[].thumbnail").description("마켓 썸네일 이미지 URL"),
+                                fieldWithPath("markets[].totalSales").description("총 판매 수량"),
+                                fieldWithPath("markets[].totalReviews").description("총 리뷰 개수")
+                        })));
+    }
 }
