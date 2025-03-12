@@ -8,6 +8,8 @@ import com.fondant.market.exception.MarketError;
 import com.fondant.product.domain.entity.QCategoryEntity;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.NumberExpression;
+import com.querydsl.jpa.JPAExpressions;
+import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -15,9 +17,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class MarketRepositoryImpl implements MarketRepositoryCustom {
 
@@ -89,15 +89,21 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
                 .add(market.totalReviews.coalesce(0L).castToNum(Double.class).multiply(2.0))
                 .add(Expressions.numberTemplate(Double.class, "GREATEST(0, {0})", 100));
 
-        List<MarketEntity> markets = queryFactory
-                .selectFrom(market)
+        JPQLQuery<Long> subQuery = JPAExpressions
+                .select(market.id)
+                .from(market)
                 .where(market.createAt.isNotNull())
                 .orderBy(popularityScore.desc())
-                .limit(30)
+                .limit(30);
+
+        List<MarketEntity> markets = queryFactory
+                .selectFrom(market)
+                .where(market.id.in(subQuery))
+                .orderBy(Expressions.numberTemplate(Double.class, "random()").asc())
+                .limit(5)
                 .fetch();
 
-        Collections.shuffle(markets);
-        return markets.stream().limit(5).collect(Collectors.toList());
+        return markets;
     }
 
     @Override
