@@ -42,18 +42,17 @@ public class OrderDetailEntity {
     @JoinColumn(name = "product_id")
     private ProductEntity product;
 
-    @Column(name = "status")
+    @Column(name = "quantity")
     @NotNull
-    @Enumerated(EnumType.STRING)
-    private DeliveryStatus status;
+    private int quantity;
 
     @Builder
-    public OrderDetailEntity(OrderEntity orderEntity, DeliveryEntity delivery, MarketEntity market, OptionEntity option, ProductEntity product, DeliveryStatus status) {
+    public OrderDetailEntity(OrderEntity orderEntity, DeliveryEntity delivery, MarketEntity market, OptionEntity option, ProductEntity product, int quantity) {
         this.order = orderEntity;
         this.delivery = delivery;
         this.market = market;
         this.option = option;
         this.product = product;
-        this.status = status;
+        this.quantity = quantity;
     }
 }
