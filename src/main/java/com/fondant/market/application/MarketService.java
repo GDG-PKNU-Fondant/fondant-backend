@@ -96,6 +96,8 @@ public class MarketService {
                         .name(market.getName())
                         .description(market.getDescription())
                         .thumbnail(market.getThumbnail())
+                        .totalReviews(market.getTotalReviews())
+                        .totalSales(market.getTotalSales())
                         .build())
                 .toList();
     }
@@ -117,6 +119,8 @@ public class MarketService {
                         .name(market.getName())
                         .description(market.getDescription())
                         .thumbnail(market.getThumbnail())
+                        .totalSales(market.getTotalSales())
+                        .totalReviews(market.getTotalReviews())
                         .build())
                 .toList();
     }
