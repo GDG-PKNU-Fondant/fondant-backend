@@ -49,24 +49,25 @@ public class MarketEntity {
 
     @NotNull
     @Column(name="delivery_fee", nullable = false)
-    private long deliveryFee;
+    private Long deliveryFee;
 
     @NotNull
     @Column(name="free_delivery_limit", nullable = false)
-    private long freeDeliveryLimit;
+    private Long freeDeliveryLimit;
 
     @Builder
-    MarketEntity(String name, Long totalSales, Long totalReviews, LocalDate createAt, LocalDate updateAt, String description, String thumbnail, String background, long deliveryFee, long freeDeliveryLimit) {
+    public MarketEntity(String name, Long totalSales, Long totalReviews, LocalDate createAt, LocalDate updateAt,
+                        String description, String thumbnail, String background, Long deliveryFee, Long freeDeliveryLimit) {
         this.name = name;
-        this.totalSales = 0L;
-        this.totalReviews = 0L;
-        this.createAt = LocalDate.now();
+        this.totalSales = totalSales != null ? totalSales : 0L;
+        this.totalReviews = totalReviews != null ? totalReviews : 0L;
+        this.createAt = createAt != null ? createAt : LocalDate.now();
         this.updateAt = updateAt;
         this.description = description;
         this.thumbnail = thumbnail;
         this.background = background;
-        this.deliveryFee = 0L;
-        this.freeDeliveryLimit = 0L;
+        this.deliveryFee = deliveryFee != null ? deliveryFee : 0L;
+        this.freeDeliveryLimit = freeDeliveryLimit != null ? freeDeliveryLimit : 0L;
     }
 
 }
