@@ -46,9 +46,15 @@ public class MarketController {
                 marketService.getTop10MarketsByPopularity(effectivePageable)));
     }
 
-    @GetMapping("/top5")
-    public ResponseEntity<MarketsResponse> getTop5MarketsByPopularity() {
-        return ResponseEntity.ok(marketService.getTop5MarketsByPopularity());
+    @GetMapping("/{categoryId}/top5")
+    public ResponseEntity<ResponseDto<MarketsResponse>> getRandomTop5MarketsByCategoryId(
+            @PathVariable(name = "categoryId") Long categoryId,
+            @RequestParam(required = false) Pageable pageable) {
+
+        Pageable effectivePageable = (pageable == null) ? pageConfig.defaultPageable() : pageable;
+        MarketsResponse marketsResponse = marketService.getRandomTop5MarketsByCategoryId(categoryId, effectivePageable);
+
+        return ResponseEntity.ok(ResponseDto.ofSuccess(SuccessMessage.OPERATION_SUCCESS, marketsResponse));
     }
 
     @GetMapping("/{categoryId}/top30")
