@@ -1,18 +1,27 @@
 package com.fondant.user.presentation;
 
+import com.fondant.global.annotation.CurrentUser;
+import com.fondant.global.dto.ResponseDto;
+import com.fondant.global.dto.SuccessMessage;
 import com.fondant.user.application.ReissueService;
 import com.fondant.user.application.UserService;
+import com.fondant.user.application.dto.CustomUserDetails;
+import com.fondant.user.domain.entity.UserEntity;
+import com.fondant.user.presentation.dto.request.UserUpdateRequest;
+import com.fondant.user.presentation.dto.response.UserResponse;
+import com.fondant.user.application.ReissueService;
+import com.fondant.user.application.UserService;
+
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 
 @Controller
-@RequestMapping("api/user")
+@RequestMapping("/api/user")
 public class UserController {
 
     private final UserService userService;
@@ -23,11 +32,17 @@ public class UserController {
         this.reissueService = reissueService;
     }
 
-//    @PostMapping("/join")
-//    public ResponseEntity<String> join(@RequestBody JoinRequest joinRequest) {
-//        userService.joinUser(joinRequest);
-//        return ResponseEntity.ok("회원가입이 완료되었습니다.");
-//    }
+    @GetMapping("")
+    public ResponseEntity<ResponseDto<UserResponse>> getUserInfo(@CurrentUser CustomUserDetails user) {
+        return ResponseEntity.ok(ResponseDto.ofSuccess(SuccessMessage.OPERATION_SUCCESS,
+                userService.getUserInfo(user.getUserId())));
+    }
+
+    @PatchMapping("")
+    public ResponseEntity<ResponseDto<Void>> updateUserInfo(@CurrentUser CustomUserDetails user, @RequestBody UserUpdateRequest request) {
+        userService.updateUserInfo(user.getUserId(), request);
+        return ResponseEntity.ok(ResponseDto.ofSuccess(SuccessMessage.OPERATION_SUCCESS));
+    }
 
     @PostMapping("/reissue")
     public ResponseEntity<?> reissue(HttpServletRequest request, HttpServletResponse response) throws IOException {
