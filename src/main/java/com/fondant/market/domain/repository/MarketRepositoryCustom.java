@@ -12,7 +12,7 @@ public interface MarketRepositoryCustom {
 
     Page<MarketEntity> findTop10MarketsByPopularity(Pageable pageable);
 
-    List<MarketEntity> findTop5MarketsByPopularity();
+    Page<MarketEntity> findRandomTop5MarketsByCategory(Long categoryId, Pageable pageable);
 
     Page<MarketEntity> findTop30MarketsByCategory(Long categoryId, Pageable pageable);
 }

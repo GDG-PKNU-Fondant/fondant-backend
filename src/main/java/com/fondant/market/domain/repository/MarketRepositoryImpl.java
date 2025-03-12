@@ -81,8 +81,10 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
     }
 
     @Override
-    public List<MarketEntity> findTop5MarketsByPopularity() {
+    public Page<MarketEntity> findRandomTop5MarketsByCategory(Long categoryId, Pageable pageable) {
         QMarketEntity market = QMarketEntity.marketEntity;
+        QMarketCategoryEntity marketCategory = QMarketCategoryEntity.marketCategoryEntity;
+        QCategoryEntity category = QCategoryEntity.categoryEntity;
 
         NumberExpression<Double> popularityScore = market.totalSales
                 .coalesce(0L).castToNum(Double.class)
@@ -91,8 +93,13 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
 
         JPQLQuery<Long> subQuery = JPAExpressions
                 .select(market.id)
-                .from(market)
-                .where(market.createAt.isNotNull())
+                .from(marketCategory)
+                .join(marketCategory.market, market)
+                .join(marketCategory.category, category)
+                .where(
+                        category.id.eq(categoryId)
+                                .and(market.createAt.isNotNull())
+                )
                 .orderBy(popularityScore.desc())
                 .limit(30);
 
@@ -103,7 +110,7 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
                 .limit(5)
                 .fetch();
 
-        return markets;
+        return new PageImpl<>(markets, pageable, markets.size());
     }
 
     @Override
