@@ -14,7 +14,8 @@ import java.util.List;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name="account")
+@Table(name = "users")
+@Getter
 public class UserEntity {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name="user_id")
@@ -27,48 +28,63 @@ public class UserEntity {
 
     @NotNull
     @Enumerated(EnumType.STRING)
-    @Column(name="sns_type")
+    @Column(name = "sns_type")
     private SNSType snsType;
 
     @NotNull
-    @Column(name="name")
+    @Column(name = "name")
     private String name;
 
-    @NotNull
-    @Column(name="phone_number")
+    @Column(name = "password")
+    private String password;
+
+    @Column(name = "phone_number")
     private String phoneNumber;
 
+    @Column(name = "verified_phone")
+    private boolean verifiedPhone;
+
     @NotNull
-    @Column(name="email")
+    @Column(name = "email")
     private String email;
 
-    @Column(name="birth")
+    @Column(name = "birth")
     private Date birth;
 
-    @Column(name="nickname")
+    @Column(name = "nickname")
     private String nickname;
 
-    @Column(name="profile_url")
+    @Column(name = "profile_url")
     private String profileUrl;
 
     @NotNull
-    @Column(name="create_at", updatable = false)
+    @Column(name = "create_at")
     private LocalDate createAt;
 
-    @NotNull
-    @Column(name="gender")
+    @Column(name = "gender")
     private Gender gender;
 
-    @Builder
-    public UserEntity(SNSType snsType, String name, String phoneNumber, String email, Date birth, String nickname, String profileUrl, LocalDate createAt, Gender gender) {
+    @NotNull
+    @Column(name = "role")
+    private UserRole role;
+
+    @Builder(toBuilder = true)
+    public UserEntity(
+            Long id, SNSType snsType, String name, String phoneNumber, boolean verifiedPhone, String email,
+            String password, Date birth, String nickname,
+            String profileUrl, LocalDate createAt, Gender gender, UserRole role) {
+        this.id = id;
         this.snsType = snsType;
         this.name = name;
         this.phoneNumber = phoneNumber;
+        this.verifiedPhone = verifiedPhone;
         this.email = email;
+        this.password = password;
         this.birth = birth;
         this.nickname = nickname;
         this.profileUrl = profileUrl;
         this.createAt = createAt;
         this.gender = gender;
+        this.role = role;
     }
 }

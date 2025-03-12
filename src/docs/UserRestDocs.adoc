@@ -1,0 +1,101 @@
+= API 문서
+Fondant Backend Team
+2025-02-16
+:toc: left
+:toclevels: 2
+:source-highlighter: highlightjs
+:sectlinks:
+
+== User API
+=== 1. Access Token 재발급
+
+==== HTTP Request
+
+include::{snippets}/user/reissue-access-and-refresh-token/http-request.adoc[]
+
+==== Request Cookie
+
+include::{snippets}/user/reissue-access-and-refresh-token/request-cookies.adoc[]
+
+==== HTTP Response
+
+include::{snippets}/user/reissue-access-and-refresh-token/http-response.adoc[]
+
+==== Response Cookie
+
+include::{snippets}/user/reissue-access-and-refresh-token/request-cookies.adoc[]
+
+==== Response Body
+
+include::{snippets}/user/reissue-access-and-refresh-token/response-body.adoc[]
+
+==== Response Field
+
+include::{snippets}/user/reissue-access-and-refresh-token/response-fields.adoc[]
+
+=== 2. 로그아웃
+
+==== HTTP Request
+
+include::{snippets}/user/logout/http-request.adoc[]
+
+==== Request Cookie
+
+include::{snippets}/user/logout/request-cookies.adoc[]
+
+==== HTTP Response
+
+include::{snippets}/user/logout/http-response.adoc[]
+
+==== Response Body
+
+include::{snippets}/user/logout/response-fields.adoc[]
+
+=== 3. 유저 정보 조회
+
+==== HTTP Request
+
+include::{snippets}/user/get-user-info/http-request.adoc[]
+
+==== Request Header
+
+include::{snippets}/user/get-user-info/request-headers.adoc[]
+
+==== HTTP Response
+
+include::{snippets}/user/get-user-info/http-response.adoc[]
+
+==== Response Field
+
+include::{snippets}/user/get-user-info/response-fields.adoc[]
+
+=== 4. 유저 정보 수정
+
+==== HTTP Request
+
+include::{snippets}/user/update-user-info/http-request.adoc[]
+
+==== Request Header
+
+include::{snippets}/user/update-user-info/request-headers.adoc[]
+
+==== Request Body
+
+include::{snippets}/user/update-user-info/request-body.adoc[]
+
+==== Request Field
+
+include::{snippets}/user/update-user-info/request-fields.adoc[]
+
+==== HTTP Response
+
+include::{snippets}/user/update-user-info/http-response.adoc[]
+
+==== Response Body
+
+include::{snippets}/user/update-user-info/response-body.adoc[]
+
+==== Response Field
+
+include::{snippets}/user/update-user-info/response-fields.adoc[]
+=======
