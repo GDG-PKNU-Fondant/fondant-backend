@@ -17,6 +17,8 @@ import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDoc
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.util.Arrays;
+
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
@@ -44,11 +46,9 @@ public class MarketRestDocsTest {
     @Autowired
     private MarketCategoryTestRepository marketCategoryRepository;
 
-    private MarketEntity market1;
-    private MarketEntity market2;
-    private MarketEntity market3;
-    private CategoryEntity category1;
-    private CategoryEntity category2;
+    private CategoryEntity categoryCookie;
+    private CategoryEntity categoryBread;
+    private CategoryEntity categoryBakedGoods;
 
     private static final String BASE_URL = "/api/markets";
 
@@ -57,57 +57,44 @@ public class MarketRestDocsTest {
         marketCategoryRepository.deleteAll();
         categoryRepository.deleteAll();
         marketRepository.deleteAll();
-        
-        category1 = categoryRepository.save(CategoryEntity.builder()
-                .name("쿠키")
-                .build());
 
-        category2 = categoryRepository.save(CategoryEntity.builder()
-                .name("빵")
-                .build());
+        categoryCookie = categoryRepository.save(
+                CategoryEntity.builder().name("쿠키").build());
+        categoryBread = categoryRepository.save(
+                CategoryEntity.builder().name("빵").build());
+        categoryBakedGoods = categoryRepository.save(
+                CategoryEntity.builder().name("구움과자").build());
 
-        market1 = marketRepository.save(MarketEntity.builder()
-                .name("상윤이네 쿠키")
-                .description("쿠키를 판매하는 마켓")
-                .thumbnail("market-a-thumbnail.jpg")
-                .background("market-a-bg.jpg")
-                .totalSales(500L)
-                .totalReviews(100L)
-                .build());
+        int marketCount = 1;
+        for (CategoryEntity category : Arrays.asList(categoryCookie, categoryBread, categoryBakedGoods)) {
+            String categoryName;
+            if (category == categoryCookie) {
+                categoryName = "쿠키";
+            } else if (category == categoryBread) {
+                categoryName = "빵";
+            } else {
+                categoryName = "구움과자";
+            }
 
-        market2 = marketRepository.save(MarketEntity.builder()
-                .name("명인 강지원")
-                .description("쿠키를 판매하는 마켓")
-                .thumbnail("market-b-thumbnail.jpg")
-                .background("market-b-bg.jpg")
-                .totalSales(500L)
-                .totalReviews(200L)
-                .build());
+            for (int i = 1; i <= 40; i++) {
+                MarketEntity market = marketRepository.save(MarketEntity.builder()
+                        .name("마켓 " + marketCount)
+                        .description(categoryName + "을 판매하는 마켓 " + marketCount)
+                        .thumbnail("market-" + marketCount + "-thumbnail.jpg")
+                        .background("market-" + marketCount + "-bg.jpg")
+                        .totalSales(100L * marketCount)
+                        .totalReviews(10L * marketCount)
+                        .build());
 
-        market3 = marketRepository.save(MarketEntity.builder()
-                .name("도현베이커리")
-                .description("빵을 판매하는 마켓")
-                .thumbnail("market-b-thumbnail.jpg")
-                .background("market-b-bg.jpg")
-                .totalSales(100L)
-                .totalReviews(70L)
-                .build());
-
-        marketCategoryRepository.save(MarketCategoryEntity.builder()
-                .market(market1)
-                .category(category1)
-                .build());
-
-        marketCategoryRepository.save(MarketCategoryEntity.builder()
-                .market(market2)
-                .category(category1)
-                .build());
-
-        marketCategoryRepository.save(MarketCategoryEntity.builder()
-                .market(market3)
-                .category(category2)
-                .build());
+                marketCategoryRepository.save(MarketCategoryEntity.builder()
+                        .market(market)
+                        .category(category)
+                        .build());
+                marketCount++;
+            }
+        }
     }
+
     public static FieldDescriptor[] commonResponseFields() {
         return new FieldDescriptor[]{
                 fieldWithPath("code").description("요청 성공 여부 (true/false)"),
@@ -118,7 +105,7 @@ public class MarketRestDocsTest {
 
     @Test
     void getMarketsByCategory() throws Exception {
-        mockMvc.perform(get(BASE_URL + "/categories/{categoryId}", category2.getId())
+        mockMvc.perform(get(BASE_URL + "/categories/{categoryId}", categoryBread.getId())
                         .param("page", "0")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -148,7 +135,8 @@ public class MarketRestDocsTest {
 
     @Test
     void getMarketById() throws Exception {
-        mockMvc.perform(get(BASE_URL + "/{marketId}", market1.getId())
+        MarketEntity market = marketRepository.findAll().get(0);
+        mockMvc.perform(get(BASE_URL + "/{marketId}", market.getId())
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andDo(document("markets/get-market-by-id",
@@ -198,7 +186,7 @@ public class MarketRestDocsTest {
 
     @Test
     void getTop30MarketsByCategory() throws Exception {
-        mockMvc.perform(get(BASE_URL + "/{categoryId}/top30", category1.getId())
+        mockMvc.perform(get(BASE_URL + "/{categoryId}/top30", categoryCookie.getId())
                 .param("page", "0")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -229,7 +217,7 @@ public class MarketRestDocsTest {
 
     @Test
     void getRandomTop5MarketsByCategory() throws Exception {
-        mockMvc.perform(get(BASE_URL + "/{categoryId}/top5", category2.getId())
+        mockMvc.perform(get(BASE_URL + "/{categoryId}/top5", categoryCookie.getId())
                         .param("page", "0")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
