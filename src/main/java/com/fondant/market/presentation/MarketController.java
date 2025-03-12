@@ -11,8 +11,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/markets")
@@ -53,8 +51,14 @@ public class MarketController {
         return ResponseEntity.ok(marketService.getTop5MarketsByPopularity());
     }
 
-    @GetMapping("/top30")
-    public ResponseEntity<MarketsResponse> getTop30MarketsByPopularity() {
-        return ResponseEntity.ok(marketService.getTop30MarketsByPopularity());
+    @GetMapping("/{categoryId}/top30")
+    public ResponseEntity<ResponseDto<MarketsResponse>> getTop30MarketsByPopularity(
+            @PathVariable(name = "categoryId") Long categoryId,
+            @RequestParam(required = false) Pageable pageable) {
+
+        Pageable effectivePageable = (pageable == null) ? pageConfig.defaultPageable() : pageable;
+        MarketsResponse marketsResponse = marketService.getTop30MarketsByCategoryId(categoryId, effectivePageable);
+
+        return ResponseEntity.ok(ResponseDto.ofSuccess(SuccessMessage.OPERATION_SUCCESS, marketsResponse));
     }
 }
