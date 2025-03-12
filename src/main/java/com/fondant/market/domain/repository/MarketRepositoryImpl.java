@@ -124,7 +124,7 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
                 .add(market.totalReviews.coalesce(0L).castToNum(Double.class).multiply(2.0))
                 .add(Expressions.numberTemplate(Double.class, "GREATEST(0, {0})", 100));
 
-        List<MarketEntity> markets = queryFactory
+        List<MarketEntity> top30Markets = queryFactory
                 .select(market)
                 .from(marketCategory)
                 .join(marketCategory.market, market)
@@ -146,11 +146,11 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
                 .limit(30)
                 .fetch();
 
-        if (markets.isEmpty()) {
+        if (top30Markets.isEmpty()) {
             throw new ApiException(MarketError.NO_MARKETS_FOUND);
         }
 
-        long total = queryFactory
+        long rawTotal = queryFactory
                 .select(market.countDistinct())
                 .from(marketCategory)
                 .join(marketCategory.market, market)
@@ -161,6 +161,14 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
                 )
                 .fetchOne();
 
-        return new PageImpl<>(markets, pageable, total);
+        long total = Math.min(rawTotal, 30);
+
+        int totalInt = (int) total;
+        int offset = (int) pageable.getOffset();
+        int pageSize = pageable.getPageSize();
+        int end = Math.min(offset + pageSize, totalInt);
+        List<MarketEntity> pageContent = top30Markets.subList(offset, end);
+
+        return new PageImpl<>(pageContent, pageable, total);
     }
 }
