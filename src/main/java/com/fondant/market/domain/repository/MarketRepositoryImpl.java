@@ -107,8 +107,10 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
     }
 
     @Override
-    public List<MarketEntity> findTop30MarketsByPopularity() {
+    public Page<MarketEntity> findTop30MarketsByCategory(Long categoryId, Pageable pageable) {
         QMarketEntity market = QMarketEntity.marketEntity;
+        QMarketCategoryEntity marketCategory = QMarketCategoryEntity.marketCategoryEntity;
+        QCategoryEntity category = QCategoryEntity.categoryEntity;
 
         NumberExpression<Double> popularityScore = market.totalSales
                 .coalesce(0L).castToNum(Double.class)
@@ -116,8 +118,23 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
                 .add(Expressions.numberTemplate(Double.class, "GREATEST(0, {0})", 100));
 
         List<MarketEntity> markets = queryFactory
-                .selectFrom(market)
-                .where(market.createAt.isNotNull())
+                .select(market)
+                .from(marketCategory)
+                .join(marketCategory.market, market)
+                .join(marketCategory.category, category)
+                .where(
+                        category.id.eq(categoryId)
+                                .and(market.createAt.isNotNull())
+                )
+                .groupBy(
+                        market.id,
+                        market.createAt,
+                        market.description,
+                        market.name,
+                        market.thumbnail,
+                        market.totalReviews,
+                        market.totalSales
+                )
                 .orderBy(popularityScore.desc())
                 .limit(30)
                 .fetch();
@@ -126,6 +143,17 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
             throw new ApiException(MarketError.NO_MARKETS_FOUND);
         }
 
-        return markets;
+        long total = queryFactory
+                .select(market.countDistinct())
+                .from(marketCategory)
+                .join(marketCategory.market, market)
+                .join(marketCategory.category, category)
+                .where(
+                        category.id.eq(categoryId)
+                                .and(market.createAt.isNotNull())
+                )
+                .fetchOne();
+
+        return new PageImpl<>(markets, pageable, total);
     }
 }

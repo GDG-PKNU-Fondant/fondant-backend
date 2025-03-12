@@ -14,5 +14,5 @@ public interface MarketRepositoryCustom {
 
     List<MarketEntity> findTop5MarketsByPopularity();
 
-    List<MarketEntity> findTop30MarketsByPopularity();
+    Page<MarketEntity> findTop30MarketsByCategory(Long categoryId, Pageable pageable);
 }
