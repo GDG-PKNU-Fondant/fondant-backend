@@ -3,7 +3,7 @@ name: Issue
 about: 이슈 템플릿
 title: "[Feat/Chore/Docs/Fix/Refactor/Style] : "
 labels: ''
-assignees: onegqueen
+assignees:
 
 ---
 
