@@ -17,6 +17,8 @@ import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDoc
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.util.List;
+
 import static com.fondant.restdocs.ProductRestDocsTest.commonResponseFields;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
@@ -24,6 +26,7 @@ import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWit
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
 import static org.springframework.restdocs.request.RequestDocumentation.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -52,6 +55,10 @@ public class MarketRestDocsTest {
 
     @BeforeEach
     void setUp() {
+        marketCategoryRepository.deleteAll();
+        categoryRepository.deleteAll();
+        marketRepository.deleteAll();
+        
         category = categoryRepository.save(CategoryEntity.builder()
                 .name("쿠키")
                 .build());
@@ -61,6 +68,8 @@ public class MarketRestDocsTest {
                 .description("쿠키를 판매하는 마켓 A")
                 .thumbnail("market-a-thumbnail.jpg")
                 .background("market-a-bg.jpg")
+                .totalSales(50L)
+                .totalReviews(100L)
                 .build());
 
         market2 = marketRepository.save(MarketEntity.builder()
@@ -68,6 +77,8 @@ public class MarketRestDocsTest {
                 .description("쿠키를 판매하는 마켓 B")
                 .thumbnail("market-b-thumbnail.jpg")
                 .background("market-b-bg.jpg")
+                .totalSales(50L)
+                .totalReviews(2000L)
                 .build());
 
         marketCategoryRepository.save(MarketCategoryEntity.builder()
@@ -79,6 +90,13 @@ public class MarketRestDocsTest {
                 .market(market2)
                 .category(category)
                 .build());
+    }
+    public static FieldDescriptor[] commonResponseFields() {
+        return new FieldDescriptor[]{
+                fieldWithPath("code").description("요청 성공 여부 (true/false)"),
+                fieldWithPath("message").description("응답 메시지"),
+                fieldWithPath("response").description("응답 데이터")
+        };
     }
 
     @Test
@@ -130,6 +148,34 @@ public class MarketRestDocsTest {
                                 fieldWithPath("description").description("마켓 한줄 소개"),
                                 fieldWithPath("thumbnail").description("마켓 썸네일 이미지 URL"),
                                 fieldWithPath("background").description("마켓 배경 이미지 URL")
+                        })));
+    }
+
+    @Test
+    void getTop10MarketsByPopularity() throws Exception {
+        mockMvc.perform(get(BASE_URL + "/top10")
+                        .param("page", "0")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andDo(document("markets/get-top10-markets-by-popularity",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+                        queryParameters(
+                                parameterWithName("page").description("페이지 번호 (0부터 시작)")
+                        ),
+                        responseFields(
+                                commonResponseFields()
+                        ).andWithPrefix("response.", new FieldDescriptor[]{
+                                fieldWithPath("pageInfo").description("페이지 정보"),
+                                fieldWithPath("pageInfo.currentPage").description("현재 페이지"),
+                                fieldWithPath("pageInfo.totalPage").description("전체 페이지"),
+                                fieldWithPath("markets").description("마켓 목록"),
+                                fieldWithPath("markets[].id").description("마켓 ID"),
+                                fieldWithPath("markets[].name").description("마켓 이름"),
+                                fieldWithPath("markets[].description").description("마켓 한줄 소개"),
+                                fieldWithPath("markets[].thumbnail").description("마켓 썸네일 이미지 URL"),
+                                fieldWithPath("markets[].totalSales").description("총 판매 수량"),
+                                fieldWithPath("markets[].totalReviews").description("총 리뷰 개수")
                         })));
     }
 }

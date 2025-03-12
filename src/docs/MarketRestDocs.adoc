@@ -46,3 +46,21 @@ include::{snippets}/markets/get-market-by-id/http-response.adoc[]
 ==== response body
 
 include::{snippets}/markets/get-market-by-id/response-fields.adoc[]
+
+=== 3. 종합 인기 Top10 마켓 목록 조회
+
+==== HTTP request
+
+include::{snippets}/markets/get-top10-markets-by-popularity/http-request.adoc[]
+
+==== Query Parameters
+
+include::{snippets}/markets/get-top10-markets-by-popularity/query-parameters.adoc[]
+
+==== HTTP response
+
+include::{snippets}/markets/get-top10-markets-by-popularity/http-response.adoc[]
+
+==== response body
+
+include::{snippets}/markets/get-top10-markets-by-popularity/response-fields.adoc[]
