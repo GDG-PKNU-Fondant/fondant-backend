@@ -13,7 +13,7 @@ public interface SmsVerificationRepository extends JpaRepository<SmsVerification
     @Transactional
     void deleteByExpiresAtBefore(LocalDateTime now);
 
-    List<Optional<SmsVerificationEntity>> findByPhoneNumber(String phoneNumber);
+    Optional<SmsVerificationEntity> findByPhoneNumber(String phoneNumber);
 
     void deleteByPhoneNumber(String phoneNumber);
 }

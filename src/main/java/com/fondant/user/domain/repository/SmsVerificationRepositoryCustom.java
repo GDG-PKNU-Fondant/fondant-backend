@@ -1,4 +1,4 @@
-package com.fondant.user.domain.repository;
+package com.fondant.infra.sms.domain.repository;
 
 import java.time.LocalDateTime;
 

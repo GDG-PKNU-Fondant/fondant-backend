@@ -1,4 +1,4 @@
-package com.fondant.user.domain.repository;
+package com.fondant.infra.sms.domain.repository;
 
 import com.fondant.global.exception.ApiException;
 import com.fondant.user.domain.entity.QSmsVerificationEntity;
