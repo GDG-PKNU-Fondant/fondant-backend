@@ -38,7 +38,6 @@ public class DeliveryEntity {
     private LocalDateTime statusStartedAt;
 
     @Column(name = "tracking_number")
-    @NotNull
     private String trackingNumber;
 
     @Builder

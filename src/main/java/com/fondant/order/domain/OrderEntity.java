@@ -3,7 +3,6 @@ package com.fondant.order.domain;
 
 import com.fondant.user.domain.entity.DeliveryAddressEntity;
 import com.fondant.user.domain.entity.UserEntity;
-import com.fondant.user.exception.UserError;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
@@ -28,10 +27,11 @@ public class OrderEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @NotNull
-    @JoinColumn(name = "deliveryAddress_id")
+    @JoinColumn(name = "delivery_address_id")
     private DeliveryAddressEntity deliveryAddress;
 
     @Column(name = "order_date")
+    @NotNull
     private LocalDateTime orderDate;
 
     @Builder

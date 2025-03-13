@@ -1,6 +1,5 @@
 package com.fondant.order.domain;
 
-import com.fondant.market.domain.entity.MarketEntity;
 import com.fondant.product.domain.entity.OptionEntity;
 import com.fondant.product.domain.entity.ProductEntity;
 import jakarta.persistence.*;
@@ -12,7 +11,7 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "orderDetail")
+@Table(name = "order_detail")
 public class OrderDetailEntity {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Getter
@@ -29,11 +28,6 @@ public class OrderDetailEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @NotNull
-    @JoinColumn(name = "market_id")
-    private MarketEntity market;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @NotNull
     @JoinColumn(name = "option_id")
     private OptionEntity option;
 
@@ -47,10 +41,9 @@ public class OrderDetailEntity {
     private int quantity;
 
     @Builder
-    public OrderDetailEntity(OrderEntity orderEntity, DeliveryEntity delivery, MarketEntity market, OptionEntity option, ProductEntity product, int quantity) {
+    public OrderDetailEntity(OrderEntity orderEntity, DeliveryEntity delivery, OptionEntity option, ProductEntity product, int quantity) {
         this.order = orderEntity;
         this.delivery = delivery;
-        this.market = market;
         this.option = option;
         this.product = product;
         this.quantity = quantity;
