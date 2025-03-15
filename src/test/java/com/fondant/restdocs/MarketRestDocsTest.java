@@ -17,13 +17,15 @@ import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDoc
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import static com.fondant.restdocs.ProductRestDocsTest.commonResponseFields;
+import java.util.Arrays;
+
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
 import static org.springframework.restdocs.request.RequestDocumentation.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -44,46 +46,66 @@ public class MarketRestDocsTest {
     @Autowired
     private MarketCategoryTestRepository marketCategoryRepository;
 
-    private MarketEntity market1;
-    private MarketEntity market2;
-    private CategoryEntity category;
+    private CategoryEntity categoryCookie;
+    private CategoryEntity categoryBread;
+    private CategoryEntity categoryBakedGoods;
 
     private static final String BASE_URL = "/api/markets";
 
     @BeforeEach
     void setUp() {
-        category = categoryRepository.save(CategoryEntity.builder()
-                .name("쿠키")
-                .build());
+        marketCategoryRepository.deleteAll();
+        categoryRepository.deleteAll();
+        marketRepository.deleteAll();
 
-        market1 = marketRepository.save(MarketEntity.builder()
-                .name("Market A")
-                .description("쿠키를 판매하는 마켓 A")
-                .thumbnail("market-a-thumbnail.jpg")
-                .background("market-a-bg.jpg")
-                .build());
+        categoryCookie = categoryRepository.save(
+                CategoryEntity.builder().name("쿠키").build());
+        categoryBread = categoryRepository.save(
+                CategoryEntity.builder().name("빵").build());
+        categoryBakedGoods = categoryRepository.save(
+                CategoryEntity.builder().name("구움과자").build());
 
-        market2 = marketRepository.save(MarketEntity.builder()
-                .name("Market B")
-                .description("쿠키를 판매하는 마켓 B")
-                .thumbnail("market-b-thumbnail.jpg")
-                .background("market-b-bg.jpg")
-                .build());
+        int marketCount = 1;
+        for (CategoryEntity category : Arrays.asList(categoryCookie, categoryBread, categoryBakedGoods)) {
+            String categoryName;
+            if (category == categoryCookie) {
+                categoryName = "쿠키";
+            } else if (category == categoryBread) {
+                categoryName = "빵";
+            } else {
+                categoryName = "구움과자";
+            }
 
-        marketCategoryRepository.save(MarketCategoryEntity.builder()
-                .market(market1)
-                .category(category)
-                .build());
+            for (int i = 1; i <= 40; i++) {
+                MarketEntity market = marketRepository.save(MarketEntity.builder()
+                        .name("마켓 " + marketCount)
+                        .description(categoryName + "을 판매하는 마켓 " + marketCount)
+                        .thumbnail("market-" + marketCount + "-thumbnail.jpg")
+                        .background("market-" + marketCount + "-bg.jpg")
+                        .totalSales(100L * marketCount)
+                        .totalReviews(10L * marketCount)
+                        .build());
 
-        marketCategoryRepository.save(MarketCategoryEntity.builder()
-                .market(market2)
-                .category(category)
-                .build());
+                marketCategoryRepository.save(MarketCategoryEntity.builder()
+                        .market(market)
+                        .category(category)
+                        .build());
+                marketCount++;
+            }
+        }
+    }
+
+    public static FieldDescriptor[] commonResponseFields() {
+        return new FieldDescriptor[]{
+                fieldWithPath("code").description("요청 성공 여부 (true/false)"),
+                fieldWithPath("message").description("응답 메시지"),
+                fieldWithPath("response").description("응답 데이터")
+        };
     }
 
     @Test
     void getMarketsByCategory() throws Exception {
-        mockMvc.perform(get(BASE_URL + "/categories/{categoryId}", category.getId())
+        mockMvc.perform(get(BASE_URL + "/categories/{categoryId}", categoryBread.getId())
                         .param("page", "0")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -113,7 +135,8 @@ public class MarketRestDocsTest {
 
     @Test
     void getMarketById() throws Exception {
-        mockMvc.perform(get(BASE_URL + "/{marketId}", market1.getId())
+        MarketEntity market = marketRepository.findAll().get(0);
+        mockMvc.perform(get(BASE_URL + "/{marketId}", market.getId())
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andDo(document("markets/get-market-by-id",
@@ -130,6 +153,96 @@ public class MarketRestDocsTest {
                                 fieldWithPath("description").description("마켓 한줄 소개"),
                                 fieldWithPath("thumbnail").description("마켓 썸네일 이미지 URL"),
                                 fieldWithPath("background").description("마켓 배경 이미지 URL")
+                        })));
+    }
+
+    @Test
+    void getTop10MarketsByPopularity() throws Exception {
+        mockMvc.perform(get(BASE_URL + "/top10")
+                        .param("page", "0")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andDo(document("markets/get-top10-markets-by-popularity",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+                        queryParameters(
+                                parameterWithName("page").description("페이지 번호 (0부터 시작)")
+                        ),
+                        responseFields(
+                                commonResponseFields()
+                        ).andWithPrefix("response.", new FieldDescriptor[]{
+                                fieldWithPath("pageInfo").description("페이지 정보"),
+                                fieldWithPath("pageInfo.currentPage").description("현재 페이지"),
+                                fieldWithPath("pageInfo.totalPage").description("전체 페이지"),
+                                fieldWithPath("markets").description("마켓 목록"),
+                                fieldWithPath("markets[].id").description("마켓 ID"),
+                                fieldWithPath("markets[].name").description("마켓 이름"),
+                                fieldWithPath("markets[].description").description("마켓 한줄 소개"),
+                                fieldWithPath("markets[].thumbnail").description("마켓 썸네일 이미지 URL"),
+                                fieldWithPath("markets[].totalSales").description("총 판매 수량"),
+                                fieldWithPath("markets[].totalReviews").description("총 리뷰 개수")
+                        })));
+    }
+
+    @Test
+    void getTop30MarketsByCategory() throws Exception {
+        mockMvc.perform(get(BASE_URL + "/{categoryId}/top30", categoryCookie.getId())
+                .param("page", "0")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andDo(document("markets/get-top30-markets-by-category",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+                        pathParameters(
+                                parameterWithName("categoryId").description("조회할 카테고리 ID")
+                        ),
+                        queryParameters(
+                                parameterWithName("page").description("페이지 번호 (0부터 시작)")
+                        ),
+                        responseFields(
+                                commonResponseFields()
+                        ).andWithPrefix("response.", new FieldDescriptor[]{
+                                fieldWithPath("pageInfo").description("페이지 정보"),
+                                fieldWithPath("pageInfo.currentPage").description("현재 페이지"),
+                                fieldWithPath("pageInfo.totalPage").description("전체 페이지"),
+                                fieldWithPath("markets").description("마켓 목록"),
+                                fieldWithPath("markets[].id").description("마켓 ID"),
+                                fieldWithPath("markets[].name").description("마켓 이름"),
+                                fieldWithPath("markets[].description").description("마켓 한줄 소개"),
+                                fieldWithPath("markets[].thumbnail").description("마켓 썸네일 이미지 URL"),
+                                fieldWithPath("markets[].totalSales").description("총 판매 수량"),
+                                fieldWithPath("markets[].totalReviews").description("총 리뷰 개수")
+                        })));
+    }
+
+    @Test
+    void getRandomTop5MarketsByCategory() throws Exception {
+        mockMvc.perform(get(BASE_URL + "/{categoryId}/top5", categoryCookie.getId())
+                        .param("page", "0")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andDo(document("markets/get-random-top5-markets-by-category",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+                        pathParameters(
+                                parameterWithName("categoryId").description("조회할 카테고리 ID")
+                        ),
+                        queryParameters(
+                                parameterWithName("page").description("페이지 번호 (0부터 시작)")
+                        ),
+                        responseFields(
+                                commonResponseFields()
+                        ).andWithPrefix("response.", new FieldDescriptor[]{
+                                fieldWithPath("pageInfo").description("페이지 정보"),
+                                fieldWithPath("pageInfo.currentPage").description("현재 페이지"),
+                                fieldWithPath("pageInfo.totalPage").description("전체 페이지"),
+                                fieldWithPath("markets").description("마켓 목록"),
+                                fieldWithPath("markets[].id").description("마켓 ID"),
+                                fieldWithPath("markets[].name").description("마켓 이름"),
+                                fieldWithPath("markets[].description").description("마켓 한줄 소개"),
+                                fieldWithPath("markets[].thumbnail").description("마켓 썸네일 이미지 URL"),
+                                fieldWithPath("markets[].totalSales").description("총 판매 수량"),
+                                fieldWithPath("markets[].totalReviews").description("총 리뷰 개수")
                         })));
     }
 }
