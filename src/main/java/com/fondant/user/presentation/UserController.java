@@ -12,9 +12,6 @@ import com.fondant.user.application.dto.CustomUserDetails;
 import com.fondant.user.domain.entity.UserEntity;
 import com.fondant.user.presentation.dto.request.UserUpdateRequest;
 import com.fondant.user.presentation.dto.response.UserResponse;
-import com.fondant.user.application.ReissueService;
-import com.fondant.user.application.UserService;
-
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.ResponseEntity;

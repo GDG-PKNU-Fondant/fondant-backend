@@ -1,6 +1,6 @@
 package com.fondant.restdocs;
 
-
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fondant.market.domain.entity.MarketEntity;
 import com.fondant.product.domain.entity.*;
 import com.fondant.product.domain.repository.OptionRepository;
@@ -9,6 +9,13 @@ import com.fondant.product.domain.repository.ProductRepository;
 import com.fondant.test.repository.CategoryTestRepository;
 import com.fondant.test.repository.MarketTestRepository;
 import com.fondant.test.repository.ProductCategoryTestRepository;
+import com.fondant.test.repository.UserTestRepository;
+import com.fondant.user.domain.entity.Gender;
+import com.fondant.user.domain.entity.SNSType;
+import com.fondant.user.domain.entity.UserEntity;
+import com.fondant.wishlist.application.dto.request.WishListRegistRequest;
+import com.fondant.wishlist.domain.entity.WishListEntity;
+import com.fondant.wishlist.domain.repository.WishListRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,24 +27,31 @@ import org.springframework.restdocs.payload.FieldDescriptor;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.Date;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
-import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
-import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
+import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 import static org.springframework.restdocs.request.RequestDocumentation.*;
+import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
 @AutoConfigureRestDocs(uriScheme = "http", uriHost = "localhost", uriPort = 8080)
 @Transactional
-public class ProductRestDocsTest {
-
+public class WishListRestDocsTest {
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @Autowired
     private ProductRepository productRepository;
@@ -57,6 +71,12 @@ public class ProductRestDocsTest {
     @Autowired
     private OptionRepository optionRepository;
 
+    @Autowired
+    private WishListRepository wishListRepository;
+
+    @Autowired
+    private UserTestRepository userRepository;
+
     private MarketEntity market;
     private CategoryEntity category1;
     private CategoryEntity category2;
@@ -66,10 +86,11 @@ public class ProductRestDocsTest {
     private ProductEntity product2;
     private ProductImageEntity productImage1;
     private ProductImageEntity productImage2;
-    private ProductImageEntity productDetail1;
     private OptionEntity option1;
+    private UserEntity testUser;
+    private WishListEntity wishList1;
 
-    private static final String BASE_URL = "/api/product";
+    private static final String BASE_URL = "/api/wishlist";
 
     @BeforeEach
     void setUp() {
@@ -118,30 +139,43 @@ public class ProductRestDocsTest {
                 .productId(product1.getId())
                 .imageUrl("test-image.png")
                 .imageType(ImageType.PRODUCT_PHOTO)
-                .imgOrder(1)
                 .build());
 
         productImage2 = productImageRepository.save(ProductImageEntity.builder()
                 .productId(product1.getId())
-                .imageUrl("test-image.png")
-                .imageType(ImageType.PRODUCT_PHOTO)
-                .imgOrder(2)
-                .build());
-
-        productDetail1 = productImageRepository.save(ProductImageEntity.builder()
-                .productId(product1.getId())
                 .imageUrl("test-detail-page.png")
                 .imageType(ImageType.DETAIL_PAGE)
-                .imgOrder(1)
                 .build());
 
         option1 = optionRepository.save(
-                 OptionEntity.builder()
-                 .name("3개 세트")
-                 .productId(product1.getId())
-                 .price(20000)
-                 .build());
+                OptionEntity.builder()
+                        .name("3개 세트")
+                        .productId(product1.getId())
+                        .price(20000)
+                        .build());
+
+        testUser = userRepository.save(
+                UserEntity.builder()
+                        .snsType(SNSType.NAVER)
+                        .name("test-user")
+                        .phoneNumber("010-0000-0000")
+                        .email("test-user@example.com")
+                        .birth(Date.valueOf(LocalDate.of(2001, 1, 1)))
+                        .nickname("test-user-nickname")
+                        .profileUrl("https://example.com")
+                        .createAt(Date.valueOf(LocalDate.of(2025, 1, 1)).toLocalDate())
+                        .gender(Gender.FEMALE)
+                        .build()
+        );
+
+        wishList1 = wishListRepository.save(
+                WishListEntity.builder()
+                        .product(product1)
+                        .userId(testUser.getId())
+                        .build()
+        );
     }
+
 
     public static FieldDescriptor[] commonResponseFields() {
         return new FieldDescriptor[]{
@@ -152,20 +186,43 @@ public class ProductRestDocsTest {
     }
 
     @Test
-    void getProductsByMarketAndCategory() throws Exception {
-        mockMvc.perform(get(BASE_URL + "/{marketId}/{categoryId}", market.getId(), category1.getId())
+    void registerWishListTest() throws Exception {
+        // Given
+        WishListRegistRequest request = new WishListRegistRequest(
+                testUser.getId(),
+                product1.getId()
+        );
+
+        //Then
+        mockMvc.perform(post(BASE_URL)
+                        .content(objectMapper.writeValueAsString(request))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andDo(document("wishlist/post-wishlist",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+                        requestFields(
+                                fieldWithPath("userId").description("유저 ID"),
+                                fieldWithPath("productId").description("관심상품으로 등록할 상품 ID")
+                        ),
+                        responseFields(
+                                commonResponseFields()
+                        )));
+    }
+
+    @Test
+    void getWishList() throws Exception {
+        mockMvc.perform(get(BASE_URL)
+                        .param("userId", testUser.getId().toString())
                         .param("page", "0")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andDo(document("products/get-products-by-market-and-category",
+                .andDo(document("wishlist/get-wishlist",
                         preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint()),
-                        pathParameters(
-                                parameterWithName("marketId").description("조회할 마켓의 ID"),
-                                parameterWithName("categoryId").description("조회할 카테고리의 ID")
-                        ),
                         queryParameters(
-                                parameterWithName("page").description("페이지 번호 (0부터 시작)")
+                                parameterWithName("page").description("페이지 번호 (0부터 시작)"),
+                                parameterWithName("userId").description("*토큰으로 수정예정")
                         ),
                         responseFields(
                                 commonResponseFields()
@@ -182,35 +239,4 @@ public class ProductRestDocsTest {
                                 fieldWithPath("products[].discountPrice").description("상품 할인 후 가격")
                         })));
     }
-
-    @Test
-    void getProductDetails() throws Exception {
-        mockMvc.perform(get(BASE_URL + "/{productId}", product1.getId())
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andDo(document("products/get-product-details",
-                        preprocessRequest(prettyPrint()),
-                        preprocessResponse(prettyPrint()),
-                        pathParameters(
-                                parameterWithName("productId").description("조회할 상품의 ID")
-                        ),
-                        responseFields(
-                                commonResponseFields()
-                        ).andWithPrefix("response.", new FieldDescriptor[] {
-                                fieldWithPath("photos").description("상품 사진 정보 목록"),
-                                fieldWithPath("photos[].imgUrl").description("상품 사진 개별 URL"),
-                                fieldWithPath("photos[].imgOrder").description("상품 사진 순서"),
-                                fieldWithPath("name").description("상품 이름"),
-                                fieldWithPath("options").description("상품 옵션 목록").optional(),
-                                fieldWithPath("options[].id").description("옵션 ID").optional(),
-                                fieldWithPath("options[].name").description("옵션 이름").optional(),
-                                fieldWithPath("options[].price").description("옵션 가격").optional(),
-                                fieldWithPath("description").description("상품 설명"),
-                                fieldWithPath("detailPages").description("상품 상세 페이지 이미지 정보 목록"),
-                                fieldWithPath("detailPages[].imgUrl").description("상품 상세 페이지 이미지 URL"),
-                                fieldWithPath("detailPages[].imgOrder").description("상품 상세 페이지 이미지 순서"),
-                                fieldWithPath("basePrice").description("상품 기본 가격 (옵션 가격 추가 전)"),
-                        })));
-    }
 }
-

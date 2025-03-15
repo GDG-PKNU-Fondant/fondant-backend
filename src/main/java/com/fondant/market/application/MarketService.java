@@ -54,6 +54,51 @@ public class MarketService {
         return convertToDetailDto(market);
     }
 
+    @Transactional(readOnly = true)
+    public MarketsResponse getTop10MarketsByPopularity(Pageable pageable) {
+        Pageable effectivePageable = (pageable == null) ? pageConfig.defaultPageable() : pageable;
+        Page<MarketEntity> markets = marketRepository.findTop10MarketsByPopularity(effectivePageable);
+
+        if (markets == null || markets.isEmpty()) {
+            throw new ApiException(MarketError.NO_MARKETS_FOUND);
+        }
+
+        return MarketsResponse.builder()
+                .pageInfo(PageInfo.of(markets.getNumber(), markets.getTotalPages()))
+                .markets(getMarketInfos(markets.getContent()))
+                .build();
+    }
+
+    @Transactional(readOnly = true)
+    public MarketsResponse getRandomTop5MarketsByCategoryId(Long categoryId, Pageable pageable) {
+        Pageable effectivePageable = (pageable == null) ? pageConfig.defaultPageable() : pageable;
+        Page<MarketEntity> markets = marketRepository.findRandomTop5MarketsByCategory(categoryId, effectivePageable);
+
+        if (markets == null || markets.isEmpty()) {
+            throw new ApiException(MarketError.NO_MARKETS_FOUND);
+        }
+
+        return MarketsResponse.builder()
+                .pageInfo(PageInfo.of(markets.getNumber(), markets.getTotalPages()))
+                .markets(getMarketInfos(markets.getContent()))
+                .build();
+    }
+
+    @Transactional(readOnly = true)
+    public MarketsResponse getTop30MarketsByCategoryId(Long categoryId, Pageable pageable) {
+        if (categoryId == null || categoryId <= 0) {
+            throw new ApiException(MarketError.INVALID_CATEGORY_ID);
+        }
+
+        Pageable effectivePageable = (pageable == null) ? pageConfig.defaultPageable() : pageable;
+        Page<MarketEntity> markets = marketRepository.findTop30MarketsByCategory(categoryId, effectivePageable);
+
+        return MarketsResponse.builder()
+                .pageInfo(PageInfo.of(markets.getNumber(), markets.getTotalPages()))
+                .markets(getMarketInfos(markets.getContent()))
+                .build();
+    }
+
     private List<MarketInfo> getMarketInfos(List<MarketEntity> markets) {
         return markets.stream()
                 .map(market -> MarketInfo.builder()
@@ -61,6 +106,8 @@ public class MarketService {
                         .name(market.getName())
                         .description(market.getDescription())
                         .thumbnail(market.getThumbnail())
+                        .totalReviews(market.getTotalReviews())
+                        .totalSales(market.getTotalSales())
                         .build())
                 .toList();
     }
@@ -73,5 +120,18 @@ public class MarketService {
                 .thumbnail(market.getThumbnail())
                 .background(market.getBackground())
                 .build();
+    }
+
+    private List<MarketInfo> convertToMarketInfos(List<MarketEntity> markets) {
+        return markets.stream()
+                .map(market -> MarketInfo.builder()
+                        .id(market.getId())
+                        .name(market.getName())
+                        .description(market.getDescription())
+                        .thumbnail(market.getThumbnail())
+                        .totalSales(market.getTotalSales())
+                        .totalReviews(market.getTotalReviews())
+                        .build())
+                .toList();
     }
 }

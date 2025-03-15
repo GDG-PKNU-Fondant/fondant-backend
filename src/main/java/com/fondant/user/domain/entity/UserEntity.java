@@ -1,5 +1,7 @@
 package com.fondant.user.domain.entity;
 
+import com.fondant.global.exception.ApiException;
+import com.fondant.user.exception.UserError;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
@@ -17,9 +19,9 @@ import java.util.List;
 @Table(name = "users")
 @Getter
 public class UserEntity {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "user_id")
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name="user_id")
+    @Getter
     private Long id;
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
@@ -86,5 +88,12 @@ public class UserEntity {
         this.createAt = createAt;
         this.gender = gender;
         this.role = role;
+    }
+
+    public DeliveryAddressEntity findDeliveryAddressById(Long addressId) {
+        return this.deliveryAddresses.stream()
+                .filter(address -> address.getId().equals(addressId))
+                .findFirst()
+                .orElseThrow(() -> new ApiException(UserError.ADDRESS_NOT_FOUND));
     }
 }

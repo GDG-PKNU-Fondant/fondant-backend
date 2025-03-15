@@ -98,4 +98,111 @@ include::{snippets}/user/update-user-info/response-body.adoc[]
 ==== Response Field
 
 include::{snippets}/user/update-user-info/response-fields.adoc[]
-=======
+
+=== 5. 유저 배송지 추가
+
+==== HTTP Request
+
+include::{snippets}/user/add-user-delivery-address/http-request.adoc[]
+
+==== Request Header
+
+include::{snippets}/user/add-user-delivery-address/request-headers.adoc[]
+
+==== Request Body
+
+include::{snippets}/user/add-user-delivery-address/request-body.adoc[]
+
+==== Request Field
+
+include::{snippets}/user/add-user-delivery-address/request-fields.adoc[]
+
+==== HTTP Response
+
+include::{snippets}/user/add-user-delivery-address/http-response.adoc[]
+
+==== Response Body
+
+include::{snippets}/user/add-user-delivery-address/response-body.adoc[]
+
+==== Response Field
+
+include::{snippets}/user/add-user-delivery-address/response-fields.adoc[]
+
+=== 6. 유저 배송지 조회
+
+==== HTTP Request
+
+include::{snippets}/user/get-user-delivery-address/http-request.adoc[]
+
+==== Request Header
+
+include::{snippets}/user/get-user-delivery-address/request-headers.adoc[]
+
+==== HTTP Response
+
+include::{snippets}/user/get-user-delivery-address/http-response.adoc[]
+
+==== Response Body
+
+include::{snippets}/user/get-user-delivery-address/response-body.adoc[]
+
+==== Response Field
+
+include::{snippets}/user/get-user-delivery-address/response-fields.adoc[]
+
+=== 7. 유저 배송지 수정
+
+==== HTTP Request
+
+include::{snippets}/user/update-user-delivery-address/http-request.adoc[]
+
+==== Request Header
+
+include::{snippets}/user/update-user-delivery-address/request-headers.adoc[]
+
+==== Request Body
+
+include::{snippets}/user/update-user-delivery-address/request-body.adoc[]
+
+==== Request Field
+
+include::{snippets}/user/update-user-delivery-address/request-fields.adoc[]
+
+==== HTTP Response
+
+include::{snippets}/user/update-user-delivery-address/http-response.adoc[]
+
+==== Response Body
+
+include::{snippets}/user/update-user-delivery-address/response-body.adoc[]
+
+==== Response Field
+
+include::{snippets}/user/update-user-delivery-address/response-fields.adoc[]
+
+=== 8. 유저 배송지 삭제
+
+==== HTTP Request
+
+include::{snippets}/user/delete-user-delivery-address/http-request.adoc[]
+
+==== Request Header
+
+include::{snippets}/user/delete-user-delivery-address/request-headers.adoc[]
+
+==== Request Parameter
+
+include::{snippets}/user/delete-user-delivery-address/path-parameters.adoc[]
+
+==== HTTP Response
+
+include::{snippets}/user/delete-user-delivery-address/http-response.adoc[]
+
+==== Response Body
+
+include::{snippets}/user/delete-user-delivery-address/response-body.adoc[]
+
+==== Response Field
+
+include::{snippets}/user/delete-user-delivery-address/response-fields.adoc[]
