@@ -7,5 +7,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface ProductImageRepository extends JpaRepository<ProductImageEntity,Long> {
-    List<ProductImageEntity> findByProductIdAndImageType(Long productId, ImageType type);
+    List<ProductImageEntity> findByProductIdAndImageTypeOrderByImgOrderAsc(Long productId, ImageType type);
 }
