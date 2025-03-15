@@ -1,5 +1,7 @@
 package com.fondant.user.domain.entity;
 
+import com.fondant.global.exception.ApiException;
+import com.fondant.user.exception.UserError;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
@@ -86,5 +88,12 @@ public class UserEntity {
         this.createAt = createAt;
         this.gender = gender;
         this.role = role;
+    }
+
+    public DeliveryAddressEntity findDeliveryAddressById(Long addressId) {
+        return this.deliveryAddresses.stream()
+                .filter(address -> address.getId().equals(addressId))
+                .findFirst()
+                .orElseThrow(() -> new ApiException(UserError.ADDRESS_NOT_FOUND));
     }
 }

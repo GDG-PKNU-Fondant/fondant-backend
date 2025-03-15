@@ -6,9 +6,18 @@ import com.fondant.infra.jwt.application.JWTUtil;
 import com.fondant.test.repository.UserTestRepository;
 import com.fondant.global.annotation.WithMockCustomUser;
 import com.fondant.user.application.UserService;
+import com.fondant.user.application.dto.CustomUserDetails;
+import com.fondant.user.domain.entity.DeliveryAddressEntity;
 import com.fondant.user.domain.entity.Gender;
 import com.fondant.user.domain.entity.UserEntity;
+import com.fondant.user.domain.entity.UserRole;
+import com.fondant.user.presentation.dto.request.DeliveryAddressAddRequest;
+import com.fondant.user.presentation.dto.request.DeliveryAddressUpdateRequest;
 import com.fondant.user.presentation.dto.request.UserUpdateRequest;
+import com.fondant.user.presentation.dto.response.DeliveryAddressResponse;
+import jakarta.persistence.EntityManager;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,22 +28,27 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.payload.FieldDescriptor;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.test.annotation.Rollback;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 import static org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders;
 import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
+import static org.springframework.restdocs.request.RequestDocumentation.pathParameters;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.sql.Date;
+import java.util.List;
 
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders;
+
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -58,6 +72,9 @@ public class UserRestDocsTest {
     @Autowired
     private JWTUtil jwtUtil;
 
+    @Autowired
+    private EntityManager entityManager;
+
     private static final String BASE_URL = "/api/user";
 
     public static FieldDescriptor[] commonResponseFields() {
@@ -68,8 +85,29 @@ public class UserRestDocsTest {
         };
     }
 
+    private DeliveryAddressAddRequest address1;
+    private DeliveryAddressAddRequest address2;
+
     @BeforeEach
     public void setUp() {
+
+        address1 = DeliveryAddressAddRequest.builder()
+                .deliveryAddress("서울시 강남구")
+                .postCode("12345")
+                .alias("alias")
+                .receiverName("홍길동")
+                .receiverPhoneNumber("010-1234-5678")
+                .isPrimary(true)
+                .build();
+
+        address2 = DeliveryAddressAddRequest.builder()
+                .deliveryAddress("서울시 서초구")
+                .postCode("67890")
+                .alias("alias2")
+                .receiverName("김철수")
+                .receiverPhoneNumber("010-9876-5432")
+                .isPrimary(false)
+                .build();
     }
 
     @Test
@@ -153,5 +191,213 @@ public class UserRestDocsTest {
         assertThat(updatedUser.getPhoneNumber()).isEqualTo(request.phoneNumber());
         assertThat(updatedUser.getProfileUrl()).isEqualTo(request.profileUrl());
         assertThat(updatedUser.getGender()).isEqualTo(request.gender());
+    }
+
+    @Test
+    @WithMockCustomUser
+    void getUserDeliveryAddress() throws Exception {
+
+        CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getPrincipal();
+
+        userService.addDeliveryAddress(userDetails.getUserId(), address1);
+        userService.addDeliveryAddress(userDetails.getUserId(), address2);
+
+        entityManager.flush();
+        entityManager.clear();
+
+        String access = jwtUtil.generateToken("access", userDetails.getUserId(), UserRole.USER.toString(), userDetails.getUserId());
+
+        mockMvc.perform(get(BASE_URL + "/address/")
+                        .header(HttpHeaders.AUTHORIZATION," Bearer " + access))
+                .andExpect(status().isOk())
+                .andDo(document("user/get-user-delivery-address",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+                        requestHeaders(
+                                headerWithName(HttpHeaders.AUTHORIZATION)
+                                        .description("Bearer {access-token}")
+                                        .optional(),
+                                headerWithName(HttpHeaders.CONTENT_TYPE)
+                                        .description("application/json")
+                                        .optional()
+                        ),
+                        responseFields(
+                                commonResponseFields()
+                        ).andWithPrefix("response.", new FieldDescriptor[]{
+                                fieldWithPath("[]").description("배송지 목록"),
+                                fieldWithPath("[].id").description("배송지 ID"),
+                                fieldWithPath("[].deliveryAddress").description("배송지 주소"),
+                                fieldWithPath("[].postCode").description("우편번호"),
+                                fieldWithPath("[].alias").description("배송지 별명"),
+                                fieldWithPath("[].receiverName").description("수령인 이름"),
+                                fieldWithPath("[].receiverPhoneNumber").description("수령인 연락처"),
+                                fieldWithPath("[].isPrimary").description("기본 배송지 여부")
+                        })
+                ));
+    }
+
+    @Test
+    @WithMockCustomUser
+    void addUserDeliveryAddress() throws Exception {
+
+        CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getPrincipal();
+
+        String access = jwtUtil.generateToken("access", userDetails.getUserId(), UserRole.USER.toString(), userDetails.getUserId());
+
+        mockMvc.perform(post(BASE_URL + "/address/")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(address1))
+                        .header(HttpHeaders.AUTHORIZATION," Bearer " + access))
+                .andExpect(status().isOk())
+                .andDo(document("user/add-user-delivery-address",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+                        requestHeaders(
+                                headerWithName(HttpHeaders.AUTHORIZATION)
+                                        .description("Bearer {access-token}")
+                                        .optional(),
+                                headerWithName(HttpHeaders.CONTENT_TYPE)
+                                        .description("application/json")
+                                        .optional()
+                        ),
+                        requestFields(
+                                fieldWithPath("deliveryAddress").description("배송지 주소"),
+                                fieldWithPath("postCode").description("우편번호"),
+                                fieldWithPath("alias").description("배송지 별명"),
+                                fieldWithPath("receiverName").description("수령인 이름"),
+                                fieldWithPath("receiverPhoneNumber").description("수령인 연락처"),
+                                fieldWithPath("isPrimary").description("기본 배송지 여부")
+                        ),
+                        responseFields(
+                                commonResponseFields()
+                        )
+                ));
+
+        assertThat(userService.getDeliveryAddress(userDetails.getUserId()).get(0))
+                .satisfies(address -> {
+                    assertThat(address.deliveryAddress()).isEqualTo(address1.deliveryAddress());
+                    assertThat(address.postCode()).isEqualTo(address1.postCode());
+                    assertThat(address.alias()).isEqualTo(address1.alias());
+                    assertThat(address.receiverName()).isEqualTo(address1.receiverName());
+                    assertThat(address.receiverPhoneNumber()).isEqualTo(address1.receiverPhoneNumber());
+                    assertThat(address.isPrimary()).isEqualTo(address1.isPrimary());
+                });
+    }
+
+    @Test
+    @WithMockCustomUser
+    void updateUserDeliveryAddress() throws Exception {
+        CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getPrincipal();
+
+        userService.addDeliveryAddress(userDetails.getUserId(), address2);
+
+        entityManager.flush();
+        entityManager.clear();
+
+        List<DeliveryAddressResponse> deliveryAddresses = userService.getDeliveryAddress(userDetails.getUserId());
+        DeliveryAddressResponse savedAddress = deliveryAddresses.get(deliveryAddresses.size() - 1);
+
+        DeliveryAddressUpdateRequest updateRequest = DeliveryAddressUpdateRequest.builder()
+                .id(savedAddress.id())
+                .deliveryAddress("대구광역시 동구")
+                .postCode("61234")
+                .alias("update")
+                .receiverName("이훈이")
+                .receiverPhoneNumber("010-9226-5222")
+                .isPrimary(false)
+                .build();
+
+        String access = jwtUtil.generateToken("access", userDetails.getUserId(), UserRole.USER.toString(), userDetails.getUserId());
+
+        mockMvc.perform(patch(BASE_URL + "/address/")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updateRequest))
+                        .header(HttpHeaders.AUTHORIZATION," Bearer " + access))
+                .andExpect(status().isOk())
+                .andDo(document("user/update-user-delivery-address",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+                        requestHeaders(
+                                headerWithName(HttpHeaders.AUTHORIZATION)
+                                        .description("Bearer {access-token}")
+                                        .optional(),
+                                headerWithName(HttpHeaders.CONTENT_TYPE)
+                                        .description("application/json")
+                                        .optional()
+                        )
+                        ,requestFields(
+                                fieldWithPath("id").description("배송지 주소의 id"),
+                                fieldWithPath("deliveryAddress").description("배송지 주소"),
+                                fieldWithPath("postCode").description("우편번호"),
+                                fieldWithPath("alias").description("배송지 별명"),
+                                fieldWithPath("receiverName").description("수령인 이름"),
+                                fieldWithPath("receiverPhoneNumber").description("수령인 연락처"),
+                                fieldWithPath("isPrimary").description("기본 배송지 여부")
+                        )
+                        ,
+                        responseFields(
+                                commonResponseFields()
+                        )
+                ));
+
+        assertThat(userService.getDeliveryAddress(userDetails.getUserId()).get(0))
+                .satisfies(address -> {
+                    assertThat(address.deliveryAddress()).isEqualTo(updateRequest.deliveryAddress());
+                    assertThat(address.postCode()).isEqualTo(updateRequest.postCode());
+                    assertThat(address.alias()).isEqualTo(updateRequest.alias());
+                    assertThat(address.receiverName()).isEqualTo(updateRequest.receiverName());
+                    assertThat(address.receiverPhoneNumber()).isEqualTo(updateRequest.receiverPhoneNumber());
+                    assertThat(address.isPrimary()).isEqualTo(updateRequest.isPrimary());
+                });
+    }
+
+    @Test
+    @WithMockCustomUser
+    void deleteUserDeliveryAddress() throws Exception {
+        CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getPrincipal();
+
+        userService.addDeliveryAddress(userDetails.getUserId(), address1);
+
+        entityManager.flush();
+        entityManager.clear();
+
+        List<DeliveryAddressResponse> deliveryAddresses = userService.getDeliveryAddress(userDetails.getUserId());
+        Long deliveryAddressId = deliveryAddresses.get(deliveryAddresses.size() - 1).id();
+
+        String access = jwtUtil.generateToken("access", userDetails.getUserId(), UserRole.USER.toString(), userDetails.getUserId());
+
+        mockMvc.perform(delete(BASE_URL + "/address/{deliveryAddressId}",deliveryAddressId)
+                        .header(HttpHeaders.AUTHORIZATION," Bearer " + access))
+                .andExpect(status().isOk())
+                .andDo(document("user/delete-user-delivery-address",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+                        requestHeaders(
+                                headerWithName(HttpHeaders.AUTHORIZATION)
+                                        .description("Bearer {access-token}")
+                                        .optional(),
+                                headerWithName(HttpHeaders.CONTENT_TYPE)
+                                        .description("application/json")
+                                        .optional()
+                        ),
+                        pathParameters(
+                                parameterWithName("deliveryAddressId").description("배송지 주소의 id")
+                        ),
+                        responseFields(
+                                commonResponseFields()
+                        )
+                ));
     }
 }
