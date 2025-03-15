@@ -13,7 +13,6 @@ import com.fondant.user.domain.repository.UserRepository;
 import com.fondant.user.presentation.dto.request.UserUpdateRequest;
 import com.fondant.user.presentation.dto.response.DeliveryAddressResponse;
 import com.fondant.user.presentation.dto.response.UserResponse;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -72,7 +71,7 @@ public class UserService {
 
         userRepository.save(userEntity);
     }
-
+  
     @Transactional
     public UserEntity joinUser(JoinRequest request) {
 

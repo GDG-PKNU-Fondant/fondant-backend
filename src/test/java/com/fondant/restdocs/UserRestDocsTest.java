@@ -47,6 +47,8 @@ import java.util.List;
 
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
+import static org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders;
+
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -85,7 +87,6 @@ public class UserRestDocsTest {
 
     private DeliveryAddressAddRequest address1;
     private DeliveryAddressAddRequest address2;
-
 
     @BeforeEach
     public void setUp() {
@@ -155,7 +156,6 @@ public class UserRestDocsTest {
                 .gender(Gender.FEMALE)
                 .birth(Date.valueOf("2000-01-01"))
                 .build();
-
 
         mockMvc.perform(patch(BASE_URL + "/")
                         .contentType(MediaType.APPLICATION_JSON)

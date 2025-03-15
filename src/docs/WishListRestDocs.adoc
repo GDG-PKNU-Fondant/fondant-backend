@@ -1,0 +1,46 @@
+= API 문서
+Fondant Backend Team
+2025-01-26
+:toc: left
+:toclevels: 2
+:source-highlighter: highlightjs
+:sectlinks:
+
+== Product API
+
+=== 1. 관심상품 등록
+
+==== HTTP request
+
+include::{snippets}/wishlist/post-wishlist/http-request.adoc[]
+
+==== Request Body
+
+include::{snippets}/wishlist/post-wishlist/request-fields.adoc[]
+
+==== HTTP response
+
+include::{snippets}/wishlist/post-wishlist/http-response.adoc[]
+
+==== response body
+
+include::{snippets}/wishlist/post-wishlist/response-fields.adoc[]
+
+=== 2. 관심상품 조회
+
+==== HTTP request
+
+include::{snippets}/wishlist/get-wishlist/http-request.adoc[]
+
+==== Query Parameters
+
+include::{snippets}/wishlist/get-wishlist/query-parameters.adoc[]
+
+==== HTTP response
+
+include::{snippets}/wishlist/get-wishlist/http-response.adoc[]
+
+==== response body
+
+include::{snippets}/wishlist/get-wishlist/response-fields.adoc[]
+

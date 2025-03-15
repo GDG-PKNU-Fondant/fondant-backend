@@ -19,9 +19,9 @@ import java.util.List;
 @Table(name = "users")
 @Getter
 public class UserEntity {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "user_id")
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name="user_id")
+    @Getter
     private Long id;
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)

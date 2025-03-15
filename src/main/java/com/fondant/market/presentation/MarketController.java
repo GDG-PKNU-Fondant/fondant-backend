@@ -35,4 +35,36 @@ public class MarketController {
         return ResponseEntity.ok(ResponseDto.ofSuccess(SuccessMessage.OPERATION_SUCCESS,
                 marketService.getMarketsByCategoryId(categoryId, effectivePageable)));
     }
+
+    @GetMapping("/top10")
+    public ResponseEntity<ResponseDto<MarketsResponse>> getTop10MarketsByPopularity(
+            @RequestParam(required = false) Pageable pageable) {
+
+        Pageable effectivePageable = (pageable == null) ? pageConfig.defaultPageable() : pageable;
+
+        return ResponseEntity.ok(ResponseDto.ofSuccess(SuccessMessage.OPERATION_SUCCESS,
+                marketService.getTop10MarketsByPopularity(effectivePageable)));
+    }
+
+    @GetMapping("/{categoryId}/top5")
+    public ResponseEntity<ResponseDto<MarketsResponse>> getRandomTop5MarketsByCategoryId(
+            @PathVariable(name = "categoryId") Long categoryId,
+            @RequestParam(required = false) Pageable pageable) {
+
+        Pageable effectivePageable = (pageable == null) ? pageConfig.defaultPageable() : pageable;
+        MarketsResponse marketsResponse = marketService.getRandomTop5MarketsByCategoryId(categoryId, effectivePageable);
+
+        return ResponseEntity.ok(ResponseDto.ofSuccess(SuccessMessage.OPERATION_SUCCESS, marketsResponse));
+    }
+
+    @GetMapping("/{categoryId}/top30")
+    public ResponseEntity<ResponseDto<MarketsResponse>> getTop30MarketsByPopularity(
+            @PathVariable(name = "categoryId") Long categoryId,
+            @RequestParam(required = false) Pageable pageable) {
+
+        Pageable effectivePageable = (pageable == null) ? pageConfig.defaultPageable() : pageable;
+        MarketsResponse marketsResponse = marketService.getTop30MarketsByCategoryId(categoryId, effectivePageable);
+
+        return ResponseEntity.ok(ResponseDto.ofSuccess(SuccessMessage.OPERATION_SUCCESS, marketsResponse));
+    }
 }

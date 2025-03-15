@@ -21,14 +21,18 @@ public class ProductImageEntity {
     @Column(name="img_url")
     private String imageUrl;
 
+    @Column(name="img_order")
+    private Integer imgOrder;
+
     @Enumerated(EnumType.STRING)
     @Column(name="img_type")
     private  ImageType imageType;
 
     @Builder
-    public ProductImageEntity(Long productId, String imageUrl, ImageType imageType) {
+    public ProductImageEntity(Long productId, String imageUrl, ImageType imageType, Integer imgOrder) {
         this.productId = productId;
         this.imageUrl = imageUrl;
         this.imageType = imageType;
+        this.imgOrder = imgOrder;
     }
 }

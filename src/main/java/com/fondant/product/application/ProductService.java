@@ -2,6 +2,7 @@ package com.fondant.product.application;
 
 import com.fondant.global.dto.PageInfo;
 import com.fondant.global.exception.ApiException;
+import com.fondant.product.application.dto.ImageInfo;
 import com.fondant.product.application.dto.OptionInfo;
 import com.fondant.product.application.dto.ProductInfo;
 import com.fondant.product.domain.entity.ImageType;
@@ -49,7 +50,7 @@ public class ProductService {
                 .build();
     }
 
-    private List<ProductInfo> getProductInfos(List<ProductEntity> products) {
+    public List<ProductInfo> getProductInfos(List<ProductEntity> products) {
         return products.stream()
                 .map(product->
                         ProductInfo.builder()
@@ -76,12 +77,15 @@ public class ProductService {
                 .options(getOptionInfos(productId))
                 .description(product.getDescription())
                 .detailPages(getImageUrlsByProductIdAndType(productId,ImageType.DETAIL_PAGE))
+                .basePrice(product.getPrice())
                 .build();
     }
 
-    private List<String> getImageUrlsByProductIdAndType(Long productId,ImageType imageType){
-        return productImageRepository.findByProductIdAndImageType(productId, imageType)
-                .stream().map(ProductImageEntity::getImageUrl).toList();
+    private List<ImageInfo> getImageUrlsByProductIdAndType(Long productId, ImageType imageType){
+        return productImageRepository.findByProductIdAndImageTypeOrderByImgOrderAsc(productId, imageType)
+                .stream().map(img->
+                        new ImageInfo(img.getImageUrl(),img.getImgOrder())
+                ).toList();
     }
 
     private List<OptionInfo> getOptionInfos(Long productId){
@@ -96,7 +100,7 @@ public class ProductService {
                  .toList();
     }
 
-    private ProductEntity getProductById(Long productId) {
+    public ProductEntity getProductById(Long productId) {
         return productRepository.findById(productId)
                 .orElseThrow(() -> new ApiException(ProductError.PRODUCT_NOT_FOUND));
     }

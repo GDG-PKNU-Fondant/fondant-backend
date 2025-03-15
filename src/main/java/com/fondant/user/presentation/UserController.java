@@ -1,6 +1,5 @@
 package com.fondant.user.presentation;
 
-
 import com.fondant.global.annotation.CurrentUser;
 import com.fondant.global.dto.ResponseDto;
 import com.fondant.global.dto.SuccessMessage;
@@ -15,6 +14,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+
 import java.io.IOException;
 
 @Controller
