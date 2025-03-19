@@ -1,8 +1,10 @@
 package com.fondant.wishlist.application;
 
+import com.fondant.global.annotation.CurrentUser;
 import com.fondant.global.dto.ResponseDto;
 import com.fondant.global.dto.SuccessMessage;
 import com.fondant.product.presentation.dto.response.ProductsResponse;
+import com.fondant.user.application.dto.CustomUserDetails;
 import com.fondant.wishlist.application.dto.request.WishListRegistRequest;
 import com.fondant.wishlist.presentation.WishListService;
 
@@ -24,19 +26,20 @@ public class WishListController {
 
     @PostMapping("")
     public ResponseEntity<ResponseDto<Void>> registerWishlist(
+            @CurrentUser CustomUserDetails user,
             @RequestBody WishListRegistRequest request
             ){
-        wishListService.registerWishList(request.userId(), request.productId());
+        wishListService.registerWishList(user.getUserId(), request.productId());
         return ResponseEntity.ok(ResponseDto.ofSuccess(SuccessMessage.CREATE_SUCCESS));
     }
 
     @GetMapping("")
     public ResponseEntity<ResponseDto<ProductsResponse>> getWishLists(
-            @RequestParam Long userId,
+            @CurrentUser CustomUserDetails user,
             @RequestParam(name="page") int page
     ){
         Pageable pageable = PageRequest.of(page, PAGE_SIZE);
         return ResponseEntity.ok(ResponseDto.ofSuccess(SuccessMessage.OPERATION_SUCCESS,
-                wishListService.getWishList(userId,pageable)));
+                wishListService.getWishList(user.getUserId(),pageable)));
     }
 }
