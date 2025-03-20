@@ -2,6 +2,8 @@ package com.fondant.restdocs;
 
 import com.fondant.market.domain.entity.MarketCategoryEntity;
 import com.fondant.market.domain.entity.MarketEntity;
+import com.fondant.market.domain.entity.MarketHashtagEntity;
+import com.fondant.market.domain.repository.MarketHashtagRepository;
 import com.fondant.product.domain.entity.CategoryEntity;
 import com.fondant.test.repository.CategoryTestRepository;
 import com.fondant.test.repository.MarketCategoryTestRepository;
@@ -18,6 +20,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.Arrays;
+import java.util.List;
 
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
@@ -45,6 +48,9 @@ public class MarketRestDocsTest {
 
     @Autowired
     private MarketCategoryTestRepository marketCategoryRepository;
+
+    @Autowired
+    private MarketHashtagRepository marketHashtagRepository;
 
     private CategoryEntity categoryCookie;
     private CategoryEntity categoryBread;
@@ -136,6 +142,12 @@ public class MarketRestDocsTest {
     @Test
     void getMarketById() throws Exception {
         MarketEntity market = marketRepository.findAll().get(0);
+
+        marketHashtagRepository.saveAll(List.of(
+                MarketHashtagEntity.builder().market(market).name("기념일맞춤").build(),
+                MarketHashtagEntity.builder().market(market).name("수제간식").build()
+        ));
+
         mockMvc.perform(get(BASE_URL + "/{marketId}", market.getId())
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -152,7 +164,11 @@ public class MarketRestDocsTest {
                                 fieldWithPath("name").description("마켓 이름"),
                                 fieldWithPath("description").description("마켓 한줄 소개"),
                                 fieldWithPath("thumbnail").description("마켓 썸네일 이미지 URL"),
-                                fieldWithPath("background").description("마켓 배경 이미지 URL")
+                                fieldWithPath("background").description("마켓 배경 이미지 URL"),
+                                fieldWithPath("liked").description("현재 로그인 유저가 이 마켓을 좋아요 눌렀는지 여부 (현재는 false 고정)"),
+                                fieldWithPath("likeCount").description("좋아요 누적 수"),
+                                fieldWithPath("isTop10").description("카테고리별 인기 마켓 TOP10 여부"),
+                                fieldWithPath("hashtags").description("해시태그 목록 (최대 5개)")
                         })));
     }
 
