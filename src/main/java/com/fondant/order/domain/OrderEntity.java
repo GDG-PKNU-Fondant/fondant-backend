@@ -25,17 +25,16 @@ public class OrderEntity {
     @JoinColumn(name = "user_id")
     private UserEntity user;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @NotNull
-    @JoinColumn(name = "delivery_address_id")
-    private DeliveryAddressEntity deliveryAddress;
-
     @Column(name = "order_date")
     @NotNull
     private LocalDateTime orderDate;
 
+    @Column(name = "order_date")
+    @NotNull
+    private String deliveryAddress;
+
     @Builder
-    public OrderEntity(UserEntity user, DeliveryAddressEntity deliveryAddress, LocalDateTime orderDate) {
+    public OrderEntity(UserEntity user, LocalDateTime orderDate, String deliveryAddress) {
         this.user = user;
         this.deliveryAddress = deliveryAddress;
         this.orderDate = orderDate;
