@@ -3,6 +3,7 @@ package com.fondant.restdocs;
 
 import com.fondant.infra.jwt.application.JWTUtil;
 import com.fondant.market.domain.entity.MarketEntity;
+import com.fondant.product.category.domain.CategoryEntity;
 import com.fondant.product.domain.entity.*;
 import com.fondant.product.domain.repository.OptionRepository;
 import com.fondant.product.domain.repository.ProductImageRepository;
