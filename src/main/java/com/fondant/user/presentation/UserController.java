@@ -6,7 +6,6 @@ import com.fondant.global.dto.SuccessMessage;
 import com.fondant.user.application.ReissueService;
 import com.fondant.user.application.UserService;
 import com.fondant.user.application.dto.CustomUserDetails;
-import com.fondant.user.domain.entity.UserEntity;
 import com.fondant.user.presentation.dto.request.UserUpdateRequest;
 import com.fondant.user.presentation.dto.response.UserResponse;
 import jakarta.servlet.http.HttpServletRequest;
