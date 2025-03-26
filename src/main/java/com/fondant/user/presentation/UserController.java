@@ -4,7 +4,10 @@ import com.fondant.global.annotation.CurrentUser;
 import com.fondant.global.dto.ResponseDto;
 import com.fondant.global.dto.SuccessMessage;
 import com.fondant.user.application.ReissueService;
+import com.fondant.user.application.SmsVerificationService;
 import com.fondant.user.application.UserService;
+import com.fondant.user.presentation.dto.request.SmsSendRequest;
+import com.fondant.user.presentation.dto.request.SmsVerifyRequest;
 import com.fondant.user.application.dto.CustomUserDetails;
 import com.fondant.user.domain.entity.UserEntity;
 import com.fondant.user.presentation.dto.request.UserUpdateRequest;
@@ -23,11 +26,23 @@ public class UserController {
 
     private final UserService userService;
     private final ReissueService reissueService;
+    private final SmsVerificationService smsVerificationService;
 
-    public UserController(UserService userService, ReissueService reissueService) {
+    public UserController(UserService userService, ReissueService reissueService, SmsVerificationService smsVerificationService) {
         this.userService = userService;
         this.reissueService = reissueService;
+        this.smsVerificationService = smsVerificationService;
     }
+
+    @PostMapping("/sms/send")
+    public ResponseEntity<ResponseDto<Void>> sendOne(@RequestBody SmsSendRequest request) throws Exception {
+        smsVerificationService.sendMessage(request.phoneNumber());
+        return ResponseEntity.ok(ResponseDto.ofSuccess(SuccessMessage.OPERATION_SUCCESS));
+    }
+
+    @PostMapping("/sms/verify")
+    public ResponseEntity<ResponseDto<Void>> verifyOne(@RequestBody SmsVerifyRequest request){
+        smsVerificationService.verifyCode(request.phoneNumber(), request.code());
 
     @GetMapping("")
     public ResponseEntity<ResponseDto<UserResponse>> getUserInfo(@CurrentUser CustomUserDetails user) {
