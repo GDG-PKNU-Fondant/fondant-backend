@@ -15,4 +15,6 @@ public interface MarketRepositoryCustom {
     Page<MarketEntity> findRandomTop5MarketsByCategory(Long categoryId, Pageable pageable);
 
     Page<MarketEntity> findTop30MarketsByCategory(Long categoryId, Pageable pageable);
+
+    boolean isMarketInTop10ByCategory(Long marketId);
 }

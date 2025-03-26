@@ -171,4 +171,36 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
 
         return new PageImpl<>(pageContent, pageable, total);
     }
+
+    @Override
+    public boolean isMarketInTop10ByCategory(Long marketId) {
+        QMarketEntity market = QMarketEntity.marketEntity;
+        QMarketCategoryEntity marketCategory = QMarketCategoryEntity.marketCategoryEntity;
+        QCategoryEntity category = QCategoryEntity.categoryEntity;
+
+        Long categoryId = queryFactory
+                .select(marketCategory.category.id)
+                .from(marketCategory)
+                .where(marketCategory.market.id.eq(marketId))
+                .fetchFirst();
+
+        if (categoryId == null) return false;
+
+        NumberExpression<Double> popularityScore = market.totalSales
+                .coalesce(0L).castToNum(Double.class)
+                .add(market.totalReviews.coalesce(0L).castToNum(Double.class).multiply(2.0))
+                .add(Expressions.numberTemplate(Double.class, "GREATEST(0, {0})", 100));
+
+        List<Long> top10Ids = queryFactory
+                .select(market.id)
+                .from(marketCategory)
+                .join(marketCategory.market, market)
+                .join(marketCategory.category, category)
+                .where(category.id.eq(categoryId))
+                .orderBy(popularityScore.desc())
+                .limit(10)
+                .fetch();
+
+        return top10Ids.contains(marketId);
+    }
 }
