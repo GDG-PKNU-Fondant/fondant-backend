@@ -21,7 +21,7 @@ public class CategoryService {
 
     @Transactional
     public CategoriesResponse<MainCategoryInfo> getAllCategories(){
-        List<CategoryEntity> categories = categoryRepository.findAll();
+        List<CategoryEntity> categories = categoryRepository.findAllByChildrenIsNotNull();
 
         return CategoriesResponse.of(categories.stream()
                 .map(this::toMainCategoryInfo)
