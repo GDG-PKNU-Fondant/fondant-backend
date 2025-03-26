@@ -5,7 +5,7 @@ import com.fondant.market.domain.entity.MarketEntity;
 import com.fondant.market.domain.entity.QMarketCategoryEntity;
 import com.fondant.market.domain.entity.QMarketEntity;
 import com.fondant.market.exception.MarketError;
-import com.fondant.product.domain.entity.QCategoryEntity;
+import com.fondant.product.category.domain.QCategoryEntity;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.JPAExpressions;

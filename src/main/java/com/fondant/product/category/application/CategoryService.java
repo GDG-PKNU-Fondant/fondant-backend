@@ -9,6 +9,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class CategoryService {
@@ -43,5 +44,10 @@ public class CategoryService {
                 category.getId(),
                 category.getName()
         );
+    }
+
+    private List<Long> getAllChildren(Long parentId) {
+        List<CategoryEntity> children = categoryRepository.getByParentId(parentId);
+        return children.stream().map(CategoryEntity::getId).toList();
     }
 }

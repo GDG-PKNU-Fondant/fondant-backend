@@ -26,6 +26,7 @@ public class ProductCategoryEntity {
     @JoinColumn(name = "category_id")
     private CategoryEntity category;
 
+
     @Builder
     public ProductCategoryEntity(ProductEntity product, CategoryEntity category) {
         this.product = product;
