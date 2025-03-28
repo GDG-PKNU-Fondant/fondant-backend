@@ -9,9 +9,8 @@ import com.fondant.user.application.dto.CustomUserDetails;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-
-import java.util.List;
 
 @Controller
 @RequestMapping("/api/order")
@@ -24,7 +23,7 @@ public class OrderController {
     }
 
     @PostMapping("")
-    public ResponseEntity<ResponseDto<Void>> createOrder(@CurrentUser CustomUserDetails user, OrderCreateRequest orderList) {
+    public ResponseEntity<ResponseDto<Void>> createOrder(@CurrentUser CustomUserDetails user, @RequestBody OrderCreateRequest orderList) {
         orderService.createOrder(user.getUserId(), orderList);
         return ResponseEntity.ok(ResponseDto.ofSuccess(SuccessMessage.OPERATION_SUCCESS));
     }
