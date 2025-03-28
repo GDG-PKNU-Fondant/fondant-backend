@@ -15,9 +15,9 @@ import java.util.List;
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "delivery")
+@Getter
 public class DeliveryEntity {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Getter
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
