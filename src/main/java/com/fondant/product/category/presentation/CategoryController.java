@@ -22,4 +22,11 @@ public class CategoryController {
                 categoryService.getAllCategories()
         ));
     }
+
+    @GetMapping("/main")
+    public ResponseEntity<ResponseDto<CategoriesResponse>> getAllMainCategories() {
+        return ResponseEntity.ok(ResponseDto.ofSuccess(SuccessMessage.OPERATION_SUCCESS,
+                categoryService.getAllMainCategories()
+        ));
+    }
 }

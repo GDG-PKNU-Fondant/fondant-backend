@@ -140,4 +140,20 @@ public class CategoryRestDocsTest {
                                 fieldWithPath("categories[].subCategories[].name").description("소분류 카테고리 이름"),
                         })));
     }
+
+    @Test
+    void getAllMainCategories() throws Exception {
+        mockMvc.perform(get(BASE_URL + "/main")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + mockToken))
+                .andExpect(status().isOk())
+                .andDo(document("categories/get-main-category",
+                        preprocessResponse(prettyPrint()),
+                        responseFields(
+                                commonResponseFields()
+                        ).andWithPrefix("response.", new FieldDescriptor[] {
+                                fieldWithPath("categories[]").description("대분류 카테고리 목록"),
+                                fieldWithPath("categories[].id").description("대분류 카테고리 아이디"),
+                                fieldWithPath("categories[].name").description("대분류 카테고리 이름")
+                        })));
+    }
 }

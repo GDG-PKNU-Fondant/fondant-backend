@@ -22,4 +22,19 @@ include::{snippets}/categories/get-all-category/http-response.adoc[]
 
 include::{snippets}/categories/get-all-category/response-fields.adoc[]
 
+=== 1. 카테고리 대분류 목록 조회
+
+==== HTTP request
+
+include::{snippets}/categories/get-main-category/http-request.adoc[]
+
+==== HTTP response
+
+include::{snippets}/categories/get-main-category/http-response.adoc[]
+
+==== response body
+
+include::{snippets}/categories/get-main-category/response-fields.adoc[]
+
+
 

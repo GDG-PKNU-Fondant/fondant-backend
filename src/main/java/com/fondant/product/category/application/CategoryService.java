@@ -46,6 +46,15 @@ public class CategoryService {
         );
     }
 
+    @Transactional
+    public CategoriesResponse<CategoryInfo> getAllMainCategories(){
+        List<CategoryEntity> categories = categoryRepository.findAllByChildrenIsNotNull();
+
+        return CategoriesResponse.of(categories.stream()
+                .map(this::toCategoryInfo)
+                .toList());
+    }
+
     private List<Long> getAllChildren(Long parentId) {
         List<CategoryEntity> children = categoryRepository.getByParentId(parentId);
         return children.stream().map(CategoryEntity::getId).toList();
