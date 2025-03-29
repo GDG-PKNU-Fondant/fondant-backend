@@ -90,6 +90,9 @@ public class MarketRestDocsTest {
                         .background("market-" + marketCount + "-bg.jpg")
                         .totalSales(100L * marketCount)
                         .totalReviews(10L * marketCount)
+                        .businessNumber("123-45-67890")
+                        .instagramProfile("https://instagram.com/market" + marketCount)
+                        .location("지구 어딘가")
                         .build());
 
                 marketCategoryRepository.save(MarketCategoryEntity.builder()
@@ -170,10 +173,11 @@ public class MarketRestDocsTest {
                                 fieldWithPath("likeCount").description("좋아요 누적 수"),
                                 fieldWithPath("isTop10").description("카테고리별 인기 마켓 TOP10 여부"),
                                 fieldWithPath("hashtags").description("해시태그 목록 (최대 5개)"),
-                                fieldWithPath("location").description("마켓 위치"),
-                                fieldWithPath("businessNumber").description("사업자 번호"),
-                                fieldWithPath("naverLink").description("네이버 링크"),
-                                fieldWithPath("instagramProfile").description("인스타그램 프로필 링크")
+                                fieldWithPath("profile").description("마켓 상세 정보 객체")
+                        }).andWithPrefix("response.profile.", new FieldDescriptor[]{
+                                fieldWithPath("businessNumber").description("사업자 등록번호"),
+                                fieldWithPath("instagramProfile").description("인스타그램 프로필 링크"),
+                                fieldWithPath("location").description("마켓 위치 주소")
                         })));
     }
 
