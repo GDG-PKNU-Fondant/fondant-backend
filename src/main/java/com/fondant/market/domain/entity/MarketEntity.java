@@ -58,9 +58,23 @@ public class MarketEntity {
     @Column(name="likeCount")
     private Long likeCount;
 
+    @Column(name = "location")
+    private String location;
+
+    @Column(name = "business_number")
+    private String businessNumber;
+
+    @Column(name = "naver_link")
+    private String naverLink;
+
+    @Column(name = "instagram_profile")
+    private String instagramProfile;
+
     @Builder
     public MarketEntity(String name, Long totalSales, Long totalReviews, LocalDate createAt, LocalDate updateAt,
-                        String description, String thumbnail, String background, Long deliveryFee, Long freeDeliveryLimit, Long likeCount) {
+                        String description, String thumbnail, String background,
+                        Long deliveryFee, Long freeDeliveryLimit, Long likeCount,
+                        String location, String businessNumber, String naverLink, String instagramProfile) {
         this.name = name;
         this.totalSales = totalSales != null ? totalSales : 0L;
         this.totalReviews = totalReviews != null ? totalReviews : 0L;
@@ -72,6 +86,10 @@ public class MarketEntity {
         this.deliveryFee = deliveryFee != null ? deliveryFee : 0L;
         this.freeDeliveryLimit = freeDeliveryLimit != null ? freeDeliveryLimit : 0L;
         this.likeCount = likeCount != null ? likeCount : 0L;
+        this.location = location;
+        this.businessNumber = businessNumber;
+        this.naverLink = naverLink;
+        this.instagramProfile = instagramProfile;
     }
 
 }
