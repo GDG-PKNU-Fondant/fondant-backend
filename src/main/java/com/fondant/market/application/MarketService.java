@@ -5,6 +5,7 @@ import com.fondant.global.dto.PageInfo;
 import com.fondant.global.exception.ApiException;
 import com.fondant.market.application.dto.MarketDetail;
 import com.fondant.market.application.dto.MarketInfo;
+import com.fondant.market.application.dto.MarketProfile;
 import com.fondant.market.domain.entity.MarketEntity;
 import com.fondant.market.domain.repository.MarketHashtagRepository;
 import com.fondant.market.domain.repository.MarketRepository;
@@ -127,6 +128,11 @@ public class MarketService {
                 .likeCount(market.getLikeCount() != null ? market.getLikeCount() : 0L)
                 .isTop10(false)
                 .hashtags(hashtags)
+                .profile(MarketProfile.builder()
+                        .businessNumber(market.getBusinessNumber())
+                        .instagramProfile(market.getInstagramProfile())
+                        .location(market.getLocation())
+                        .build())
                 .build();
     }
 
