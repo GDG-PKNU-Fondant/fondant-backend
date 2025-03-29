@@ -65,6 +65,8 @@ public class OrderDetailEntity {
     public static OrderDetailEntity from(OrderItem item, OrderEntity order, ProductEntity product, MarketEntity market) {
         double totalPrice = calculateTotalPrice(item.price(), item.optionPrice(), item.quantity(), product.getDiscountRate());
 
+        System.out.println(totalPrice);
+
         return OrderDetailEntity.builder()
                 .order(order)
                 .product(product)
@@ -75,6 +77,6 @@ public class OrderDetailEntity {
     }
 
     private static double calculateTotalPrice(double price, double optionPrice, int quantity, double discountRate) {
-        return Math.round((price + optionPrice) * quantity * (1.0 - discountRate));
+        return Math.round(price * (1.0 - discountRate) + optionPrice) * quantity;
     }
 }

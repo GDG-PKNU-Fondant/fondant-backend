@@ -183,7 +183,6 @@ public class OrderRestDocsTest {
                         .optionId(option1.getId())
                         .productId(product1.getId())
                         .quantity(2)
-                        .discountRate(0.1)
                         .price(14000.0)
                         .optionPrice(1000.0)
                         .deliveryFee(3000L)
@@ -193,7 +192,6 @@ public class OrderRestDocsTest {
                         .optionId(option2.getId())
                         .productId(product2.getId())
                         .quantity(1)
-                        .discountRate(0.3)
                         .price(20000.0)
                         .optionPrice(2000.0)
                         .deliveryFee(3000L)
@@ -203,7 +201,7 @@ public class OrderRestDocsTest {
         orderCreateRequest = OrderCreateRequest.builder()
                 .items(items)
                 .addressId(userService.getDeliveryAddress(userDetails.getUserId()).get(0).id())
-                .totalPrice(45400.0)
+                .totalPrice(55000.0)
                 .build();
     }
 

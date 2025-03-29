@@ -12,6 +12,7 @@ import com.fondant.order.domain.repository.OrderRepository;
 import com.fondant.order.exception.OrderError;
 import com.fondant.order.presentation.dto.request.OrderCreateRequest;
 import com.fondant.order.presentation.dto.request.OrderItem;
+import com.fondant.product.application.ProductService;
 import com.fondant.product.domain.entity.OptionEntity;
 import com.fondant.product.domain.entity.ProductEntity;
 import com.fondant.product.domain.repository.OptionRepository;
@@ -38,14 +39,16 @@ public class OrderService {
     private final OrderDetailRepository orderDetailRepository;
     private final ProductRepository productRepository;
     private final OptionRepository optionRepository;
+    private final ProductService productService;
 
-    public OrderService(UserRepository userRepository, MarketRepository marketRepository, OrderRepository orderRepository, OrderDetailRepository orderDetailRepository, ProductRepository productRepository, OptionRepository optionRepository) {
+    public OrderService(UserRepository userRepository, MarketRepository marketRepository, OrderRepository orderRepository, OrderDetailRepository orderDetailRepository, ProductRepository productRepository, OptionRepository optionRepository, ProductService productService) {
         this.userRepository = userRepository;
         this.marketRepository = marketRepository;
         this.orderRepository = orderRepository;
         this.orderDetailRepository = orderDetailRepository;
         this.productRepository = productRepository;
         this.optionRepository = optionRepository;
+        this.productService = productService;
     }
 
     @Transactional
@@ -63,29 +66,21 @@ public class OrderService {
                 .deliveryAddress(user.findDeliveryAddressById(orderList.addressId()).getDeliveryAddress())
                 .build();
 
-        Map<MarketEntity, List<OrderItem>> itemsByMarket = new HashMap<>();
+        Map<MarketEntity, List<OrderItem>> itemsByMarket = divideOrderListByMarket(orderList);
 
-        for (OrderItem item : orderList.items()) {
-            MarketEntity market = marketRepository.findById(item.marketId())
-                    .orElseThrow(() -> new ApiException(MarketError.MARKET_NOT_FOUND));
+        OrderDetailCalculationResult result = calculateOrderDetails(itemsByMarket, order);
+        System.out.println(result);
 
-            itemsByMarket.computeIfAbsent(market, k -> new ArrayList<>()).add(item);
-        }
-
-        double itemTotalPrice = 0.0;
-        List<OrderDetailEntity> emptyOrderDetails = new ArrayList<>();
-
-        OrderDetailCalculationResult result = calculateOrderDetails(itemsByMarket, order, itemTotalPrice, emptyOrderDetails);
-
-        if (result.totalItemPrice() != orderList.totalPrice()) {
-            throw new ApiException(OrderError.INVALID_ORDER);
-        }
+        validateTotalPrice(result.totalItemPrice(), orderList.totalPrice());
 
         orderRepository.save(order);
         orderDetailRepository.saveAll(result.orderDetails());
     }
 
-    private OrderDetailCalculationResult calculateOrderDetails(Map<MarketEntity, List<OrderItem>> itemsByMarket, OrderEntity order, double itemTotalPrice, List<OrderDetailEntity> orderDetails) {
+    private OrderDetailCalculationResult calculateOrderDetails(Map<MarketEntity, List<OrderItem>> itemsByMarket, OrderEntity order) {
+        double itemTotalPrice = 0.0;
+        List<OrderDetailEntity> orderDetails = new ArrayList<>();
+
         for (Map.Entry<MarketEntity, List<OrderItem>> entry : itemsByMarket.entrySet()) {
             MarketEntity market = entry.getKey();
             List<OrderItem> items = entry.getValue();
@@ -101,7 +96,7 @@ public class OrderService {
                 double deliveryFee = isFirstItem? item.deliveryFee(): 0.0;
                 isFirstItem = false;
 
-                double itemPrice = (item.price() + item.optionPrice()) * item.quantity() * (1.0 - item.discountRate()) + deliveryFee;
+                double itemPrice = (item.price() * (1.0 - product.getDiscountRate()) + item.optionPrice()) * item.quantity() + deliveryFee;
 
                 itemTotalPrice += itemPrice;
                 orderDetails.add(OrderDetailEntity.from(item, order, product, market));
@@ -111,5 +106,23 @@ public class OrderService {
                 .orderDetails(orderDetails)
                 .totalItemPrice(itemTotalPrice)
                 .build();
+    }
+
+    private void validateTotalPrice(double totalItemPrice, double orderTotalPrice) {
+        if (totalItemPrice != orderTotalPrice) {
+            throw new ApiException(OrderError.INVALID_ORDER);
+        }
+    }
+
+    private HashMap<MarketEntity, List<OrderItem>> divideOrderListByMarket(OrderCreateRequest orderList) {
+        HashMap<MarketEntity, List<OrderItem>> itemsByMarket = new HashMap<>();
+        for (OrderItem item : orderList.items()) {
+            MarketEntity market = marketRepository.findById(item.marketId())
+                    .orElseThrow(() -> new ApiException(MarketError.MARKET_NOT_FOUND));
+
+            itemsByMarket.computeIfAbsent(market, k -> new ArrayList<>()).add(item);
+        }
+
+        return itemsByMarket;
     }
 }
