@@ -15,7 +15,8 @@ public record MarketDetail(
         boolean liked,
         Long likeCount,
         boolean isTop10,
-        List<String> hashtags
+        List<String> hashtags,
+        MarketProfile profile
 ) {
     public static MarketDetail of(
             MarketEntity market,
@@ -33,7 +34,8 @@ public record MarketDetail(
                 liked,
                 likeCount != null ? likeCount : 0L,
                 isTop10,
-                hashtags
+                hashtags,
+                MarketProfile.from(market)
         );
     }
 }
