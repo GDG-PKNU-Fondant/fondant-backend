@@ -8,6 +8,7 @@ import com.fondant.product.domain.entity.CategoryEntity;
 import com.fondant.test.repository.CategoryTestRepository;
 import com.fondant.test.repository.MarketCategoryTestRepository;
 import com.fondant.test.repository.MarketTestRepository;
+import com.fondant.global.annotation.WithMockCustomUser;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +29,6 @@ import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWit
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
 import static org.springframework.restdocs.request.RequestDocumentation.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -140,6 +140,7 @@ public class MarketRestDocsTest {
     }
 
     @Test
+    @WithMockCustomUser
     void getMarketById() throws Exception {
         MarketEntity market = marketRepository.findAll().get(0);
 
@@ -168,7 +169,11 @@ public class MarketRestDocsTest {
                                 fieldWithPath("liked").description("현재 로그인 유저가 이 마켓을 좋아요 눌렀는지 여부 (현재는 false 고정)"),
                                 fieldWithPath("likeCount").description("좋아요 누적 수"),
                                 fieldWithPath("isTop10").description("카테고리별 인기 마켓 TOP10 여부"),
-                                fieldWithPath("hashtags").description("해시태그 목록 (최대 5개)")
+                                fieldWithPath("hashtags").description("해시태그 목록 (최대 5개)"),
+                                fieldWithPath("location").description("마켓 위치"),
+                                fieldWithPath("businessNumber").description("사업자 번호"),
+                                fieldWithPath("naverLink").description("네이버 링크"),
+                                fieldWithPath("instagramProfile").description("인스타그램 프로필 링크")
                         })));
     }
 
@@ -201,9 +206,10 @@ public class MarketRestDocsTest {
     }
 
     @Test
+    @WithMockCustomUser
     void getTop30MarketsByCategory() throws Exception {
         mockMvc.perform(get(BASE_URL + "/{categoryId}/top30", categoryCookie.getId())
-                .param("page", "0")
+                        .param("page", "0")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andDo(document("markets/get-top30-markets-by-category",
@@ -227,7 +233,11 @@ public class MarketRestDocsTest {
                                 fieldWithPath("markets[].description").description("마켓 한줄 소개"),
                                 fieldWithPath("markets[].thumbnail").description("마켓 썸네일 이미지 URL"),
                                 fieldWithPath("markets[].totalSales").description("총 판매 수량"),
-                                fieldWithPath("markets[].totalReviews").description("총 리뷰 개수")
+                                fieldWithPath("markets[].totalReviews").description("총 리뷰 개수"),
+                                fieldWithPath("location").description("마켓 위치"),
+                                fieldWithPath("businessNumber").description("사업자 번호"),
+                                fieldWithPath("naverLink").description("네이버 링크"),
+                                fieldWithPath("instagramProfile").description("인스타그램 프로필 링크")
                         })));
     }
 
