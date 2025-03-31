@@ -17,4 +17,8 @@ public interface MarketRepositoryCustom {
     Page<MarketEntity> findTop30MarketsByCategory(Long categoryId, Pageable pageable);
 
     boolean isMarketInTop10ByCategory(Long marketId);
+
+    boolean isMarketLikedByUser(Long marketId, Long userId);
+
+    long countLikesByMarket(Long marketId);
 }

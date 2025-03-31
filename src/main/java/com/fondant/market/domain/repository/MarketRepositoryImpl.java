@@ -4,6 +4,7 @@ import com.fondant.global.exception.ApiException;
 import com.fondant.market.domain.entity.MarketEntity;
 import com.fondant.market.domain.entity.QMarketCategoryEntity;
 import com.fondant.market.domain.entity.QMarketEntity;
+import com.fondant.market.domain.entity.QMarketLikeEntity;
 import com.fondant.market.exception.MarketError;
 import com.fondant.product.domain.entity.QCategoryEntity;
 import com.querydsl.core.types.dsl.Expressions;
@@ -202,5 +203,30 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
                 .fetch();
 
         return top10Ids.contains(marketId);
+    }
+
+    @Override
+    public boolean isMarketLikedByUser(Long marketId, Long userId) {
+        QMarketLikeEntity marketLike = QMarketLikeEntity.marketLikeEntity;
+
+        Integer fetchOne = queryFactory
+                .selectOne()
+                .from(marketLike)
+                .where(marketLike.market.id.eq(marketId)
+                        .and(marketLike.user.id.eq(userId)))
+                .fetchFirst();
+
+        return fetchOne != null;
+    }
+
+    @Override
+    public long countLikesByMarket(Long marketId) {
+        QMarketLikeEntity marketLike = QMarketLikeEntity.marketLikeEntity;
+
+        return queryFactory
+                .select(marketLike.count())
+                .from(marketLike)
+                .where(marketLike.market.id.eq(marketId))
+                .fetchOne();
     }
 }
