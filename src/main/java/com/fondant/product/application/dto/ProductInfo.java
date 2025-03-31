@@ -6,10 +6,10 @@ import lombok.Builder;
 public record ProductInfo(
         Long id,
         String name,
-        int price,
+        double price,
         String thumbnailUrl,
         double score,
         double discountRate,
-        int discountPrice
+        double discountPrice
 ) {
 }

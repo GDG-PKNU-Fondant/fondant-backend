@@ -2,7 +2,6 @@ package com.fondant.product.domain.repository;
 
 import com.fondant.market.domain.entity.QMarketEntity;
 import com.fondant.product.domain.entity.ProductEntity;
-import com.fondant.product.domain.entity.QCategoryEntity;
 import com.fondant.product.domain.entity.QProductCategoryEntity;
 import com.fondant.product.domain.entity.QProductEntity;
 import com.querydsl.jpa.impl.JPAQueryFactory;
