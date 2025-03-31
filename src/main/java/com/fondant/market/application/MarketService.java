@@ -46,7 +46,7 @@ public class MarketService {
     }
 
     @Transactional(readOnly = true)
-    public MarketDetail getMarketById(Long marketId) {
+    public MarketDetail getMarketById(Long marketId, Long userId) {
         if (marketId == null || marketId <= 0) {
             throw new ApiException(MarketError.INVALID_MARKET_ID);
         }
@@ -56,7 +56,10 @@ public class MarketService {
 
         List<String> hashtags = marketHashtagRepository.findNamesByMarketId(marketId);
 
-        return convertToDetailDto(market, hashtags);
+        boolean liked = marketRepository.isMarketLikedByUser(marketId, userId);
+        long likeCount = marketRepository.countLikesByMarket(marketId);
+
+        return convertToDetailDto(market, hashtags, liked, likeCount);
     }
 
     @Transactional(readOnly = true)
@@ -117,7 +120,7 @@ public class MarketService {
                 .toList();
     }
 
-    private MarketDetail convertToDetailDto(MarketEntity market, List<String> hashtags) {
+    private MarketDetail convertToDetailDto(MarketEntity market, List<String> hashtags, boolean liked, long likeCount) {
         return MarketDetail.builder()
                 .id(market.getId())
                 .name(market.getName())
@@ -125,7 +128,7 @@ public class MarketService {
                 .thumbnail(market.getThumbnail())
                 .background(market.getBackground())
                 .liked(false)
-                .likeCount(market.getLikeCount() != null ? market.getLikeCount() : 0L)
+                .likeCount(likeCount)
                 .isTop10(false)
                 .hashtags(hashtags)
                 .profile(MarketProfile.builder()
