@@ -55,9 +55,6 @@ public class MarketEntity {
     @Column(name="free_delivery_limit", nullable = false)
     private Long freeDeliveryLimit;
 
-    @Column(name="likeCount")
-    private Long likeCount;
-
     @Column(name = "location")
     private String location;
 
@@ -73,7 +70,7 @@ public class MarketEntity {
     @Builder
     public MarketEntity(String name, Long totalSales, Long totalReviews, LocalDate createAt, LocalDate updateAt,
                         String description, String thumbnail, String background,
-                        Long deliveryFee, Long freeDeliveryLimit, Long likeCount,
+                        Long deliveryFee, Long freeDeliveryLimit,
                         String location, String businessNumber, String naverLink, String instagramProfile) {
         this.name = name;
         this.totalSales = totalSales != null ? totalSales : 0L;
@@ -85,7 +82,6 @@ public class MarketEntity {
         this.background = background;
         this.deliveryFee = deliveryFee != null ? deliveryFee : 0L;
         this.freeDeliveryLimit = freeDeliveryLimit != null ? freeDeliveryLimit : 0L;
-        this.likeCount = likeCount != null ? likeCount : 0L;
         this.location = location;
         this.businessNumber = businessNumber;
         this.naverLink = naverLink;
