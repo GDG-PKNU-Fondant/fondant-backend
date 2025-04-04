@@ -44,11 +44,11 @@ public class ProductEntity {
     private LocalDate startDate;
 
     @NotNull
-    @Column(name="maxCount")
+    @Column(name="max_count")
     private double maxCount;
 
     @NotNull
-    @Column(name="discount rate")
+    @Column(name="discount_rate")
     private double discountRate;
 
     @Builder
