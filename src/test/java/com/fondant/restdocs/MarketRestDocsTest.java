@@ -1,22 +1,32 @@
 package com.fondant.restdocs;
 
+import com.fondant.infra.jwt.application.JWTUtil;
 import com.fondant.market.domain.entity.MarketCategoryEntity;
 import com.fondant.market.domain.entity.MarketEntity;
 import com.fondant.product.domain.entity.CategoryEntity;
 import com.fondant.test.repository.CategoryTestRepository;
 import com.fondant.test.repository.MarketCategoryTestRepository;
 import com.fondant.test.repository.MarketTestRepository;
+import com.fondant.test.repository.UserTestRepository;
+import com.fondant.user.domain.entity.Gender;
+import com.fondant.user.domain.entity.SNSType;
+import com.fondant.user.domain.entity.UserEntity;
+import com.fondant.user.domain.entity.UserRole;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.payload.FieldDescriptor;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.sql.Date;
+import java.time.LocalDate;
 import java.util.Arrays;
 
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
@@ -46,9 +56,17 @@ public class MarketRestDocsTest {
     @Autowired
     private MarketCategoryTestRepository marketCategoryRepository;
 
+    @Autowired
+    private UserTestRepository userRepository;
+
+    @MockitoSpyBean
+    private JWTUtil jwtUtil;
+
     private CategoryEntity categoryCookie;
     private CategoryEntity categoryBread;
     private CategoryEntity categoryBakedGoods;
+    private UserEntity testUser;
+    private String mockToken;
 
     private static final String BASE_URL = "/api/markets";
 
@@ -93,6 +111,23 @@ public class MarketRestDocsTest {
                 marketCount++;
             }
         }
+
+        testUser = userRepository.save(
+                UserEntity.builder()
+                        .snsType(SNSType.NAVER)
+                        .name("test-user")
+                        .phoneNumber("010-0000-0000")
+                        .email("test-user@example.com")
+                        .birth(Date.valueOf(LocalDate.of(2001, 1, 1)))
+                        .nickname("test-user-nickname")
+                        .profileUrl("https://example.com")
+                        .createAt(Date.valueOf(LocalDate.of(2025, 1, 1)).toLocalDate())
+                        .gender(Gender.FEMALE)
+                        .role(UserRole.USER)
+                        .build()
+        );
+
+        mockToken = jwtUtil.generateToken("access", testUser.getId(), "USER", 60 * 10 * 1000L);
     }
 
     public static FieldDescriptor[] commonResponseFields() {
@@ -106,6 +141,7 @@ public class MarketRestDocsTest {
     @Test
     void getMarketsByCategory() throws Exception {
         mockMvc.perform(get(BASE_URL + "/categories/{categoryId}", categoryBread.getId())
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + mockToken)
                         .param("page", "0")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -137,6 +173,7 @@ public class MarketRestDocsTest {
     void getMarketById() throws Exception {
         MarketEntity market = marketRepository.findAll().get(0);
         mockMvc.perform(get(BASE_URL + "/{marketId}", market.getId())
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + mockToken)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andDo(document("markets/get-market-by-id",
@@ -159,6 +196,7 @@ public class MarketRestDocsTest {
     @Test
     void getTop10MarketsByPopularity() throws Exception {
         mockMvc.perform(get(BASE_URL + "/top10")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + mockToken)
                         .param("page", "0")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -187,6 +225,7 @@ public class MarketRestDocsTest {
     @Test
     void getTop30MarketsByCategory() throws Exception {
         mockMvc.perform(get(BASE_URL + "/{categoryId}/top30", categoryCookie.getId())
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + mockToken)
                 .param("page", "0")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -218,6 +257,7 @@ public class MarketRestDocsTest {
     @Test
     void getRandomTop5MarketsByCategory() throws Exception {
         mockMvc.perform(get(BASE_URL + "/{categoryId}/top5", categoryCookie.getId())
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + mockToken)
                         .param("page", "0")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())

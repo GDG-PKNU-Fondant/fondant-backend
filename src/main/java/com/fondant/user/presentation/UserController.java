@@ -44,13 +44,13 @@ public class UserController {
     public ResponseEntity<ResponseDto<Void>> verifyOne(@RequestBody SmsVerifyRequest request){
         smsVerificationService.verifyCode(request.phoneNumber(), request.code());
 
-    @GetMapping("")
+    @GetMapping("/")
     public ResponseEntity<ResponseDto<UserResponse>> getUserInfo(@CurrentUser CustomUserDetails user) {
         return ResponseEntity.ok(ResponseDto.ofSuccess(SuccessMessage.OPERATION_SUCCESS,
                 userService.getUserInfo(user.getUserId())));
     }
 
-    @PatchMapping("")
+    @PatchMapping("/")
     public ResponseEntity<ResponseDto<Void>> updateUserInfo(@CurrentUser CustomUserDetails user, @RequestBody UserUpdateRequest request) {
         userService.updateUserInfo(user.getUserId(), request);
         return ResponseEntity.ok(ResponseDto.ofSuccess(SuccessMessage.OPERATION_SUCCESS));
