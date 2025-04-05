@@ -30,6 +30,13 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
         this.queryFactory = queryFactory;
     }
 
+    private NumberExpression<Double> calculatePopularityScore(QMarketEntity market) {
+        return market.totalSales
+                .coalesce(0L).castToNum(Double.class)
+                .add(market.totalReviews.coalesce(0L).castToNum(Double.class).multiply(2.0))
+                .add(Expressions.numberTemplate(Double.class, "GREATEST(0, {0})", 100));
+    }
+
     @Override
     public Page<MarketEntity> findMarketsByCategory(Long categoryId, Pageable pageable) {
         QMarketEntity market = QMarketEntity.marketEntity;
@@ -61,10 +68,7 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
     public Page<MarketEntity> findTop10MarketsByPopularity(Pageable pageable) {
         QMarketEntity market = QMarketEntity.marketEntity;
 
-        NumberExpression<Double> popularityScore = market.totalSales
-                .coalesce(0L).castToNum(Double.class)
-                .add(market.totalReviews.coalesce(0L).castToNum(Double.class).multiply(2.0))
-                .add(Expressions.numberTemplate(Double.class, "GREATEST(0, {0})", 100));
+        NumberExpression<Double> popularityScore = calculatePopularityScore(market);
 
         List<MarketEntity> markets = queryFactory
                 .selectFrom(market)
@@ -85,11 +89,7 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
         QMarketEntity market = QMarketEntity.marketEntity;
         QMarketCategoryEntity marketCategory = QMarketCategoryEntity.marketCategoryEntity;
         QCategoryEntity category = QCategoryEntity.categoryEntity;
-
-        NumberExpression<Double> popularityScore = market.totalSales
-                .coalesce(0L).castToNum(Double.class)
-                .add(market.totalReviews.coalesce(0L).castToNum(Double.class).multiply(2.0))
-                .add(Expressions.numberTemplate(Double.class, "GREATEST(0, {0})", 100));
+        NumberExpression<Double> popularityScore = calculatePopularityScore(market);
 
         JPQLQuery<Long> subQuery = JPAExpressions
                 .select(market.id)
@@ -119,10 +119,7 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
         QMarketCategoryEntity marketCategory = QMarketCategoryEntity.marketCategoryEntity;
         QCategoryEntity category = QCategoryEntity.categoryEntity;
 
-        NumberExpression<Double> popularityScore = market.totalSales
-                .coalesce(0L).castToNum(Double.class)
-                .add(market.totalReviews.coalesce(0L).castToNum(Double.class).multiply(2.0))
-                .add(Expressions.numberTemplate(Double.class, "GREATEST(0, {0})", 100));
+        NumberExpression<Double> popularityScore = calculatePopularityScore(market);
 
         List<MarketEntity> top30Markets = queryFactory
                 .select(market)

@@ -1,0 +1,61 @@
+= API 문서
+Fondant Backend Team
+2025-02-16
+:toc: left
+:toclevels: 2
+:source-highlighter: highlightjs
+:sectlinks:
+
+== SMS Verification API
+
+=== 1. SMS 전송
+
+==== HTTP Request
+
+include::{snippets}/user/send-SMS/http-request.adoc[]
+
+==== Request Header
+
+include::{snippets}/user/send-SMS/request-headers.adoc[]
+
+==== Request Body
+
+include::{snippets}/user/send-SMS/request-body.adoc[]
+
+==== Request Field
+
+include::{snippets}/user/send-SMS/request-fields.adoc[]
+
+==== HTTP Response
+
+include::{snippets}/user/send-SMS/http-response.adoc[]
+
+==== Response Field
+
+include::{snippets}/user/send-SMS/response-fields.adoc[]
+
+=== 2. SMS Code 인증
+
+==== HTTP Request
+
+include::{snippets}/user/verify-SMS/http-request.adoc[]
+
+==== Request Header
+
+include::{snippets}/user/verify-SMS/request-headers.adoc[]
+
+==== Request Body
+
+include::{snippets}/user/verify-SMS/request-body.adoc[]
+
+==== Request Field
+
+include::{snippets}/user/verify-SMS/request-fields.adoc[]
+
+==== HTTP Response
+
+include::{snippets}/user/verify-SMS/http-response.adoc[]
+
+==== Response Field
+
+include::{snippets}/user/verify-SMS/response-fields.adoc[]
