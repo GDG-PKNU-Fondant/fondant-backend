@@ -1,5 +1,6 @@
 package com.fondant.product.presentation.dto.response;
 
+import com.fondant.market.application.dto.MarketInfo;
 import com.fondant.product.application.dto.ImageInfo;
 import com.fondant.product.application.dto.OptionInfo;
 import lombok.Builder;
@@ -13,6 +14,7 @@ public record ProductDetailResponse(
         List<OptionInfo> options,
         String description,
         List<ImageInfo> detailPages,
+        MarketInfo marketInfo,
         int basePrice
 ) {
 }
