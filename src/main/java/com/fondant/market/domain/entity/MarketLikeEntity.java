@@ -23,7 +23,9 @@ public class MarketLikeEntity {
     @JoinColumn(name = "market_id", nullable = false)
     private MarketEntity market;
 
-    @Builder public MarketLikeEntity(UserEntity user, MarketEntity market) {
+    @Builder
+    public MarketLikeEntity(UserEntity user, MarketEntity market) {
         this.user = user;
+        this.market = market;
     }
 }
