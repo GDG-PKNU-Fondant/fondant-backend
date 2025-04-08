@@ -3,6 +3,7 @@ package com.fondant.restdocs;
 
 import com.fondant.infra.jwt.application.JWTUtil;
 import com.fondant.market.domain.entity.MarketEntity;
+import com.fondant.product.category.domain.CategoryEntity;
 import com.fondant.product.domain.entity.*;
 import com.fondant.product.domain.repository.OptionRepository;
 import com.fondant.product.domain.repository.ProductImageRepository;
@@ -102,9 +103,29 @@ public class ProductRestDocsTest {
                 .name("초콜릿")
                 .build());
 
+        category1.addChild(CategoryEntity.builder()
+                .name("화이트초콜릿")
+                .build());
+
+        category1.addChild(CategoryEntity.builder()
+                .name("다크초콜릿")
+                .build());
+
+        categoryRepository.save(category1);
+
         category2 = categoryRepository.save(CategoryEntity.builder()
                 .name("쿠키")
                 .build());
+
+        category2.addChild(CategoryEntity.builder()
+                .name("르벵쿠키")
+                .build());
+
+        category2.addChild(CategoryEntity.builder()
+                .name("비건쿠키")
+                .build());
+
+        categoryRepository.save(category2);
 
         product1 = productRepository.save(ProductEntity.builder()
                 .name("두바이 초콜릿")
@@ -128,7 +149,7 @@ public class ProductRestDocsTest {
 
         categoryProduct1 = productCategoryRepository.save(ProductCategoryEntity.builder()
                 .product(product1)
-                .category(category1)
+                .category(category1.getChildren().get(1))
                 .build());
 
         productImage1 = productImageRepository.save(ProductImageEntity.builder()
