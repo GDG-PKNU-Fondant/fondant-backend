@@ -1,7 +1,9 @@
 package com.fondant.restdocs;
 
 
+import com.fondant.infra.jwt.application.JWTUtil;
 import com.fondant.market.domain.entity.MarketEntity;
+import com.fondant.product.category.domain.CategoryEntity;
 import com.fondant.product.domain.entity.*;
 import com.fondant.product.domain.repository.OptionRepository;
 import com.fondant.product.domain.repository.ProductImageRepository;
@@ -9,17 +11,25 @@ import com.fondant.product.domain.repository.ProductRepository;
 import com.fondant.test.repository.CategoryTestRepository;
 import com.fondant.test.repository.MarketTestRepository;
 import com.fondant.test.repository.ProductCategoryTestRepository;
+import com.fondant.test.repository.UserTestRepository;
+import com.fondant.user.domain.entity.Gender;
+import com.fondant.user.domain.entity.SNSType;
+import com.fondant.user.domain.entity.UserEntity;
+import com.fondant.user.domain.entity.UserRole;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.payload.FieldDescriptor;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.Date;
 import java.time.LocalDate;
 
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
@@ -57,6 +67,12 @@ public class ProductRestDocsTest {
     @Autowired
     private OptionRepository optionRepository;
 
+    @Autowired
+    private UserTestRepository userRepository;
+
+    @MockitoSpyBean
+    private JWTUtil jwtUtil;
+
     private MarketEntity market;
     private CategoryEntity category1;
     private CategoryEntity category2;
@@ -68,6 +84,8 @@ public class ProductRestDocsTest {
     private ProductImageEntity productImage2;
     private ProductImageEntity productDetail1;
     private OptionEntity option1;
+    private UserEntity testUser;
+    private String mockToken;
 
     private static final String BASE_URL = "/api/product";
 
@@ -85,9 +103,29 @@ public class ProductRestDocsTest {
                 .name("초콜릿")
                 .build());
 
+        category1.addChild(CategoryEntity.builder()
+                .name("화이트초콜릿")
+                .build());
+
+        category1.addChild(CategoryEntity.builder()
+                .name("다크초콜릿")
+                .build());
+
+        categoryRepository.save(category1);
+
         category2 = categoryRepository.save(CategoryEntity.builder()
                 .name("쿠키")
                 .build());
+
+        category2.addChild(CategoryEntity.builder()
+                .name("르벵쿠키")
+                .build());
+
+        category2.addChild(CategoryEntity.builder()
+                .name("비건쿠키")
+                .build());
+
+        categoryRepository.save(category2);
 
         product1 = productRepository.save(ProductEntity.builder()
                 .name("두바이 초콜릿")
@@ -111,7 +149,7 @@ public class ProductRestDocsTest {
 
         categoryProduct1 = productCategoryRepository.save(ProductCategoryEntity.builder()
                 .product(product1)
-                .category(category1)
+                .category(category1.getChildren().get(1))
                 .build());
 
         productImage1 = productImageRepository.save(ProductImageEntity.builder()
@@ -141,6 +179,24 @@ public class ProductRestDocsTest {
                  .productId(product1.getId())
                  .price(20000)
                  .build());
+
+        testUser = userRepository.save(
+                UserEntity.builder()
+                        .snsType(SNSType.NAVER)
+                        .name("test-user")
+                        .phoneNumber("010-0000-0000")
+                        .email("test-user@example.com")
+                        .birth(Date.valueOf(LocalDate.of(2001, 1, 1)))
+                        .nickname("test-user-nickname")
+                        .profileUrl("https://example.com")
+                        .createAt(Date.valueOf(LocalDate.of(2025, 1, 1)).toLocalDate())
+                        .gender(Gender.FEMALE)
+                        .role(UserRole.USER)
+                        .build()
+        );
+
+        mockToken = jwtUtil.generateToken("access", testUser.getId(), "USER", 60 * 10 * 1000L);
+
     }
 
     public static FieldDescriptor[] commonResponseFields() {
@@ -154,6 +210,7 @@ public class ProductRestDocsTest {
     @Test
     void getProductsByMarketAndCategory() throws Exception {
         mockMvc.perform(get(BASE_URL + "/{marketId}/{categoryId}", market.getId(), category1.getId())
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + mockToken)
                         .param("page", "0")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -186,7 +243,8 @@ public class ProductRestDocsTest {
     @Test
     void getProductDetails() throws Exception {
         mockMvc.perform(get(BASE_URL + "/{productId}", product1.getId())
-                        .contentType(MediaType.APPLICATION_JSON))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + mockToken))
                 .andExpect(status().isOk())
                 .andDo(document("products/get-product-details",
                         preprocessRequest(prettyPrint()),

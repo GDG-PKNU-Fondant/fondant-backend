@@ -7,10 +7,7 @@ import com.fondant.test.repository.UserTestRepository;
 import com.fondant.global.annotation.WithMockCustomUser;
 import com.fondant.user.application.UserService;
 import com.fondant.user.application.dto.CustomUserDetails;
-import com.fondant.user.domain.entity.DeliveryAddressEntity;
-import com.fondant.user.domain.entity.Gender;
-import com.fondant.user.domain.entity.UserEntity;
-import com.fondant.user.domain.entity.UserRole;
+import com.fondant.user.domain.entity.*;
 import com.fondant.user.presentation.dto.request.DeliveryAddressAddRequest;
 import com.fondant.user.presentation.dto.request.DeliveryAddressUpdateRequest;
 import com.fondant.user.presentation.dto.request.UserUpdateRequest;
@@ -30,6 +27,7 @@ import org.springframework.http.MediaType;
 import org.springframework.restdocs.payload.FieldDescriptor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.annotation.Rollback;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -43,6 +41,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.sql.Date;
+import java.time.LocalDate;
 import java.util.List;
 
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
@@ -69,6 +68,7 @@ public class UserRestDocsTest {
     @Autowired
     private UserTestRepository userRepository;
 
+    @MockitoSpyBean
     @Autowired
     private JWTUtil jwtUtil;
 
@@ -87,6 +87,8 @@ public class UserRestDocsTest {
 
     private DeliveryAddressAddRequest address1;
     private DeliveryAddressAddRequest address2;
+    private String mockToken;
+    private UserEntity testUser;
 
     @BeforeEach
     public void setUp() {
@@ -108,13 +110,30 @@ public class UserRestDocsTest {
                 .receiverPhoneNumber("010-9876-5432")
                 .isPrimary(false)
                 .build();
+
+        testUser = userRepository.save(
+                UserEntity.builder()
+                        .snsType(SNSType.NAVER)
+                        .name("test-user")
+                        .phoneNumber("010-0000-0000")
+                        .email("test-user@example.com")
+                        .birth(Date.valueOf(LocalDate.of(2001, 1, 1)))
+                        .nickname("test-user-nickname")
+                        .profileUrl("https://example.com")
+                        .createAt(Date.valueOf(LocalDate.of(2025, 1, 1)).toLocalDate())
+                        .gender(Gender.FEMALE)
+                        .role(UserRole.USER)
+                        .build()
+        );
+
+        mockToken = jwtUtil.generateToken("access", testUser.getId(), "USER", 60 * 10 * 1000L);
     }
 
     @Test
     @WithMockCustomUser
     void getUserInfo() throws Exception {
-
-        mockMvc.perform(get(BASE_URL + "/"))
+        mockMvc.perform(get(BASE_URL + "/")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + mockToken))
                 .andExpect(status().isOk())
                 .andDo(document("user/get-user-info",
                 preprocessRequest(prettyPrint()),
@@ -158,6 +177,7 @@ public class UserRestDocsTest {
                 .build();
 
         mockMvc.perform(patch(BASE_URL + "/")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + mockToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())

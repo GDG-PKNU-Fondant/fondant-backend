@@ -74,7 +74,7 @@ public class OAuth2RestDocsTest {
         mockMvc.perform(post(BASE_URL + "/reissue")
                         .cookie(cookie))
                 .andExpect(status().isOk())
-                .andDo(document("/user/reissue-access-and-refresh-token",
+                .andDo(document("user/reissue-access-and-refresh-token",
                         preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint()),
                         requestCookies(

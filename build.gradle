@@ -71,6 +71,9 @@ dependencies {
 	annotationProcessor "jakarta.annotation:jakarta.annotation-api"
 
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+	//COOLSMS
+	implementation 'net.nurigo:sdk:4.3.2'
 }
 
 
