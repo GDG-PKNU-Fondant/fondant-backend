@@ -6,13 +6,15 @@ import lombok.Builder;
 public record MarketProfile (
     String businessNumber,
     String instagramProfile,
-    String location
+    Double latitude,
+    Double longitude
 ) {
     public static MarketProfile from(MarketEntity market) {
         return MarketProfile.builder()
                 .businessNumber(market.getBusinessNumber())
                 .instagramProfile(market.getInstagramProfile())
-                .location(market.getLocation())
+                .latitude(market.getLatitude())
+                .longitude(market.getLongitude())
                 .build();
     }
 }

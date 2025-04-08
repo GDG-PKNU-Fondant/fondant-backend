@@ -109,7 +109,6 @@ public class MarketRestDocsTest {
                         .totalReviews(10L * marketCount)
                         .businessNumber("123-45-67890")
                         .instagramProfile("https://instagram.com/market" + marketCount)
-                        .location("지구 어딘가")
                         .build());
 
                 marketCategoryRepository.save(MarketCategoryEntity.builder()
@@ -195,7 +194,8 @@ public class MarketRestDocsTest {
                         }).andWithPrefix("response.profile.", new FieldDescriptor[]{
                                 fieldWithPath("businessNumber").description("사업자 등록번호"),
                                 fieldWithPath("instagramProfile").description("인스타그램 프로필 링크"),
-                                fieldWithPath("location").description("마켓 위치 주소")
+                                fieldWithPath("latitude").description("마켓 위치 위도"),
+                                fieldWithPath("longitude").description("마켓 위치 경도")
                         })));
     }
 

@@ -134,7 +134,8 @@ public class MarketService {
                 .profile(MarketProfile.builder()
                         .businessNumber(market.getBusinessNumber())
                         .instagramProfile(market.getInstagramProfile())
-                        .location(market.getLocation())
+                        .latitude(market.getLatitude())
+                        .longitude(market.getLongitude())
                         .build())
                 .build();
     }
