@@ -5,7 +5,9 @@ import com.fondant.global.dto.PageInfo;
 import com.fondant.global.exception.ApiException;
 import com.fondant.market.application.dto.MarketDetail;
 import com.fondant.market.application.dto.MarketInfo;
+import com.fondant.market.application.dto.MarketProfile;
 import com.fondant.market.domain.entity.MarketEntity;
+import com.fondant.market.domain.repository.MarketHashtagRepository;
 import com.fondant.market.domain.repository.MarketRepository;
 import com.fondant.market.exception.MarketError;
 import com.fondant.market.presentation.dto.response.MarketsResponse;
@@ -21,6 +23,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class MarketService {
     private final MarketRepository marketRepository;
+    private final MarketHashtagRepository marketHashtagRepository;
     private final PageConfig pageConfig;
 
     @Transactional(readOnly = true)
@@ -43,7 +46,7 @@ public class MarketService {
     }
 
     @Transactional(readOnly = true)
-    public MarketDetail getMarketById(Long marketId) {
+    public MarketDetail getMarketById(Long marketId, Long userId) {
         if (marketId == null || marketId <= 0) {
             throw new ApiException(MarketError.INVALID_MARKET_ID);
         }
@@ -51,7 +54,12 @@ public class MarketService {
         MarketEntity market = marketRepository.findById(marketId)
                 .orElseThrow(() -> new ApiException(MarketError.MARKET_NOT_FOUND));
 
-        return convertToDetailDto(market);
+        List<String> hashtags = marketHashtagRepository.findNamesByMarketId(marketId);
+
+        boolean liked = marketRepository.isMarketLikedByUser(marketId, userId);
+        long likeCount = marketRepository.countLikesByMarket(marketId);
+
+        return convertToDetailDto(market, hashtags, liked, likeCount);
     }
 
     @Transactional(readOnly = true)
@@ -112,13 +120,23 @@ public class MarketService {
                 .toList();
     }
 
-    private MarketDetail convertToDetailDto(MarketEntity market) {
+    private MarketDetail convertToDetailDto(MarketEntity market, List<String> hashtags, boolean liked, long likeCount) {
         return MarketDetail.builder()
                 .id(market.getId())
                 .name(market.getName())
                 .description(market.getDescription())
                 .thumbnail(market.getThumbnail())
                 .background(market.getBackground())
+                .liked(false)
+                .likeCount(likeCount)
+                .isTop10(false)
+                .hashtags(hashtags)
+                .profile(MarketProfile.builder()
+                        .businessNumber(market.getBusinessNumber())
+                        .instagramProfile(market.getInstagramProfile())
+                        .latitude(market.getLatitude())
+                        .longitude(market.getLongitude())
+                        .build())
                 .build();
     }
 

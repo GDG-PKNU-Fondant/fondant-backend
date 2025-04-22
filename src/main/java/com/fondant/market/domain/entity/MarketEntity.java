@@ -55,9 +55,27 @@ public class MarketEntity {
     @Column(name="free_delivery_limit", nullable = false)
     private Long freeDeliveryLimit;
 
+    @Column(name = "latitude")
+    private Double latitude;
+
+    @Column(name = "longitude")
+    private Double longitude;
+
+    @Column(name = "business_number")
+    private String businessNumber;
+
+    @Column(name = "naver_link")
+    private String naverLink;
+
+    @Column(name = "instagram_profile")
+    private String instagramProfile;
+
     @Builder
     public MarketEntity(String name, Long totalSales, Long totalReviews, LocalDate createAt, LocalDate updateAt,
-                        String description, String thumbnail, String background, Long deliveryFee, Long freeDeliveryLimit) {
+                        String description, String thumbnail, String background,
+                        Long deliveryFee, Long freeDeliveryLimit,
+                        Double latitude, Double longitude,
+                        String businessNumber, String naverLink, String instagramProfile) {
         this.name = name;
         this.totalSales = totalSales != null ? totalSales : 0L;
         this.totalReviews = totalReviews != null ? totalReviews : 0L;
@@ -68,6 +86,11 @@ public class MarketEntity {
         this.background = background;
         this.deliveryFee = deliveryFee != null ? deliveryFee : 0L;
         this.freeDeliveryLimit = freeDeliveryLimit != null ? freeDeliveryLimit : 0L;
+        this.latitude = latitude;
+        this.longitude = longitude;
+        this.businessNumber = businessNumber;
+        this.naverLink = naverLink;
+        this.instagramProfile = instagramProfile;
     }
 
 }
