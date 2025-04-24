@@ -286,6 +286,7 @@ public class ProductRestDocsTest {
                                 fieldWithPath("marketInfo.thumbnail").description("마켓 썸네일 이미지 URL"),
                                 fieldWithPath("marketInfo.totalSales").description("총 판매 수량"),
                                 fieldWithPath("marketInfo.totalReviews").description("총 리뷰 개수"),
+                                fieldWithPath("marketInfo.freeDeliveryLimit").description("무료배송 기준"),
                                 fieldWithPath("basePrice").description("상품 기본 가격 (옵션 가격 추가 전)"),
                         })));
     }
