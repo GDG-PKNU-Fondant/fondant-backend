@@ -1,9 +1,10 @@
 package com.fondant.product.category.application;
 
+import com.fondant.product.category.application.dto.CategoryDetailsInfo;
+import com.fondant.product.category.application.dto.MainCategoryInfo;
 import com.fondant.product.category.domain.CategoryEntity;
 import com.fondant.product.category.domain.repository.CategoryRepository;
 import com.fondant.product.category.application.dto.CategoryInfo;
-import com.fondant.product.category.application.dto.MainCategoryInfo;
 import com.fondant.product.category.presentation.dto.response.CategoriesResponse;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
@@ -20,18 +21,19 @@ public class CategoryService {
     }
 
     @Transactional
-    public CategoriesResponse<MainCategoryInfo> getAllCategories(){
+    public CategoriesResponse<CategoryDetailsInfo> getAllCategories(){
         List<CategoryEntity> categories = categoryRepository.findAllByChildrenIsNotNull();
 
         return CategoriesResponse.of(categories.stream()
-                .map(this::toMainCategoryInfo)
+                .map(this::toCategoryDetailsInfo)
                 .toList());
     }
 
-    public MainCategoryInfo toMainCategoryInfo(CategoryEntity category) {
-        return MainCategoryInfo.builder()
+    public CategoryDetailsInfo toCategoryDetailsInfo(CategoryEntity category) {
+        return CategoryDetailsInfo.builder()
                 .id(category.getId())
                 .name(category.getName())
+                .iconUrl(category.getIconUrl())
                 .subCategories(
                         category.getChildren().stream()
                                 .map(this::toCategoryInfo)
@@ -47,12 +49,20 @@ public class CategoryService {
     }
 
     @Transactional
-    public CategoriesResponse<CategoryInfo> getAllMainCategories(){
+    public CategoriesResponse<MainCategoryInfo> getAllMainCategories(){
         List<CategoryEntity> categories = categoryRepository.findAllByChildrenIsNotNull();
 
         return CategoriesResponse.of(categories.stream()
-                .map(this::toCategoryInfo)
+                .map(this::toMainCategoryInfo)
                 .toList());
+    }
+
+    public MainCategoryInfo toMainCategoryInfo(CategoryEntity category) {
+        return new MainCategoryInfo(
+                category.getId(),
+                category.getName(),
+                category.getIconUrl()
+        );
     }
 
     private List<Long> getAllChildren(Long parentId) {

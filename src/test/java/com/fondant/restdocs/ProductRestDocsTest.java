@@ -108,6 +108,7 @@ public class ProductRestDocsTest {
 
         category1 = categoryRepository.save(CategoryEntity.builder()
                 .name("초콜릿")
+                .iconUrl("domain/icon-url/chocolate")
                 .build());
 
         category1.addChild(CategoryEntity.builder()
@@ -122,6 +123,7 @@ public class ProductRestDocsTest {
 
         category2 = categoryRepository.save(CategoryEntity.builder()
                 .name("쿠키")
+                .iconUrl("domain/icon-url/cookie")
                 .build());
 
         category2.addChild(CategoryEntity.builder()
