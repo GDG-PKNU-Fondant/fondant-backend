@@ -5,10 +5,7 @@ import com.fondant.global.exception.ApiException;
 import com.fondant.market.application.MarketService;
 import com.fondant.market.application.dto.MarketInfoForProductDetail;
 import com.fondant.market.domain.entity.MarketEntity;
-import com.fondant.product.application.dto.FilterInfo;
-import com.fondant.product.application.dto.ImageInfo;
-import com.fondant.product.application.dto.OptionInfo;
-import com.fondant.product.application.dto.ProductInfo;
+import com.fondant.product.application.dto.*;
 import com.fondant.product.category.application.CategoryService;
 import com.fondant.product.domain.entity.ImageType;
 import com.fondant.product.domain.entity.OptionEntity;
@@ -27,6 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class ProductService {
@@ -135,8 +133,8 @@ public class ProductService {
     }
 
     @Transactional(readOnly = true)
-    public ProductsResponse getFilteredProducts(FilterInfo filterInfo,Pageable pageable) {
-        Page<ProductEntity> products = productRepository.findFilteredProducts(filterInfo,pageable);
+    public ProductsResponse getFilteredProducts(FilterInfo filterInfo, Pageable pageable, Optional<SortType> sortType) {
+        Page<ProductEntity> products = productRepository.findFilteredProducts(filterInfo,pageable,sortType);
 
         if(products.isEmpty()){
             throw new ApiException(ProductError.NO_PRODUCTS_FOUND);
