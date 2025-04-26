@@ -48,3 +48,41 @@ include::{snippets}/products/get-product-details/http-response.adoc[]
 
 include::{snippets}/products/get-product-details/response-fields.adoc[]
 
+=== 3. 상품 필터링 개수 조회
+
+==== HTTP request
+
+include::{snippets}/products/get-filtered-product-count/http-request.adoc[]
+
+==== Path Parameters
+
+include::{snippets}/products/get-filtered-product-count/query-parameters.adoc[]
+
+
+==== HTTP response
+
+include::{snippets}/products/get-filtered-product-count/http-response.adoc[]
+
+==== response body
+
+include::{snippets}/products/get-filtered-product-count/response-fields.adoc[]
+
+=== 4. 상품 필터링 후 상품 목록 조회
+
+==== HTTP request
+
+include::{snippets}/products/get-filtered-products/http-request.adoc[]
+
+==== Path Parameters
+
+include::{snippets}/products/get-filtered-products/query-parameters.adoc[]
+
+
+==== HTTP response
+
+include::{snippets}/products/get-filtered-products/http-response.adoc[]
+
+==== response body
+
+include::{snippets}/products/get-filtered-products/response-fields.adoc[]
+

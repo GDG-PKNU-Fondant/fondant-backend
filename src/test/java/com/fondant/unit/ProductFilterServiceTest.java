@@ -10,11 +10,14 @@ import com.fondant.product.domain.entity.ProductCategoryEntity;
 import com.fondant.product.domain.entity.ProductEntity;
 import com.fondant.product.domain.repository.ProductCategoryRepository;
 import com.fondant.product.domain.repository.ProductRepository;
+import com.fondant.product.presentation.dto.response.ProductsResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
@@ -227,6 +230,34 @@ public class ProductFilterServiceTest{
 
         // then
         assertThat(count).isEqualTo(1L);
+    }
+
+    @Test
+    @DisplayName("가격 + 포장타입 + 혜택 + 카테고리 조건 조합으로 상품 조회 테스트")
+    void getFilteredProducts_withMultipleConditions_success() {
+        // given
+        FilterInfo filterInfo = new FilterInfo(
+                Optional.of(10000.0),
+                Optional.of(13000.0),
+                List.of(category1.getId()),
+                List.of("box"),
+                List.of("free_shipping")
+        );
+
+        Pageable pageable = PageRequest.of(0, 10);
+
+        // when
+        ProductsResponse response = productFilterService.getFilteredProducts(filterInfo, pageable);
+
+        // then
+        assertThat(response.pageInfo()).isNotNull();
+        assertThat(response.pageInfo().currentPage()).isEqualTo(0);
+        assertThat(response.pageInfo().totalPage()).isEqualTo(1);
+
+        assertThat(response.products().size()).isEqualTo(1);
+        assertThat(response.products().get(0).name()).isEqualTo("다크초콜릿 바");
+
+
     }
 
 }
