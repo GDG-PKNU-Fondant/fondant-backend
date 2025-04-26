@@ -1,16 +1,18 @@
 package com.fondant.product.domain.repository;
 
-import com.fondant.global.config.PageConfig;
-import com.fondant.market.domain.entity.QMarketEntity;
+import com.fondant.product.application.dto.FilterInfo;
 import com.fondant.product.category.domain.QCategoryEntity;
 import com.fondant.product.domain.entity.ProductEntity;
 import com.fondant.product.domain.entity.QProductCategoryEntity;
 import com.fondant.product.domain.entity.QProductEntity;
+import com.querydsl.core.BooleanBuilder;
+import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class ProductRepositoryImpl implements ProductRepositoryCustom {
@@ -80,5 +82,79 @@ public class ProductRepositoryImpl implements ProductRepositoryCustom {
                 )
                 .fetchOne();
     }
+
+    @Override
+    public Long countProductsByFilter(FilterInfo filterInfo) {
+        QProductEntity product = QProductEntity.productEntity;
+        QProductCategoryEntity productCategory = QProductCategoryEntity.productCategoryEntity;
+        QCategoryEntity category = QCategoryEntity.categoryEntity;
+
+        BooleanBuilder builder = buildProductConditions(filterInfo, product);
+
+        JPAQuery<Long> query = queryFactory
+                .select(product.id.countDistinct())
+                .from(product)
+                .join(productCategory).on(product.id.eq(productCategory.product.id))
+                .join(category).on(productCategory.category.id.eq(category.id))
+                .where(builder)
+                .where(buildCategoryCondition(filterInfo, category));
+
+        return query.fetchOne();
+    }
+
+    private BooleanBuilder buildProductConditions(FilterInfo filterInfo, QProductEntity product) {
+        BooleanBuilder builder = new BooleanBuilder();
+
+        filterInfo.startPrice().ifPresent(start -> builder.and(product.price.goe(start)));
+        filterInfo.endPrice().ifPresent(end -> builder.and(product.price.loe(end)));
+
+        // 사용 예정 : packingType 및 coupon 도메인 추가 필요
+        /*
+        if (filterInfo.packingTypes() != null && !filterInfo.packingTypes().isEmpty()) {
+            builder.and(product.packagingType.in(filterInfo.packingTypes()));
+        }
+
+        if (filterInfo.benefitTypes() != null && !filterInfo.benefitTypes().isEmpty()) {
+            builder.and(product.benefit.in(filterInfo.benefitTypes()));
+        }
+        */
+
+        return builder;
+    }
+
+    private BooleanBuilder buildCategoryCondition(FilterInfo filterInfo, QCategoryEntity category) {
+        BooleanBuilder builder = new BooleanBuilder();
+
+        if (filterInfo.categoryIds() != null && !filterInfo.categoryIds().isEmpty()) {
+            List<Long> resolvedIds = resolveCategoryIds(filterInfo.categoryIds());
+
+            if (!resolvedIds.isEmpty()) {
+                builder.and(category.id.in(resolvedIds));
+            }
+        }
+
+        return builder;
+    }
+
+    private List<Long> resolveCategoryIds(List<Long> categoryIds) {
+        if (categoryIds == null || categoryIds.isEmpty()) {
+            return List.of();
+        }
+
+        List<Long> allSubCategoryIds = new ArrayList<>();
+
+        for (Long id : categoryIds) {
+            List<Long> subIds = findSubCategoryIdsByMainCategory(id);
+
+            if (subIds.isEmpty()) {
+                allSubCategoryIds.add(id);
+            } else {
+                allSubCategoryIds.addAll(subIds);
+            }
+        }
+
+        return allSubCategoryIds;
+    }
+
 }
 
