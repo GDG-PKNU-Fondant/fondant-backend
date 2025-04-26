@@ -4,6 +4,7 @@ import com.fondant.market.domain.entity.MarketEntity;
 import com.fondant.market.domain.repository.MarketRepository;
 import com.fondant.product.application.ProductService;
 import com.fondant.product.application.dto.FilterInfo;
+import com.fondant.product.application.dto.SortType;
 import com.fondant.product.category.domain.CategoryEntity;
 import com.fondant.product.category.domain.repository.CategoryRepository;
 import com.fondant.product.domain.entity.ProductCategoryEntity;
@@ -50,6 +51,7 @@ public class ProductFilterServiceTest{
     private CategoryEntity category2;
     private ProductEntity product1;
     private ProductEntity product2;
+    private ProductEntity product3;
 
     @BeforeEach
     void setUp() {
@@ -245,9 +247,10 @@ public class ProductFilterServiceTest{
         );
 
         Pageable pageable = PageRequest.of(0, 10);
+        SortType sortType = SortType.REVIEW;
 
         // when
-        ProductsResponse response = productFilterService.getFilteredProducts(filterInfo, pageable);
+        ProductsResponse response = productFilterService.getFilteredProducts(filterInfo, pageable,Optional.of(sortType));
 
         // then
         assertThat(response.pageInfo()).isNotNull();
@@ -257,7 +260,64 @@ public class ProductFilterServiceTest{
         assertThat(response.products().size()).isEqualTo(1);
         assertThat(response.products().get(0).name()).isEqualTo("다크초콜릿 바");
 
-
     }
+
+    @Test
+    @DisplayName("가격 낮은순 정렬 테스트")
+    void getFilteredProducts_sortByPriceAsc_success() {
+        // given
+        product3 = createProduct("비건 쿠키", 15000, "bag", "discount", market);
+        linkProductToSubCategory(product3, category2.getChildren().get(1));
+
+        FilterInfo filterInfo = new FilterInfo(
+                Optional.empty(),
+                Optional.empty(),
+                List.of(),
+                List.of(),
+                List.of()
+        );
+
+        Pageable pageable = PageRequest.of(0, 10);
+
+        // when
+        ProductsResponse response = productFilterService.getFilteredProducts(filterInfo, pageable,Optional.of(SortType.PRICE_ASC));
+
+        // then
+        assertThat(response.products().get(0).name()).isEqualTo("르뱅 쿠키");
+        assertThat(response.products().get(1).name()).isEqualTo("다크초콜릿 바");
+        assertThat(response.products().get(2).name()).isEqualTo("비건 쿠키");
+    }
+
+    @Test
+    @DisplayName("할인율 높은순 정렬 테스트")
+    void getFilteredProducts_sortByDiscount_success() {
+        // given
+        product3 = createProduct("비건 쿠키", 15000, "bag", "discount", market);
+        linkProductToSubCategory(product3, category2.getChildren().get(1));
+
+        product1.updateDiscountRate(0.0);
+        product2.updateDiscountRate(1.0);
+        product3.updateDiscountRate(2.0);
+
+
+        FilterInfo filterInfo = new FilterInfo(
+                Optional.empty(),
+                Optional.empty(),
+                List.of(),
+                List.of(),
+                List.of()
+        );
+
+        Pageable pageable = PageRequest.of(0, 10);
+
+        // when
+        ProductsResponse response = productFilterService.getFilteredProducts(filterInfo, pageable,Optional.of(SortType.DISCOUNT));
+
+        // then
+        assertThat(response.products().get(0).name()).isEqualTo("비건 쿠키");
+        assertThat(response.products().get(1).name()).isEqualTo("르뱅 쿠키");
+        assertThat(response.products().get(2).name()).isEqualTo("다크초콜릿 바");
+    }
+
 
 }

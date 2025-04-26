@@ -334,6 +334,7 @@ public class ProductRestDocsTest {
                         .param("categoryIds", String.valueOf(category1.getId()))
                         .param("packingTypes", "box")
                         .param("benefitTypes", "free_shipping")
+                        .param("sortType", "PRICE_ASC")
                         .param("page", "0")
                         .contentType(MediaType.APPLICATION_JSON)
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + mockToken))
@@ -347,6 +348,14 @@ public class ProductRestDocsTest {
                                 parameterWithName("categoryIds").optional().description("필터할 카테고리 ID 목록"),
                                 parameterWithName("packingTypes").optional().description("포장 타입 목록"),
                                 parameterWithName("benefitTypes").optional().description("혜택 타입 목록"),
+                                parameterWithName("sortType").optional().description(
+                                        "- DISCOUNT : 할인순 +" + "\n" +
+                                        "- REVIEW : 리뷰 많은순 +" + "\n" +
+                                        "- SALES : 판매량순 +" + "\n" +
+                                        "- PRICE_ASC : 낮은 가격순 +" + "\n" +
+                                        "- PRICE_DESC : 높은 가격순 +" + "\n" +
+                                        "※ 요청 시 위 enum 값을 그대로 입력해야 합니다."
+                                ),
                                 parameterWithName("page").description("요청 페이지 번호 (0부터 시작)")
                         ),
                         responseFields(

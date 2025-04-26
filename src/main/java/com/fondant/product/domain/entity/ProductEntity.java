@@ -62,4 +62,8 @@ public class ProductEntity {
         this.maxCount = maxCount;
         this.discountRate = 0.0;
     }
+
+    public void updateDiscountRate(double discountRate) {
+        this.discountRate = discountRate;
+    }
 }
