@@ -8,4 +8,5 @@ import org.springframework.data.domain.Pageable;
 public interface ProductRepositoryCustom {
     Page<ProductEntity> findProductsByMarketAndCategory(Long marketId, Long categoryId, Pageable pageable);
     Long countProductsByFilter(FilterInfo filterInfo);
+    Page<ProductEntity> findFilteredProducts(FilterInfo filterInfo, Pageable pageable);
 }

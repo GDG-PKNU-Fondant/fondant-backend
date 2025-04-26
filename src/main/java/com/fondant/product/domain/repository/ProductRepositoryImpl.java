@@ -156,5 +156,48 @@ public class ProductRepositoryImpl implements ProductRepositoryCustom {
         return allSubCategoryIds;
     }
 
+    @Override
+    public Page<ProductEntity> findFilteredProducts(FilterInfo filterInfo, Pageable pageable) {
+        List<ProductEntity> content = fetchFilteredProducts(filterInfo, pageable);
+        Long total = fetchFilteredProductsCount(filterInfo);
+
+        return new PageImpl<>(content, pageable, total != null ? total : 0L);
+    }
+
+    private List<ProductEntity> fetchFilteredProducts(FilterInfo filterInfo, Pageable pageable) {
+        QProductEntity product = QProductEntity.productEntity;
+        QProductCategoryEntity productCategory = QProductCategoryEntity.productCategoryEntity;
+        QCategoryEntity category = QCategoryEntity.categoryEntity;
+
+        BooleanBuilder builder = buildProductConditions(filterInfo, product);
+
+        return queryFactory
+                .select(product)
+                .from(product)
+                .join(productCategory).on(product.id.eq(productCategory.product.id))
+                .join(category).on(productCategory.category.id.eq(category.id))
+                .where(builder)
+                .where(buildCategoryCondition(filterInfo, category))
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+    }
+
+    private Long fetchFilteredProductsCount(FilterInfo filterInfo) {
+        QProductEntity product = QProductEntity.productEntity;
+        QProductCategoryEntity productCategory = QProductCategoryEntity.productCategoryEntity;
+        QCategoryEntity category = QCategoryEntity.categoryEntity;
+
+        BooleanBuilder builder = buildProductConditions(filterInfo, product);
+
+        return queryFactory
+                .select(product.id.countDistinct())
+                .from(product)
+                .join(productCategory).on(product.id.eq(productCategory.product.id))
+                .join(category).on(productCategory.category.id.eq(category.id))
+                .where(builder)
+                .where(buildCategoryCondition(filterInfo, category))
+                .fetchOne();
+    }
 }
 
