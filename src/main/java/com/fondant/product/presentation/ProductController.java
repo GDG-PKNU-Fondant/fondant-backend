@@ -46,14 +46,28 @@ public class ProductController {
 
     @GetMapping("/filter/count")
     public ResponseEntity<ResponseDto<FilteredProductCountResponse>> getFilterCount(
-            @RequestParam Optional<Double> minPrice,
-            @RequestParam Optional<Double> maxPrice,
-            @RequestParam(required = false) List<Long> categoryIds,
-            @RequestParam(required = false) List<String> packagingTypes,
-            @RequestParam(required = false) List<String> benefits) {
+            @RequestParam(name="minPrice") Optional<Double> minPrice,
+            @RequestParam(name="maxPrice") Optional<Double> maxPrice,
+            @RequestParam(name="categoryIds" ,required = false) List<Long> categoryIds,
+            @RequestParam(name="packagingTypes", required = false) List<String> packagingTypes,
+            @RequestParam(name="benefits", required = false) List<String> benefits) {
         FilterInfo filterinfo = new FilterInfo(minPrice,maxPrice,categoryIds,packagingTypes,benefits);
 
         return ResponseEntity.ok(ResponseDto.ofSuccess(SuccessMessage.OPERATION_SUCCESS,
                 productService.getFilteredProductCounts(filterinfo)));
+    }
+
+    @GetMapping("/filter")
+    public ResponseEntity<ResponseDto<ProductsResponse>> getFilteredProducts(
+            @RequestParam(name="minPrice") Optional<Double> minPrice,
+            @RequestParam(name="maxPrice") Optional<Double> maxPrice,
+            @RequestParam(name="categoryIds" ,required = false) List<Long> categoryIds,
+            @RequestParam(name="packagingTypes", required = false) List<String> packagingTypes,
+            @RequestParam(name="benefits", required = false) List<String> benefits,
+            @RequestParam(name="page") int page) {
+        FilterInfo filterinfo = new FilterInfo(minPrice,maxPrice,categoryIds,packagingTypes,benefits);
+
+        return ResponseEntity.ok(ResponseDto.ofSuccess(SuccessMessage.OPERATION_SUCCESS,
+                productService.getFilteredProducts(filterinfo,pageConfig.customPageable(page))));
     }
 }

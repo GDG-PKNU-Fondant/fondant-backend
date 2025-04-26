@@ -3,10 +3,8 @@ package com.fondant.product.application;
 import com.fondant.global.dto.PageInfo;
 import com.fondant.global.exception.ApiException;
 import com.fondant.market.application.MarketService;
-import com.fondant.market.application.dto.MarketInfo;
 import com.fondant.market.application.dto.MarketInfoForProductDetail;
 import com.fondant.market.domain.entity.MarketEntity;
-import com.fondant.market.domain.repository.MarketRepository;
 import com.fondant.product.application.dto.FilterInfo;
 import com.fondant.product.application.dto.ImageInfo;
 import com.fondant.product.application.dto.OptionInfo;
@@ -15,7 +13,6 @@ import com.fondant.product.category.application.CategoryService;
 import com.fondant.product.domain.entity.ImageType;
 import com.fondant.product.domain.entity.OptionEntity;
 import com.fondant.product.domain.entity.ProductEntity;
-import com.fondant.product.domain.entity.ProductImageEntity;
 import com.fondant.product.domain.repository.OptionRepository;
 import com.fondant.product.domain.repository.ProductImageRepository;
 import com.fondant.product.domain.repository.ProductRepository;
@@ -135,5 +132,19 @@ public class ProductService {
     public FilteredProductCountResponse getFilteredProductCounts(FilterInfo filterInfo) {
         Long count = productRepository.countProductsByFilter(filterInfo);
         return new FilteredProductCountResponse(count);
+    }
+
+    @Transactional(readOnly = true)
+    public ProductsResponse getFilteredProducts(FilterInfo filterInfo,Pageable pageable) {
+        Page<ProductEntity> products = productRepository.findFilteredProducts(filterInfo,pageable);
+
+        if(products.isEmpty()){
+            throw new ApiException(ProductError.NO_PRODUCTS_FOUND);
+        }
+
+        return ProductsResponse.builder()
+                .pageInfo(PageInfo.of(products.getNumber(), products.getTotalPages()))
+                .products(getProductInfos(products.getContent()))
+                .build();
     }
 }
