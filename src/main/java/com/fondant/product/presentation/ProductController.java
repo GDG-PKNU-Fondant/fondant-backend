@@ -4,12 +4,15 @@ import com.fondant.global.config.PageConfig;
 import com.fondant.global.dto.ResponseDto;
 import com.fondant.global.dto.SuccessMessage;
 import com.fondant.product.application.ProductService;
+import com.fondant.product.application.dto.FilterInfo;
+import com.fondant.product.presentation.dto.response.FilteredProductCountResponse;
 import com.fondant.product.presentation.dto.response.ProductDetailResponse;
 import com.fondant.product.presentation.dto.response.ProductsResponse;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Optional;
 
 
 @RestController
@@ -39,5 +42,18 @@ public class ProductController {
             @PathVariable(name="productId") Long productId) {
         return ResponseEntity.ok(ResponseDto.ofSuccess(SuccessMessage.OPERATION_SUCCESS,
                 productService.getProductDetail(productId)));
+    }
+
+    @GetMapping("/filter/count")
+    public ResponseEntity<ResponseDto<FilteredProductCountResponse>> getFilterCount(
+            @RequestParam Optional<Double> minPrice,
+            @RequestParam Optional<Double> maxPrice,
+            @RequestParam(required = false) List<Long> categoryIds,
+            @RequestParam(required = false) List<String> packagingTypes,
+            @RequestParam(required = false) List<String> benefits) {
+        FilterInfo filterinfo = new FilterInfo(minPrice,maxPrice,categoryIds,packagingTypes,benefits);
+
+        return ResponseEntity.ok(ResponseDto.ofSuccess(SuccessMessage.OPERATION_SUCCESS,
+                productService.getFilteredProductCounts(filterinfo)));
     }
 }
