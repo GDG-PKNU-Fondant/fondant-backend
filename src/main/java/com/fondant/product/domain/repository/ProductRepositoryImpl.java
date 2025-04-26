@@ -1,6 +1,7 @@
 package com.fondant.product.domain.repository;
 
 import com.fondant.product.application.dto.FilterInfo;
+import com.fondant.product.application.dto.SortType;
 import com.fondant.product.category.domain.QCategoryEntity;
 import com.fondant.product.domain.entity.ProductEntity;
 import com.fondant.product.domain.entity.QProductCategoryEntity;
@@ -14,6 +15,9 @@ import org.springframework.data.domain.Pageable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+
+import static com.fondant.product.application.dto.SortType.*;
 
 public class ProductRepositoryImpl implements ProductRepositoryCustom {
 
@@ -157,21 +161,21 @@ public class ProductRepositoryImpl implements ProductRepositoryCustom {
     }
 
     @Override
-    public Page<ProductEntity> findFilteredProducts(FilterInfo filterInfo, Pageable pageable) {
-        List<ProductEntity> content = fetchFilteredProducts(filterInfo, pageable);
+    public Page<ProductEntity> findFilteredProducts(FilterInfo filterInfo, Pageable pageable,Optional<SortType> sortType) {
+        List<ProductEntity> content = fetchFilteredProducts(filterInfo, pageable, sortType);
         Long total = fetchFilteredProductsCount(filterInfo);
 
         return new PageImpl<>(content, pageable, total != null ? total : 0L);
     }
 
-    private List<ProductEntity> fetchFilteredProducts(FilterInfo filterInfo, Pageable pageable) {
+    private List<ProductEntity> fetchFilteredProducts(FilterInfo filterInfo, Pageable pageable, Optional<SortType> sortType) {
         QProductEntity product = QProductEntity.productEntity;
         QProductCategoryEntity productCategory = QProductCategoryEntity.productCategoryEntity;
         QCategoryEntity category = QCategoryEntity.categoryEntity;
 
         BooleanBuilder builder = buildProductConditions(filterInfo, product);
 
-        return queryFactory
+        JPAQuery<ProductEntity> query = queryFactory
                 .select(product)
                 .from(product)
                 .join(productCategory).on(product.id.eq(productCategory.product.id))
@@ -179,8 +183,11 @@ public class ProductRepositoryImpl implements ProductRepositoryCustom {
                 .where(builder)
                 .where(buildCategoryCondition(filterInfo, category))
                 .offset(pageable.getOffset())
-                .limit(pageable.getPageSize())
-                .fetch();
+                .limit(pageable.getPageSize());
+
+        applySort(query, sortType, product);
+
+        return query.fetch();
     }
 
     private Long fetchFilteredProductsCount(FilterInfo filterInfo) {
@@ -199,5 +206,22 @@ public class ProductRepositoryImpl implements ProductRepositoryCustom {
                 .where(buildCategoryCondition(filterInfo, category))
                 .fetchOne();
     }
+
+    //상품별 판매량 및 리뷰수 구현 필요
+    private void applySort(JPAQuery<ProductEntity> query, Optional<SortType> sortType, QProductEntity product) {
+        if (sortType.isEmpty()) {
+            return;
+        }
+
+        switch (sortType.get()) {
+            case DISCOUNT -> query.orderBy(product.discountRate.desc());
+            //case REVIEW -> query.orderBy(product.market.totalReviews.desc());
+            //case SALES -> query.orderBy(product.market.totalSales.desc());
+            case PRICE_ASC -> query.orderBy(product.price.asc());
+            case PRICE_DESC -> query.orderBy(product.price.desc());
+        }
+    }
+
+
 }
 
