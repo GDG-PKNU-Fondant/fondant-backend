@@ -7,6 +7,7 @@ import com.fondant.market.application.dto.MarketInfo;
 import com.fondant.market.application.dto.MarketInfoForProductDetail;
 import com.fondant.market.domain.entity.MarketEntity;
 import com.fondant.market.domain.repository.MarketRepository;
+import com.fondant.product.application.dto.FilterInfo;
 import com.fondant.product.application.dto.ImageInfo;
 import com.fondant.product.application.dto.OptionInfo;
 import com.fondant.product.application.dto.ProductInfo;
@@ -19,6 +20,7 @@ import com.fondant.product.domain.repository.OptionRepository;
 import com.fondant.product.domain.repository.ProductImageRepository;
 import com.fondant.product.domain.repository.ProductRepository;
 import com.fondant.product.exception.ProductError;
+import com.fondant.product.presentation.dto.response.FilteredProductCountResponse;
 import com.fondant.product.presentation.dto.response.ProductDetailResponse;
 import com.fondant.product.presentation.dto.response.ProductsResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -127,5 +129,11 @@ public class ProductService {
     public ProductEntity getProductById(Long productId) {
         return productRepository.findById(productId)
                 .orElseThrow(() -> new ApiException(ProductError.PRODUCT_NOT_FOUND));
+    }
+
+    @Transactional(readOnly = true)
+    public FilteredProductCountResponse getFilteredProductCounts(FilterInfo filterInfo) {
+        Long count = productRepository.countProductsByFilter(filterInfo);
+        return new FilteredProductCountResponse(count);
     }
 }
