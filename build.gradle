@@ -10,6 +10,7 @@ version = '0.0.1-SNAPSHOT'
 
 configurations {
 	asciidoctorExtensions
+	compileOnly { extendsFrom annotationProcessor }
 }
 
 
@@ -19,14 +20,14 @@ java {
 	}
 }
 
-configurations {
-	compileOnly {
-		extendsFrom annotationProcessor
-	}
-}
-
 repositories {
 	mavenCentral()
+}
+
+dependencyManagement {
+	imports {
+		mavenBom "io.awspring.cloud:spring-cloud-aws-dependencies:3.2.0"
+	}
 }
 
 dependencies {
@@ -73,6 +74,9 @@ dependencies {
 
 	//COOLSMS
 	implementation 'net.nurigo:sdk:4.3.2'
+
+	//PARAMETER_STORE_STARTER
+	implementation 'io.awspring.cloud:spring-cloud-aws-starter-parameter-store'
 }
 
 
@@ -115,4 +119,5 @@ bootJar {
 
 tasks.named('test') {
 	useJUnitPlatform()
+	systemProperty "spring.profiles.active", "local"
 }
