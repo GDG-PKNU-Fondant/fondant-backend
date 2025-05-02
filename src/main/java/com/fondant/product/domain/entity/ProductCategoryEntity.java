@@ -1,5 +1,6 @@
 package com.fondant.product.domain.entity;
 
+import com.fondant.product.category.domain.CategoryEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
@@ -24,6 +25,7 @@ public class ProductCategoryEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")
     private CategoryEntity category;
+
 
     @Builder
     public ProductCategoryEntity(ProductEntity product, CategoryEntity category) {

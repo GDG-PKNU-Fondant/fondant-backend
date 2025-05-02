@@ -1,8 +1,9 @@
 package com.fondant.product.domain.repository;
 
+import com.fondant.global.config.PageConfig;
 import com.fondant.market.domain.entity.QMarketEntity;
+import com.fondant.product.category.domain.QCategoryEntity;
 import com.fondant.product.domain.entity.ProductEntity;
-import com.fondant.product.domain.entity.QCategoryEntity;
 import com.fondant.product.domain.entity.QProductCategoryEntity;
 import com.fondant.product.domain.entity.QProductEntity;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -21,36 +22,63 @@ public class ProductRepositoryImpl implements ProductRepositoryCustom {
     }
 
     @Override
-    public Page<ProductEntity> findProductsByMarketAndCategory(Long marketId, Long categoryId, Pageable pageable) {
-        QProductCategoryEntity productCategory = QProductCategoryEntity.productCategoryEntity;
-        QProductEntity product = QProductEntity.productEntity;
-        QMarketEntity market = QMarketEntity.marketEntity;
+    public Page<ProductEntity> findProductsByMarketAndCategory(Long marketId, Long mainCategoryId, Pageable pageable) {
+        List<Long> subCategoryIds = findSubCategoryIdsByMainCategory(mainCategoryId);
 
-        List<ProductEntity> content = queryFactory
-                .select(product)
-                .from(productCategory)
-                .join(productCategory.product, product)
-                .join(product.market, market)
+        if (subCategoryIds.isEmpty()) {
+            return Page.empty(pageable);
+        }
+
+        List<ProductEntity> content = findProductsByMarketAndSubCategories(marketId, subCategoryIds, pageable);
+        Long total = countProductsByMarketAndSubCategories(marketId, subCategoryIds);
+
+        return new PageImpl<>(content, pageable, total != null ? total : 0);
+    }
+
+    private List<Long> findSubCategoryIdsByMainCategory(Long mainCategoryId) {
+        QCategoryEntity category = QCategoryEntity.categoryEntity;
+
+        return queryFactory
+                .select(category.id)
+                .from(category)
+                .where(category.parent.id.eq(mainCategoryId))
+                .fetch();
+    }
+
+    private List<ProductEntity> findProductsByMarketAndSubCategories(Long marketId, List<Long> subCategoryIds, Pageable pageable) {
+        QProductEntity product = QProductEntity.productEntity;
+        QProductCategoryEntity productCategory = QProductCategoryEntity.productCategoryEntity;
+        QCategoryEntity category = QCategoryEntity.categoryEntity;
+
+        return queryFactory
+                .selectDistinct(product)
+                .from(product)
+                .join(productCategory).on(product.eq(productCategory.product))
+                .join(productCategory.category, category)
                 .where(
-                        productCategory.category.id.eq(categoryId),
-                        product.market.id.eq(marketId)
+                        product.market.id.eq(marketId),
+                        category.id.in(subCategoryIds)
                 )
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
+    }
 
-        long total = queryFactory
-                .select(product.count())
-                .from(productCategory)
-                .join(productCategory.product, product)
-                .join(product.market, market)
+    private Long countProductsByMarketAndSubCategories(Long marketId, List<Long> subCategoryIds) {
+        QProductEntity product = QProductEntity.productEntity;
+        QProductCategoryEntity productCategory = QProductCategoryEntity.productCategoryEntity;
+        QCategoryEntity category = QCategoryEntity.categoryEntity;
+
+        return queryFactory
+                .select(product.countDistinct())
+                .from(product)
+                .join(productCategory).on(product.eq(productCategory.product))
+                .join(productCategory.category, category)
                 .where(
-                        productCategory.category.id.eq(categoryId),
-                        product.market.id.eq(marketId)
+                        product.market.id.eq(marketId),
+                        category.id.in(subCategoryIds)
                 )
                 .fetchOne();
-
-        return new PageImpl<>(content, pageable, total);
     }
 }
 

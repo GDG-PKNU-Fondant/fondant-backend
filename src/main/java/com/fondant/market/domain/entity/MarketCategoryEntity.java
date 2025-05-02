@@ -1,6 +1,6 @@
 package com.fondant.market.domain.entity;
 
-import com.fondant.product.domain.entity.CategoryEntity;
+import com.fondant.product.category.domain.CategoryEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;

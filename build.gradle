@@ -100,10 +100,6 @@ ext {
 	docsOutDir  = file('build/docs/asciidoc')
 }
 
-test {
-	outputs.dir snippetsDir
-}
-
 asciidoctor {
 	sourceDir  = file("src/docs")
 	outputDir  = docsOutDir
@@ -119,5 +115,6 @@ bootJar {
 
 tasks.named('test') {
 	useJUnitPlatform()
+  outputs.dir snippetsDir
 	systemProperty "spring.profiles.active", "test"
 }
