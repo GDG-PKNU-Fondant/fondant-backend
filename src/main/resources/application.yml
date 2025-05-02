@@ -1,33 +1,26 @@
 spring:
-  # ── 공통 SMS ────────────────────────────────────────
   cool-sms:
     api-key: ${COOL_SMS_API_KEY}
     api-secret: ${COOL_SMS_API_SECRET}
     caller-number: ${COOL_SMS_CALLER_NUMBER}
 
-  # ── 공통 CORS ───────────────────────────────────────
   cors:
     allowed_origins: ${ALLOWED_ORIGINS}
 
-  # ── 공통 Datasource (URL·계정만 환경변수) ───────────
   datasource:
     url: ${SPRING_DATASOURCE_URL}
     username: ${SPRING_DATASOURCE_USERNAME}
     password: ${SPRING_DATASOURCE_PASSWORD}
-    # driver-class-name 은 각 프로필 파일에서 지정
 
-  # ── JPA 기본값 ──────────────────────────────────────
   jpa:
     hibernate:
-      ddl-auto: update           # 기본은 update
+      ddl-auto: update
     show-sql: true
     database-platform: org.hibernate.dialect.PostgreSQLDialect
 
-  # ── JWT ────────────────────────────────────────────
   jwt:
     secret: ${JWT_SECRET}
 
-  # ── OAuth2 (NAVER / GOOGLE) ────────────────────────
   security:
     oauth2:
       client:
