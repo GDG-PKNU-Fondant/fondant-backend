@@ -1,0 +1,10 @@
+spring:
+  config:
+    import:
+      - optional:aws-parameterstore:/fondant/dev/
+
+  datasource:
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate.ddl-auto: update

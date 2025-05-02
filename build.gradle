@@ -33,6 +33,7 @@ dependencyManagement {
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'com.h2database:h2:2.2.224'
 
 	//OAUTH2
 	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
@@ -94,9 +95,9 @@ clean.doLast {
 	file(querydslDir).deleteDir()
 }
 
-
 ext {
 	snippetsDir = file('build/generated-snippets')
+	docsOutDir  = file('build/docs/asciidoc')
 }
 
 test {
@@ -104,6 +105,8 @@ test {
 }
 
 asciidoctor {
+	sourceDir  = file("src/docs")
+	outputDir  = docsOutDir
 	inputs.dir snippetsDir
 	dependsOn test
 	configurations 'asciidoctorExtensions'
@@ -111,13 +114,10 @@ asciidoctor {
 
 bootJar {
 	dependsOn asciidoctor
-	copy {
-		from("${asciidoctor.outputDir}")
-		into 'src/main/resources/static/docs'
-	}
+	from(docsOutDir) { into "BOOT-INF/classes/static/docs" }
 }
 
 tasks.named('test') {
 	useJUnitPlatform()
-	systemProperty "spring.profiles.active", "local"
+	systemProperty "spring.profiles.active", "test"
 }

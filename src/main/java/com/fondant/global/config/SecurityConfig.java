@@ -9,6 +9,7 @@ import com.fondant.infra.oauth2.application.CustomOAuth2UserService;
 import com.fondant.infra.oauth2.application.CustomSuccessHandler;
 import com.fondant.user.domain.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -55,7 +56,7 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-    @Value("${spring.cors.allowed-origins}")
+    @Value("${spring.cors.allowed_origins}")
     private String allowedOrigins;
 
     @Bean
@@ -87,6 +88,8 @@ public class SecurityConfig {
 
         http
                 .authorizeHttpRequests((auth) -> auth
+                        .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
+                        .requestMatchers("/docs", "/docs/", "/docs/**").permitAll()
                         .requestMatchers("/api/user/reissue", "/login/oauth2/code/**").permitAll()
                         .requestMatchers("/api/user/join", "/api/user/login","/admin").hasRole("ADMIN")
                         .anyRequest().authenticated());

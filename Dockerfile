@@ -1,18 +1,13 @@
 FROM gradle:8.6-jdk17 AS build
-WORKDIR /app
-
-COPY gradlew .
-COPY gradle gradle
-RUN chmod +x gradlew
-
+WORKDIR /home/gradle/src
 COPY . .
-RUN --mount=type=cache,target=/home/gradle/.gradle \
-    ./gradlew clean bootJar -x test
 
-FROM eclipse-temurin:17-jre
+RUN ./gradlew clean bootJar --no-daemon
+
+FROM gcr.io/distroless/java17-debian12 AS runtime
 WORKDIR /app
-
-COPY --from=build /app/build/libs/*.jar app.jar
+COPY --from=build /home/gradle/src/build/libs/*-SNAPSHOT.jar app.jar
 
 EXPOSE 8080
-ENTRYPOINT ["java","-jar","app.jar"]
+USER nonroot
+ENTRYPOINT ["java","-jar","/app/app.jar"]
