@@ -51,26 +51,19 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         String accessToken = jwtUtil.generateToken("access", userId, role, 60 * 60 * 24 * 1000L);
         String refreshToken = jwtUtil.generateToken("refresh", userId, role, 60 * 60 * 24 * 1000L);
 
-        Map<String, Object> responseBody = new HashMap<>();
-        Map<String, Object> innerResponse = new HashMap<>();
-
-        innerResponse.put("accessToken", accessToken);
-        if (customUserDetails.getProvider().equals(SNSType.NAVER.toString())) {
-            innerResponse.put("isPhoneVerificationRequired", "false");
-        } else {
-            innerResponse.put("isPhoneVerificationRequired", "true");
-        }
-
-        responseBody.put("code", SUCCESS);
-        responseBody.put("message", "요청이 성공적으로 처리되었습니다.");
-        responseBody.put("response", innerResponse);
-
         response.addCookie(createCookie("refresh", refreshToken));
 
-        response.setContentType("application/json");
+        String script = "<!DOCTYPE html><html><body><script>\n" +
+                "  const accessToken = '" + accessToken + "';\n" +
+                "  window.opener.postMessage({ accessToken }, 'http://localhost:5173');\n" +
+                "  window.close();\n" +
+                "</script></body></html>";
+
+        response.setContentType("text/html;charset=UTF-8");
         response.setStatus(HttpStatus.OK.value());
         PrintWriter writer = response.getWriter();
-        writer.print(new ObjectMapper().writeValueAsString(responseBody));
+        writer.write(script);
+        writer.flush();
     }
 
 
