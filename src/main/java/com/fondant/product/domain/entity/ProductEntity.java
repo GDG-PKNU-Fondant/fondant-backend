@@ -33,7 +33,7 @@ public class ProductEntity {
 
     @NotNull
     @Column(name="price")
-    private double price;
+    private Double price;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="market_id")
@@ -45,14 +45,14 @@ public class ProductEntity {
 
     @NotNull
     @Column(name="max_count")
-    private double maxCount;
+    private int maxCount;
 
     @NotNull
     @Column(name="discount_rate")
-    private double discountRate;
+    private Double discountRate;
 
     @Builder
-    public ProductEntity(String name, String description, String thumbnail, double price, MarketEntity market, LocalDate startDate, double maxCount) {
+    public ProductEntity(String name, String description, String thumbnail, Double price, MarketEntity market, LocalDate startDate, int maxCount) {
         this.name = name;
         this.description = description;
         this.thumbnail = thumbnail;

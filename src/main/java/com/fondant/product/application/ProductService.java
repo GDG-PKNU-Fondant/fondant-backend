@@ -64,8 +64,8 @@ public class ProductService {
                 ).toList();
     }
 
-    private double getDiscountedPrice(double price, double discountRate) {
-        double appliedRate = 1.0 - discountRate;
+    private Double getDiscountedPrice(Double price, Double discountRate) {
+        Double appliedRate = 1.0 - discountRate;
         return Math.floor(price * appliedRate + 0.5);
     }
 

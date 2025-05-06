@@ -13,6 +13,6 @@ public record ProductDetailResponse(
         List<OptionInfo> options,
         String description,
         List<ImageInfo> detailPages,
-        double basePrice
+        Double basePrice
 ) {
 }
