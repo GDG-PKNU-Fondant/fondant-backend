@@ -1,6 +1,7 @@
 package com.fondant.infra.jwt.filter;
 
 import com.fondant.infra.jwt.application.JWTUtil;
+import com.fondant.infra.jwt.exception.JWTErrorCode;
 import com.fondant.user.application.dto.CustomUserDetails;
 import com.fondant.infra.jwt.dto.JWTUserDTO;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -14,7 +15,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 
 public class JWTFilter extends OncePerRequestFilter {
 
@@ -38,35 +38,37 @@ public class JWTFilter extends OncePerRequestFilter {
 
         try {
             jwtUtil.isTokenExpired(accessToken);
+            String type = jwtUtil.getType(accessToken);
+
+            if (!"access".equals(type)) {
+                throw new IllegalArgumentException("Invalid token type");
+            }
+
+            Long userId = jwtUtil.getUserIdFromToken(accessToken);
+            String role = jwtUtil.getUserRoleFromToken(accessToken);
+
+            JWTUserDTO user = JWTUserDTO.builder()
+                    .userId(userId)
+                    .role(role)
+                    .build();
+
+            CustomUserDetails customUserDetails = new CustomUserDetails(user);
+
+            Authentication authToken = new UsernamePasswordAuthenticationToken(
+                    customUserDetails, null, customUserDetails.getAuthorities());
+            SecurityContextHolder.getContext().setAuthentication(authToken);
+
+            filterChain.doFilter(request, response);
+
         } catch (ExpiredJwtException e) {
-            PrintWriter writer = response.getWriter();
-            writer.print("엑세스 토큰이 만료되었습니다.");
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            return;
+            request.setAttribute("exception", JWTErrorCode.EXPIRED);
+            filterChain.doFilter(request, response);
+        } catch (IllegalArgumentException e) {
+            request.setAttribute("exception", JWTErrorCode.INVALID_TYPE);
+            filterChain.doFilter(request, response);
+        } catch (Exception e) {
+            request.setAttribute("exception", JWTErrorCode.INVALID);
+            filterChain.doFilter(request, response);
         }
-
-        String type = jwtUtil.getType(accessToken);
-
-        if (!type.equals("access")) {
-            PrintWriter writer = response.getWriter();
-            writer.print("토큰이 유효하지 않습니다.");
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            return;
-        }
-
-        Long userId = jwtUtil.getUserIdFromToken(accessToken);
-        String role = jwtUtil.getUserRoleFromToken(accessToken);
-
-        JWTUserDTO user = JWTUserDTO.builder()
-                .userId(userId)
-                .role(role)
-                .build();
-
-        CustomUserDetails customUserDetails = new CustomUserDetails(user);
-
-        Authentication authToken = new UsernamePasswordAuthenticationToken(customUserDetails, null, customUserDetails.getAuthorities());
-        SecurityContextHolder.getContext().setAuthentication(authToken);
-
-        filterChain.doFilter(request, response);
     }
 }
