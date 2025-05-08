@@ -1,10 +1,12 @@
 package com.fondant.global.config;
 
+import com.fondant.infra.jwt.exception.CustomAuthenticationEntryPoint;
 import com.fondant.infra.jwt.filter.CustomLogoutFilter;
 import com.fondant.infra.jwt.filter.JWTFilter;
 import com.fondant.infra.jwt.application.JWTUtil;
 import com.fondant.infra.jwt.domain.repository.RefreshRepository;
 import com.fondant.infra.jwt.filter.LoginFilter;
+import com.fondant.infra.oauth2.application.CustomFailureHandler;
 import com.fondant.infra.oauth2.application.CustomOAuth2UserService;
 import com.fondant.infra.oauth2.application.CustomSuccessHandler;
 import com.fondant.user.domain.repository.UserRepository;
@@ -33,16 +35,22 @@ public class SecurityConfig {
     private final RefreshRepository refreshRepository;
     private final CustomOAuth2UserService customOAuth2UserService;
     private final CustomSuccessHandler customSuccessHandler;
+    private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
 
 
-    public SecurityConfig(AuthenticationConfiguration authenticationConfiguration, JWTUtil jwtUtil,
-                          RefreshRepository refreshRepository, CustomOAuth2UserService customOAuth2UserService, UserRepository userRepository, CustomSuccessHandler customSuccessHandler) {
+    public SecurityConfig(AuthenticationConfiguration authenticationConfiguration,
+                          JWTUtil jwtUtil,
+                          RefreshRepository refreshRepository,
+                          CustomOAuth2UserService customOAuth2UserService,
+                          CustomSuccessHandler customSuccessHandler,
+                          CustomAuthenticationEntryPoint customAuthenticationEntryPoint) {
 
         this.authenticationConfiguration = authenticationConfiguration;
         this.jwtUtil = jwtUtil;
         this.refreshRepository = refreshRepository;
         this.customOAuth2UserService = customOAuth2UserService;
         this.customSuccessHandler = customSuccessHandler;
+        this.customAuthenticationEntryPoint = customAuthenticationEntryPoint;
     }
 
     @Bean
@@ -78,6 +86,11 @@ public class SecurityConfig {
 
         http
                 .formLogin(AbstractHttpConfigurer::disable);
+
+        http
+                .exceptionHandling((exceptionHandling) ->
+                        exceptionHandling.authenticationEntryPoint(customAuthenticationEntryPoint)
+                );
 
         http
                 .oauth2Login((oauth2) -> oauth2
