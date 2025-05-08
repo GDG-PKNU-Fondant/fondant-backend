@@ -1,9 +1,12 @@
 package com.fondant.user.application;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fondant.global.exception.ApiException;
 import com.fondant.infra.jwt.application.JWTUtil;
 import com.fondant.infra.jwt.domain.entity.RefreshEntity;
 import com.fondant.infra.jwt.domain.repository.RefreshRepository;
+import com.fondant.infra.jwt.exception.JWTErrorCode;
+import com.fondant.user.exception.UserError;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -33,33 +36,22 @@ public class ReissueService {
     }
 
     public ResponseEntity<?> reissueToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        String refresh = null;
-        Cookie[] cookies = request.getCookies();
-
-        if (cookies != null) {
-            for (Cookie cookie : cookies) {
-                if (cookie.getName().equals("refresh")) {
-                    refresh = cookie.getValue();
-                }
-            }
-        } else {
-            return new ResponseEntity<>("리프레쉬 토큰이 쿠키에 존재하지 않습니다.", HttpStatus.BAD_REQUEST);
-        }
+        String refresh = extractRefreshTokenFromCookie(request);
 
         try {
             jwtUtil.isTokenExpired(refresh);
         } catch (ExpiredJwtException e) {
-            return new ResponseEntity<>("리프레쉬 토큰이 만료되었습니다.", HttpStatus.BAD_REQUEST);
+            throw new ApiException(UserError.REFRESH_EXPIRED);
         }
 
         String type = jwtUtil.getType(refresh);
 
         if (type == null || !type.equals("refresh")) {
-            return new ResponseEntity<>("유효하지 않은 토큰입니다.", HttpStatus.BAD_REQUEST);
+            throw new ApiException(UserError.REFRESH_INVALID);
         }
 
         if (!refreshRepository.existsByRefresh(refresh)) {
-            return new ResponseEntity<>("존재하지 않는 토큰입니다.", HttpStatus.BAD_REQUEST);
+            throw new ApiException(UserError.REFRESH_NOT_FOUND);
         }
 
         Long userId = jwtUtil.getUserIdFromToken(refresh);
@@ -87,6 +79,19 @@ public class ReissueService {
         response.addCookie(createCookie("refresh", newRefresh));
 
         return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    private String extractRefreshTokenFromCookie(HttpServletRequest request) {
+        Cookie[] cookies = request.getCookies();
+        if (cookies == null) {
+            throw new ApiException(UserError.REFRESH_NOT_FOUND);
+        }
+        for (Cookie cookie : cookies) {
+            if ("refresh".equals(cookie.getName())) {
+                return cookie.getValue();
+            }
+        }
+        throw new ApiException(UserError.REFRESH_NOT_FOUND);
     }
 
     private Cookie createCookie(String key, String value) {
