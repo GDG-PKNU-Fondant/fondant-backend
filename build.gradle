@@ -101,16 +101,24 @@ ext {
 }
 
 asciidoctor {
-	sourceDir  = file("src/docs")
-	outputDir  = docsOutDir
-	inputs.dir snippetsDir
-	dependsOn test
-	configurations 'asciidoctorExtensions'
+    sourceDir  = file("src/docs")
+    outputDir  = docsOutDir
+    inputs.dir snippetsDir
+    dependsOn test
+    configurations 'asciidoctorExtensions'
+	baseDirFollowsSourceFile()
+
+    doFirst {
+        delete file("${outputDir}")
+    }
 }
 
 bootJar {
 	dependsOn asciidoctor
-	from(docsOutDir) { into "BOOT-INF/classes/static/docs" }
+	duplicatesStrategy = DuplicatesStrategy.INCLUDE
+	from("$docsOutDir") {
+		into "BOOT-INF/classes/static/docs"
+	}
 }
 
 tasks.named('test') {
