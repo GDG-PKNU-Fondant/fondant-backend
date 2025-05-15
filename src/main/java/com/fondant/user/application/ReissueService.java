@@ -51,7 +51,7 @@ public class ReissueService {
         }
 
         if (!refreshRepository.existsByRefresh(refresh)) {
-            throw new ApiException(UserError.REFRESH_NOT_FOUND);
+            throw new ApiException(UserError.REFRESH_INVALID);
         }
 
         Long userId = jwtUtil.getUserIdFromToken(refresh);
@@ -84,14 +84,14 @@ public class ReissueService {
     private String extractRefreshTokenFromCookie(HttpServletRequest request) {
         Cookie[] cookies = request.getCookies();
         if (cookies == null) {
-            throw new ApiException(UserError.REFRESH_NOT_FOUND);
+            throw new ApiException(UserError.REFRESH_INVALID);
         }
         for (Cookie cookie : cookies) {
             if ("refresh".equals(cookie.getName())) {
                 return cookie.getValue();
             }
         }
-        throw new ApiException(UserError.REFRESH_NOT_FOUND);
+        throw new ApiException(UserError.REFRESH_INVALID);
     }
 
     private Cookie createCookie(String key, String value) {

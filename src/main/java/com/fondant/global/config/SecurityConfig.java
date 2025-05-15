@@ -9,7 +9,6 @@ import com.fondant.infra.jwt.filter.LoginFilter;
 import com.fondant.infra.oauth2.application.CustomFailureHandler;
 import com.fondant.infra.oauth2.application.CustomOAuth2UserService;
 import com.fondant.infra.oauth2.application.CustomSuccessHandler;
-import com.fondant.user.domain.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -30,6 +29,22 @@ import java.util.Collections;
 @Configuration
 public class SecurityConfig {
 
+    public static final String[] PUBLIC_ENDPOINTS = {
+            "/oauth2/authorization/**",
+            "/login/oauth2/code/**",
+            "/api/user/reissue",
+            "/favicon.ico",
+            "/error",
+            "/docs/**",
+            "/api/markets/**"
+    };
+
+    public static final String[] ADMIN_ENDPOINTS = {
+            "/api/user/login",
+            "/api/user/join",
+            "/admin/**"
+    };
+
     private final AuthenticationConfiguration authenticationConfiguration;
     private final JWTUtil jwtUtil;
     private final RefreshRepository refreshRepository;
@@ -37,6 +52,12 @@ public class SecurityConfig {
     private final CustomSuccessHandler customSuccessHandler;
     private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
 
+    public SecurityConfig(AuthenticationConfiguration authenticationConfiguration,
+                          JWTUtil jwtUtil,
+                          RefreshRepository refreshRepository,
+                          CustomOAuth2UserService customOAuth2UserService,
+                          CustomSuccessHandler customSuccessHandler,
+                          CustomAuthenticationEntryPoint customAuthenticationEntryPoint) {
 
     public SecurityConfig(AuthenticationConfiguration authenticationConfiguration,
                           JWTUtil jwtUtil,
@@ -100,12 +121,12 @@ public class SecurityConfig {
 
         http
                 .authorizeHttpRequests((auth) -> auth
-                        .requestMatchers("/api/user/reissue", "/login/oauth2/code/**").permitAll()
-                        .requestMatchers("/api/user/join", "/api/user/login","/admin").hasRole("ADMIN")
+                        .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
+                        .requestMatchers(ADMIN_ENDPOINTS).hasRole("ADMIN")
                         .anyRequest().authenticated());
 
         http
-                .addFilterBefore(new JWTFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(new JWTFilter(jwtUtil, PUBLIC_ENDPOINTS), UsernamePasswordAuthenticationFilter.class);
 
         http
                 .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil, refreshRepository), UsernamePasswordAuthenticationFilter.class);

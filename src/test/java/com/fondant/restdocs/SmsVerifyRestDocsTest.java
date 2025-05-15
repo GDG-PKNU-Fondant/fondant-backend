@@ -94,28 +94,29 @@ public class SmsVerifyRestDocsTest {
                 .getAuthentication()
                 .getPrincipal();
 
-        String access = jwtUtil.generateToken("access", userDetails.getUserId(), UserRole.USER.toString(), userDetails.getUserId());
+        String access = jwtUtil.generateToken("access", userDetails.getUserId(), UserRole.USER.toString(), 100_000L);
+        System.out.println("access: " + access);
 
         willDoNothing().given(smsVerificationService).sendMessage(anyString());
 
         mockMvc.perform(post(BASE_URL + "/sms/send")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(new SmsSendRequest("010-1234-5678")))
-                        .header(HttpHeaders.AUTHORIZATION," Bearer " + access))
+                        .header(HttpHeaders.AUTHORIZATION,"Bearer " + access))
                 .andExpect(status().isOk())
-                        .andDo(document("user/send-SMS",
-                                preprocessRequest(prettyPrint()),
-                                preprocessResponse(prettyPrint()),
-                                requestHeaders(
-                                        headerWithName(HttpHeaders.AUTHORIZATION).description("Bearer {access-token}"),
-                                        headerWithName(HttpHeaders.CONTENT_TYPE).description("application/json")
-                                ),
-                                requestFields(
-                                        fieldWithPath("phoneNumber").description("문자를 보낼 사용자의 전화번호")
-                                ),
-                                responseFields(
-                                        commonResponseFields()
-                                )));
+                .andDo(document("user/send-SMS",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+                        requestHeaders(
+                                headerWithName(HttpHeaders.AUTHORIZATION).description("Bearer {access-token}"),
+                                headerWithName(HttpHeaders.CONTENT_TYPE).description("application/json")
+                        ),
+                        requestFields(
+                                fieldWithPath("phoneNumber").description("문자를 보낼 사용자의 전화번호")
+                        ),
+                        responseFields(
+                                commonResponseFields()
+                        )));
     }
 
     @Test
@@ -126,12 +127,12 @@ public class SmsVerifyRestDocsTest {
                 .getAuthentication()
                 .getPrincipal();
 
-        String access = jwtUtil.generateToken("access", userDetails.getUserId(), UserRole.USER.toString(), userDetails.getUserId());
+        String access = jwtUtil.generateToken("access", userDetails.getUserId(), UserRole.USER.toString(), 100_000L);
 
         mockMvc.perform(post(BASE_URL + "/sms/verify")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(new SmsVerifyRequest("010-1234-5678", "123456")))
-                        .header(HttpHeaders.AUTHORIZATION," Bearer " + access))
+                        .header(HttpHeaders.AUTHORIZATION,"Bearer " + access))
                 .andExpect(status().isOk())
                 .andDo(document("user/verify-SMS",
                         preprocessRequest(prettyPrint()),

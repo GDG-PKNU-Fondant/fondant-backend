@@ -13,8 +13,6 @@ import com.fondant.user.presentation.dto.request.DeliveryAddressUpdateRequest;
 import com.fondant.user.presentation.dto.request.UserUpdateRequest;
 import com.fondant.user.presentation.dto.response.DeliveryAddressResponse;
 import jakarta.persistence.EntityManager;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +24,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.payload.FieldDescriptor;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
@@ -46,7 +43,6 @@ import java.util.List;
 
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
-import static org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders;
 
 
 @SpringBootTest
@@ -136,8 +132,8 @@ public class UserRestDocsTest {
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + mockToken))
                 .andExpect(status().isOk())
                 .andDo(document("user/get-user-info",
-                preprocessRequest(prettyPrint()),
-                preprocessResponse(prettyPrint()),
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
                         requestHeaders(
                                 headerWithName(HttpHeaders.AUTHORIZATION)
                                         .description("Bearer {access-token}")
@@ -228,10 +224,10 @@ public class UserRestDocsTest {
         entityManager.flush();
         entityManager.clear();
 
-        String access = jwtUtil.generateToken("access", userDetails.getUserId(), UserRole.USER.toString(), userDetails.getUserId());
+        String access = jwtUtil.generateToken("access", userDetails.getUserId(), UserRole.USER.toString(), 100_000L);
 
         mockMvc.perform(get(BASE_URL + "/address/")
-                        .header(HttpHeaders.AUTHORIZATION," Bearer " + access))
+                        .header(HttpHeaders.AUTHORIZATION,"Bearer " + access))
                 .andExpect(status().isOk())
                 .andDo(document("user/get-user-delivery-address",
                         preprocessRequest(prettyPrint()),
@@ -268,12 +264,12 @@ public class UserRestDocsTest {
                 .getAuthentication()
                 .getPrincipal();
 
-        String access = jwtUtil.generateToken("access", userDetails.getUserId(), UserRole.USER.toString(), userDetails.getUserId());
+        String access = jwtUtil.generateToken("access", userDetails.getUserId(), UserRole.USER.toString(), 100_000L);
 
         mockMvc.perform(post(BASE_URL + "/address/")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(address1))
-                        .header(HttpHeaders.AUTHORIZATION," Bearer " + access))
+                        .header(HttpHeaders.AUTHORIZATION,"Bearer " + access))
                 .andExpect(status().isOk())
                 .andDo(document("user/add-user-delivery-address",
                         preprocessRequest(prettyPrint()),
@@ -336,12 +332,12 @@ public class UserRestDocsTest {
                 .isPrimary(false)
                 .build();
 
-        String access = jwtUtil.generateToken("access", userDetails.getUserId(), UserRole.USER.toString(), userDetails.getUserId());
+        String access = jwtUtil.generateToken("access", userDetails.getUserId(), UserRole.USER.toString(),100_000L);
 
         mockMvc.perform(patch(BASE_URL + "/address/")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updateRequest))
-                        .header(HttpHeaders.AUTHORIZATION," Bearer " + access))
+                        .header(HttpHeaders.AUTHORIZATION,"Bearer " + access))
                 .andExpect(status().isOk())
                 .andDo(document("user/update-user-delivery-address",
                         preprocessRequest(prettyPrint()),
@@ -396,10 +392,10 @@ public class UserRestDocsTest {
         List<DeliveryAddressResponse> deliveryAddresses = userService.getDeliveryAddress(userDetails.getUserId());
         Long deliveryAddressId = deliveryAddresses.get(deliveryAddresses.size() - 1).id();
 
-        String access = jwtUtil.generateToken("access", userDetails.getUserId(), UserRole.USER.toString(), userDetails.getUserId());
+        String access = jwtUtil.generateToken("access", userDetails.getUserId(), UserRole.USER.toString(), 100_000L);
 
         mockMvc.perform(delete(BASE_URL + "/address/{deliveryAddressId}",deliveryAddressId)
-                        .header(HttpHeaders.AUTHORIZATION," Bearer " + access))
+                        .header(HttpHeaders.AUTHORIZATION,"Bearer " + access))
                 .andExpect(status().isOk())
                 .andDo(document("user/delete-user-delivery-address",
                         preprocessRequest(prettyPrint()),

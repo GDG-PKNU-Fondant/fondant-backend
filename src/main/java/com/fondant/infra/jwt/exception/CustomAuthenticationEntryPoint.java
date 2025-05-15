@@ -1,33 +1,30 @@
 package com.fondant.infra.jwt.exception;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.InsufficientAuthenticationException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 @Component
 public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
-
     @Override
-    public void commence(HttpServletRequest request, HttpServletResponse response, org.springframework.security.core.AuthenticationException authException) throws IOException, ServletException {
+    public void commence(HttpServletRequest request, HttpServletResponse response,
+                         AuthenticationException authException) throws IOException {
 
-        JWTErrorCode errorCode = (JWTErrorCode) request.getAttribute("exception");
+        JWTErrorCode errorCode = JWTErrorCode.ACCESS_INVALID;
 
-        Map<String, String> errorResponse = new HashMap<>();
-        errorResponse.put("errorCode", errorCode.getCode());
-        errorResponse.put("message", errorCode.getMessage());
+        Object exception = request.getAttribute("exception");
 
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-        response.setContentType("application/json;charset=UTF-8");
+        if (exception instanceof JWTErrorCode) {
+            errorCode = (JWTErrorCode) exception;
+        }
 
-        new ObjectMapper().writeValue(response.getWriter(), errorResponse);
+        JWTResponseUtil.sendErrorResponse(response, errorCode);
     }
 }
