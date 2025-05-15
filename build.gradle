@@ -123,6 +123,6 @@ bootJar {
 
 tasks.named('test') {
 	useJUnitPlatform()
-  outputs.dir snippetsDir
+  	outputs.dir snippetsDir
 	systemProperty "spring.profiles.active", "test"
 }
