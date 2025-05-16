@@ -22,7 +22,7 @@ public class CartItemOptionEntity {
     @JoinColumn(name = "option_id")
     private OptionEntity option;
 
-    @JoinColumn(name = "option_quantity", nullable = false)
+    @Column(name = "option_quantity", nullable = false)
     private int quantity;
 
     @Builder
