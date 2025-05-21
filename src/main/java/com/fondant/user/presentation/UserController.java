@@ -41,8 +41,10 @@ public class UserController {
     }
 
     @PostMapping("/sms/verify")
-    public ResponseEntity<ResponseDto<Void>> verifyOne(@RequestBody SmsVerifyRequest request){
+    public ResponseEntity<ResponseDto<Void>> verifyOne(@RequestBody SmsVerifyRequest request) {
         smsVerificationService.verifyCode(request.phoneNumber(), request.code());
+        return ResponseEntity.ok(ResponseDto.ofSuccess(SuccessMessage.OPERATION_SUCCESS));
+    }
 
     @GetMapping("/")
     public ResponseEntity<ResponseDto<UserResponse>> getUserInfo(@CurrentUser CustomUserDetails user) {
