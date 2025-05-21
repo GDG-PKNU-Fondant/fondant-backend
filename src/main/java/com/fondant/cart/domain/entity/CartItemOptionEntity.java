@@ -33,4 +33,7 @@ public class CartItemOptionEntity {
         this.option = option;
         this.quantity = quantity;
     }
+    public void setCartItem(CartItemEntity cartItem) {
+        this.cartItem = cartItem;
+    }
 }
