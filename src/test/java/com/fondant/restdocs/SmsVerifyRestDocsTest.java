@@ -18,14 +18,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.BDDMockito.willDoNothing;
-import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
-import static org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-
-import org.springframework.restdocs.payload.FieldDescriptor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -33,10 +25,15 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
+import static com.fondant.global.response.CommonResponseFields.commonResponseFields;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.BDDMockito.willDoNothing;
+import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
+import static org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
-import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 
@@ -62,14 +59,6 @@ public class SmsVerifyRestDocsTest {
     private MockMvc mockMvc;
 
     private static final String BASE_URL = "/api/user";
-
-    public static FieldDescriptor[] commonResponseFields() {
-        return new FieldDescriptor[]{
-                fieldWithPath("code").description("요청 성공 여부 (true/false)"),
-                fieldWithPath("message").description("응답 메시지"),
-                fieldWithPath("response").description("응답 데이터")
-        };
-    }
 
     @BeforeEach
     void setUp(){
