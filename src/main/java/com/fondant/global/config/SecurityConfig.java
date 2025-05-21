@@ -6,7 +6,6 @@ import com.fondant.infra.jwt.filter.JWTFilter;
 import com.fondant.infra.jwt.application.JWTUtil;
 import com.fondant.infra.jwt.domain.repository.RefreshRepository;
 import com.fondant.infra.jwt.filter.LoginFilter;
-import com.fondant.infra.oauth2.application.CustomFailureHandler;
 import com.fondant.infra.oauth2.application.CustomOAuth2UserService;
 import com.fondant.infra.oauth2.application.CustomSuccessHandler;
 import org.springframework.beans.factory.annotation.Value;
@@ -59,13 +58,6 @@ public class SecurityConfig {
                           CustomSuccessHandler customSuccessHandler,
                           CustomAuthenticationEntryPoint customAuthenticationEntryPoint) {
 
-    public SecurityConfig(AuthenticationConfiguration authenticationConfiguration,
-                          JWTUtil jwtUtil,
-                          RefreshRepository refreshRepository,
-                          CustomOAuth2UserService customOAuth2UserService,
-                          CustomSuccessHandler customSuccessHandler,
-                          CustomAuthenticationEntryPoint customAuthenticationEntryPoint) {
-
         this.authenticationConfiguration = authenticationConfiguration;
         this.jwtUtil = jwtUtil;
         this.refreshRepository = refreshRepository;
@@ -84,7 +76,7 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-    @Value("${spring.cors.allowed-origins}")
+    @Value("${spring.cors.allowed_origins}")
     private String allowedOrigins;
 
     @Bean
