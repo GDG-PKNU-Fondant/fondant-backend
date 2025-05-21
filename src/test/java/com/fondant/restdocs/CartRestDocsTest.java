@@ -1,5 +1,6 @@
 package com.fondant.restdocs;
 
+import com.fondant.cart.application.CartService;
 import com.fondant.cart.domain.entity.*;
 import com.fondant.infra.jwt.application.JWTUtil;
 import com.fondant.market.domain.entity.MarketEntity;
@@ -15,15 +16,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.payload.FieldDescriptor;
+import org.springframework.restdocs.payload.JsonFieldType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Date;
 import java.time.LocalDate;
 
+import static java.sql.JDBCType.ARRAY;
+import static javax.management.openmbean.SimpleType.STRING;
+import static javax.swing.text.html.parser.DTDConstants.NUMBER;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
@@ -41,21 +47,23 @@ public class CartRestDocsTest {
     @Autowired private JWTUtil jwtUtil;
 
     @Autowired private CartTestRepository cartTestRepository;
-    @Autowired private CartMarketTestRepository cartMarketEntityTestRepository;
-    @Autowired private CartItemTestRepository cartItemEntityTestRepository;
+    @Autowired private CartMarketTestRepository cartMarketTestRepository;
+    @Autowired private CartItemTestRepository cartItemTestRepository;
     @Autowired private CartItemOptionTestRepository cartItemOptionTestRepository;
 
     @Autowired private UserTestRepository userTestRepository;
     @Autowired private MarketTestRepository marketTestRepository;
     @Autowired private ProductRepository productRepository;
     @Autowired private OptionRepository optionRepository;
+    @Autowired private CartService cartService;
+    private UserEntity user;
 
     private static final String BASE_URL = "/api/cart";
     private String mockToken;
 
     @BeforeEach
     void setUp() {
-        UserEntity user = userTestRepository.save(
+        user = userTestRepository.save(
                 UserEntity.builder()
                         .snsType(SNSType.KAKAO)
                         .name("테스트 유저")
@@ -67,64 +75,102 @@ public class CartRestDocsTest {
                         .phoneNumber("01012345678")
                         .createAt(LocalDate.now())
                         .profileUrl("http://profile.img")
-                        .build());
+                        .build()
+        );
 
-        MarketEntity market = marketTestRepository.save(MarketEntity.builder()
-                .name("마켓1")
-                .description("마켓 설명")
-                .thumbnail("thumb.jpg")
-                .background("bg.jpg")
-                .build());
+        MarketEntity market = marketTestRepository.save(
+                MarketEntity.builder()
+                        .name("달미롱")
+                        .thumbnail("thumbnail.jpg")
+                        .background("bg.jpg")
+                        .deliveryFee(3000.0)
+                        .build()
+        );
 
-        ProductEntity product1 = productRepository.save(ProductEntity.builder()
-                .name("옵션 없는 상품")
-                .description("설명")
-                .thumbnail("no-option.jpg")
-                .price(10000)
-                .market(market)
-                .startDate(LocalDate.now())
-                .maxCount(100)
-                .build());
+        ProductEntity product1 = productRepository.save(
+                ProductEntity.builder()
+                        .name("쫀득쿠키")
+                        .description("옵션이 없는 상품입니다.")
+                        .thumbnail("thumbnail.jpg")
+                        .price(5000)
+                        .market(market)
+                        .startDate(LocalDate.now())
+                        .build()
+        );
 
-        ProductEntity product2 = productRepository.save(ProductEntity.builder()
-                .name("옵션 있는 상품")
-                .description("설명")
-                .thumbnail("with-option.jpg")
-                .price(12000)
-                .market(market)
-                .startDate(LocalDate.now())
-                .maxCount(100)
-                .build());
+        ProductEntity product2 = productRepository.save(
+                ProductEntity.builder()
+                        .name("딸기모찌")
+                        .description("옵션이 있는 상품입니다.")
+                        .thumbnail("thumbnail.jpg")
+                        .price(8000)
+                        .market(market)
+                        .startDate(LocalDate.now())
+                        .build()
+        );
 
-        OptionEntity option = optionRepository.save(OptionEntity.builder()
-                .name("기본 옵션")
-                .productId(product2.getId())
-                .price(3000)
-                .build());
+        OptionEntity option1 = optionRepository.save(
+                OptionEntity.builder()
+                        .name("3개 세트")
+                        .price(2000)
+                        .productId(product2.getId())
+                        .build()
+        );
 
-        CartEntity cart = cartTestRepository.save(CartEntity.builder().user(user).build());
-        CartMarketEntity cartMarket = cartMarketEntityTestRepository.save(CartMarketEntity.builder()
-                .cart(cart)
-                .market(market)
-                .build());
+        OptionEntity option2 = optionRepository.save(
+                OptionEntity.builder()
+                        .name("5개 세트")
+                        .price(3000)
+                        .productId(product2.getId())
+                        .build()
+        );
 
-        CartItemEntity item1 = cartItemEntityTestRepository.save(CartItemEntity.builder()
-                .cartMarket(cartMarket)
-                .product(product1)
+        CartEntity cart = cartTestRepository.save(
+                CartEntity.builder()
+                        .user(user)
+                        .build()
+        );
+
+        CartMarketEntity cartMarket = cartMarketTestRepository.save(
+                CartMarketEntity.builder()
+                        .cart(cart)
+                        .market(market)
+                        .build()
+        );
+
+        CartItemEntity item1 = cartItemTestRepository.save(
+                CartItemEntity.builder()
+                        .cartMarket(cartMarket)
+                        .product(product1)
+                        .quantity(1)
+                        .arrivalDate(LocalDate.now().plusDays(3))
+                        .build()
+        );
+
+        CartItemEntity item2 = cartItemTestRepository.save(
+                CartItemEntity.builder()
+                        .cartMarket(cartMarket)
+                        .product(product2)
+                        .quantity(1)
+                        .arrivalDate(LocalDate.now().plusDays(3))
+                        .build()
+        );
+
+
+        CartItemOptionEntity itemOption1 = CartItemOptionEntity.builder()
+                .option(option1)
                 .quantity(1)
-                .build());
+                .build();
+        item2.addCartItemOption(itemOption1);
 
-        CartItemEntity item2 = cartItemEntityTestRepository.save(CartItemEntity.builder()
-                .cartMarket(cartMarket)
-                .product(product2)
-                .quantity(2)
-                .build());
+        CartItemOptionEntity itemOption2 = CartItemOptionEntity.builder()
+                .option(option2)
+                .quantity(3)
+                .build();
+        item2.addCartItemOption(itemOption2);
 
-        cartItemOptionTestRepository.save(CartItemOptionEntity.builder()
-                .cartItem(item2)
-                .option(option)
-                .quantity(2)
-                .build());
+        cartItemOptionTestRepository.save(itemOption1);
+        cartItemOptionTestRepository.save(itemOption2);
 
         mockToken = jwtUtil.generateToken("access", user.getId(), user.getRole().name(), 600000L);
     }
@@ -139,7 +185,8 @@ public class CartRestDocsTest {
 
     @Test
     void getCartItems() throws Exception {
-        mockMvc.perform(get(BASE_URL)
+        System.out.println(cartService.getCartItemsByUser(user.getId(), Pageable.unpaged()));
+        mockMvc.perform(get(BASE_URL + "/list")
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + mockToken)
                         .param("page", "0")
                         .contentType(MediaType.APPLICATION_JSON))
@@ -149,26 +196,26 @@ public class CartRestDocsTest {
                         preprocessResponse(prettyPrint()),
                         responseFields(
                                 commonResponseFields()
-                        ).andWithPrefix("response.", new FieldDescriptor[]{
+                        ).andWithPrefix("response.", new FieldDescriptor[] {
                                 fieldWithPath("pageInfo").description("페이지 정보"),
                                 fieldWithPath("pageInfo.currentPage").description("현재 페이지 번호"),
                                 fieldWithPath("pageInfo.totalPage").description("총 페이지 수"),
-                                fieldWithPath("cartItems[].cartItemId").description("장바구니 아이템 ID"),
-                                fieldWithPath("cartItems[].marketId").description("마켓 ID"),
-                                fieldWithPath("cartItems[].marketName").description("마켓 이름"),
-                                fieldWithPath("cartItems[].productId").description("상품 ID"),
-                                fieldWithPath("cartItems[].productName").description("상품 이름"),
-                                fieldWithPath("cartItems[].quantity").description("수량"),
-                                fieldWithPath("cartItems[].arrivalDate").description("도착 예정일"),
-                                fieldWithPath("cartItems[].options").description("선택 옵션 목록 (옵션이 없으면 null)"),
-                                fieldWithPath("cartItems[].options[].optionId")
-                                        .optional().type("Number").description("옵션 ID"),
-                                fieldWithPath("cartItems[].options[].optionName")
-                                        .optional().type("String").description("옵션 이름"),
-                                fieldWithPath("cartItems[].options[].optionPrice")
-                                        .optional().type("Number").description("옵션 가격"),
-                                fieldWithPath("cartItems[].options[].quantity")
-                                        .optional().type("Number").description("옵션 수량")
+                                fieldWithPath("markets[].marketId").description("마켓 ID"),
+                                fieldWithPath("markets[].marketName").description("마켓 이름"),
+                                fieldWithPath("markets[].products").description("상품 목록"),
+                                fieldWithPath("markets[].products[].productId").description("상품 ID"),
+                                fieldWithPath("markets[].products[].productName").description("상품 이름"),
+                                fieldWithPath("markets[].products[].thumbnail").description("상품 썸네일 URL"),
+                                fieldWithPath("markets[].products[].options").description("옵션 목록 (없으면 빈 배열)").type(ARRAY).optional(),
+                                fieldWithPath("markets[].products[].options[].optionId").type(JsonFieldType.NUMBER).description("옵션 ID"),
+                                fieldWithPath("markets[].products[].options[].optionName").type(JsonFieldType.STRING).description("옵션 이름"),
+                                fieldWithPath("markets[].products[].options[].additionalPrice").type(JsonFieldType.NUMBER).description("옵션 추가 금액"),
+                                fieldWithPath("markets[].products[].options[].quantity").type(JsonFieldType.NUMBER).description("옵션 수량"),
+                                fieldWithPath("markets[].products[].totalQuantity").description("상품 총 수량"),
+                                fieldWithPath("markets[].products[].arrivalDate").description("도착 예정일"),
+                                fieldWithPath("markets[].products[].totalProductPrice").description("상품 총 가격"),
+                                fieldWithPath("markets[].products[].deliveryFee").description("배송비"),
+                                fieldWithPath("markets[].products[].finalPrice").description("최종 결제 금액")
                         })));
     }
 }
