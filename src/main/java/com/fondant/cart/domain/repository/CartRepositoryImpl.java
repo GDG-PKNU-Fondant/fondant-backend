@@ -1,6 +1,13 @@
 package com.fondant.cart.domain.repository;
 
-import com.fondant.cart.domain.entity.*;
+import com.fondant.cart.domain.entity.CartItemEntity;
+import com.fondant.cart.domain.entity.QCartEntity;
+import com.fondant.cart.domain.entity.QCartItemEntity;
+import com.fondant.cart.domain.entity.QCartItemOptionEntity;
+import com.fondant.cart.domain.entity.QCartMarketEntity;
+import com.fondant.market.domain.entity.QMarketEntity;
+import com.fondant.product.domain.entity.QOptionEntity;
+import com.fondant.product.domain.entity.QProductEntity;
 import com.fondant.user.domain.entity.QUserEntity;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -13,6 +20,7 @@ import java.util.List;
 
 @RequiredArgsConstructor
 public class CartRepositoryImpl implements CartRepositoryCustom {
+
     private final JPAQueryFactory queryFactory;
 
     @Override
@@ -21,20 +29,28 @@ public class CartRepositoryImpl implements CartRepositoryCustom {
         QCartMarketEntity cartMarket = QCartMarketEntity.cartMarketEntity;
         QCartItemEntity cartItem = QCartItemEntity.cartItemEntity;
         QCartItemOptionEntity cartItemOption = QCartItemOptionEntity.cartItemOptionEntity;
+        QProductEntity product = QProductEntity.productEntity;
+        QOptionEntity option = QOptionEntity.optionEntity;
+        QMarketEntity market = QMarketEntity.marketEntity;
         QUserEntity user = QUserEntity.userEntity;
 
-        List<CartItemEntity> content = queryFactory
-                .selectFrom(cartItem).distinct()
+        JPAQuery<CartItemEntity> query = queryFactory
+                .selectDistinct(cartItem)
+                .from(cartItem)
                 .join(cartItem.cartMarket, cartMarket).fetchJoin()
                 .join(cartMarket.cart, cart).fetchJoin()
                 .join(cart.user, user).fetchJoin()
-                .join(cartItem.product).fetchJoin()
+                .join(cartMarket.market, market).fetchJoin()
+                .join(cartItem.product, product).fetchJoin()
                 .leftJoin(cartItem.cartItemOptions, cartItemOption).fetchJoin()
-                .leftJoin(cartItemOption.option).fetchJoin()
-                .where(user.id.eq(userId))
-                .offset(pageable.getOffset())
-                .limit(pageable.getPageSize())
-                .fetch();
+                .leftJoin(cartItemOption.option, option).fetchJoin()
+                .where(user.id.eq(userId));
+
+        if (!pageable.isUnpaged()) {
+            query.offset(pageable.getOffset()).limit(pageable.getPageSize());
+        }
+
+        List<CartItemEntity> content = query.fetch();
 
         JPAQuery<Long> countQuery = queryFactory
                 .select(cartItem.count())
