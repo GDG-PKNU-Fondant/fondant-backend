@@ -2,16 +2,14 @@ package com.fondant.restdocs;
 
 
 import com.fondant.infra.jwt.application.JWTUtil;
+import com.fondant.market.domain.entity.MarketCategoryEntity;
 import com.fondant.market.domain.entity.MarketEntity;
 import com.fondant.product.category.domain.CategoryEntity;
 import com.fondant.product.domain.entity.*;
 import com.fondant.product.domain.repository.OptionRepository;
 import com.fondant.product.domain.repository.ProductImageRepository;
 import com.fondant.product.domain.repository.ProductRepository;
-import com.fondant.test.repository.CategoryTestRepository;
-import com.fondant.test.repository.MarketTestRepository;
-import com.fondant.test.repository.ProductCategoryTestRepository;
-import com.fondant.test.repository.UserTestRepository;
+import com.fondant.test.repository.*;
 import com.fondant.user.domain.entity.Gender;
 import com.fondant.user.domain.entity.SNSType;
 import com.fondant.user.domain.entity.UserEntity;
@@ -31,6 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Date;
 import java.time.LocalDate;
+import java.util.Arrays;
 
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
@@ -70,6 +69,12 @@ public class ProductRestDocsTest {
     @Autowired
     private UserTestRepository userRepository;
 
+    @Autowired
+    private MarketTestRepository marketTestRepository;
+
+    @Autowired
+    private MarketCategoryTestRepository marketCategoryRepository;
+
     @MockitoSpyBean
     private JWTUtil jwtUtil;
 
@@ -96,6 +101,8 @@ public class ProductRestDocsTest {
                 .description("신메뉴 업데이트 매달 1일 ! 전국 택배가능 초콜릿 쿠키 전문 퐁당 마켓")
                 .thumbnail("test-thumbnail.png")
                 .background("test-background.png")
+                .totalSales(100L)
+                .totalReviews(10L)
                 .build()
         );
 
@@ -197,6 +204,11 @@ public class ProductRestDocsTest {
 
         mockToken = jwtUtil.generateToken("access", testUser.getId(), "USER", 60 * 10 * 1000L);
 
+        marketCategoryRepository.save(MarketCategoryEntity.builder()
+                .market(market)
+                .category(category1)
+                .build());
+
     }
 
     public static FieldDescriptor[] commonResponseFields() {
@@ -267,6 +279,14 @@ public class ProductRestDocsTest {
                                 fieldWithPath("detailPages").description("상품 상세 페이지 이미지 정보 목록"),
                                 fieldWithPath("detailPages[].imgUrl").description("상품 상세 페이지 이미지 URL"),
                                 fieldWithPath("detailPages[].imgOrder").description("상품 상세 페이지 이미지 순서"),
+                                fieldWithPath("marketInfo").description("마켓 목록"),
+                                fieldWithPath("marketInfo.id").description("마켓 ID"),
+                                fieldWithPath("marketInfo.name").description("마켓 이름"),
+                                fieldWithPath("marketInfo.description").description("마켓 한줄 소개"),
+                                fieldWithPath("marketInfo.thumbnail").description("마켓 썸네일 이미지 URL"),
+                                fieldWithPath("marketInfo.totalSales").description("총 판매 수량"),
+                                fieldWithPath("marketInfo.totalReviews").description("총 리뷰 개수"),
+                                fieldWithPath("marketInfo.freeDeliveryLimit").description("무료배송 기준"),
                                 fieldWithPath("basePrice").description("상품 기본 가격 (옵션 가격 추가 전)"),
                         })));
     }
