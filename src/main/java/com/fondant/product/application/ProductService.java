@@ -2,6 +2,11 @@ package com.fondant.product.application;
 
 import com.fondant.global.dto.PageInfo;
 import com.fondant.global.exception.ApiException;
+import com.fondant.market.application.MarketService;
+import com.fondant.market.application.dto.MarketInfo;
+import com.fondant.market.application.dto.MarketInfoForProductDetail;
+import com.fondant.market.domain.entity.MarketEntity;
+import com.fondant.market.domain.repository.MarketRepository;
 import com.fondant.product.application.dto.ImageInfo;
 import com.fondant.product.application.dto.OptionInfo;
 import com.fondant.product.application.dto.ProductInfo;
@@ -30,13 +35,15 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final ProductImageRepository productImageRepository;
     private final OptionRepository optionRepository;
+    private final MarketService marketService;
 
     @Autowired
-    public ProductService(CategoryService categoryService, ProductRepository productRepository, ProductImageRepository productImageRepository, OptionRepository optionRepository) {
+    public ProductService(CategoryService categoryService, ProductRepository productRepository, ProductImageRepository productImageRepository, OptionRepository optionRepository,MarketService marketService) {
         this.categoryService = categoryService;
         this.productRepository = productRepository;
         this.productImageRepository = productImageRepository;
         this.optionRepository = optionRepository;
+        this.marketService = marketService;
     }
 
     @Transactional(readOnly = true)
@@ -52,8 +59,6 @@ public class ProductService {
                 .products(getProductInfos(products.getContent()))
                 .build();
     }
-
-
 
     public List<ProductInfo> getProductInfos(List<ProductEntity> products) {
         return products.stream()
@@ -74,18 +79,32 @@ public class ProductService {
         return Math.floor(price * appliedRate + 0.5);
     }
 
+    @Transactional(readOnly = true)
     public ProductDetailResponse getProductDetail(Long productId) {
         ProductEntity product = getProductById(productId);
+
         return ProductDetailResponse.builder()
                 .photos(getImageUrlsByProductIdAndType(productId,ImageType.PRODUCT_PHOTO))
                 .name(product.getName())
                 .options(getOptionInfos(productId))
                 .description(product.getDescription())
                 .detailPages(getImageUrlsByProductIdAndType(productId,ImageType.DETAIL_PAGE))
+                .marketInfo(getMarketInfo(product.getMarket()))
                 .basePrice(product.getPrice())
                 .build();
     }
 
+    private MarketInfoForProductDetail getMarketInfo(MarketEntity market) {
+        return MarketInfoForProductDetail.builder()
+                .id(market.getId())
+                .name(market.getName())
+                .description(market.getDescription())
+                .thumbnail(market.getThumbnail())
+                .totalReviews(market.getTotalReviews())
+                .totalSales(market.getTotalSales())
+                .freeDeliveryLimit(market.getFreeDeliveryLimit())
+                .build();
+    }
     private List<ImageInfo> getImageUrlsByProductIdAndType(Long productId, ImageType imageType){
         return productImageRepository.findByProductIdAndImageTypeOrderByImgOrderAsc(productId, imageType)
                 .stream().map(img->
