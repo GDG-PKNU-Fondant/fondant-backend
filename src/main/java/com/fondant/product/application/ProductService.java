@@ -5,6 +5,7 @@ import com.fondant.global.exception.ApiException;
 import com.fondant.product.application.dto.ImageInfo;
 import com.fondant.product.application.dto.OptionInfo;
 import com.fondant.product.application.dto.ProductInfo;
+import com.fondant.product.category.application.CategoryService;
 import com.fondant.product.domain.entity.ImageType;
 import com.fondant.product.domain.entity.OptionEntity;
 import com.fondant.product.domain.entity.ProductEntity;
@@ -25,12 +26,14 @@ import java.util.List;
 
 @Service
 public class ProductService {
+    private final CategoryService categoryService;
     private final ProductRepository productRepository;
     private final ProductImageRepository productImageRepository;
     private final OptionRepository optionRepository;
 
     @Autowired
-    public ProductService(ProductRepository productRepository, ProductImageRepository productImageRepository, OptionRepository optionRepository) {
+    public ProductService(CategoryService categoryService, ProductRepository productRepository, ProductImageRepository productImageRepository, OptionRepository optionRepository) {
+        this.categoryService = categoryService;
         this.productRepository = productRepository;
         this.productImageRepository = productImageRepository;
         this.optionRepository = optionRepository;
@@ -49,6 +52,8 @@ public class ProductService {
                 .products(getProductInfos(products.getContent()))
                 .build();
     }
+
+
 
     public List<ProductInfo> getProductInfos(List<ProductEntity> products) {
         return products.stream()

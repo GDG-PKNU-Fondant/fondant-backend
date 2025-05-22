@@ -1,5 +1,6 @@
 package com.fondant.product.presentation;
 
+import com.fondant.global.config.PageConfig;
 import com.fondant.global.dto.ResponseDto;
 import com.fondant.global.dto.SuccessMessage;
 import com.fondant.product.application.ProductService;
@@ -16,9 +17,11 @@ public class ProductController {
     private static int PAGE_SIZE = 10;
 
     private final ProductService productService;
+    private final PageConfig pageConfig;
 
-    public ProductController(ProductService productService) {
+    public ProductController(ProductService productService, PageConfig pageConfig) {
         this.productService = productService;
+        this.pageConfig = pageConfig;
     }
 
     @GetMapping("/{marketId}/{categoryId}")
@@ -26,10 +29,8 @@ public class ProductController {
             @PathVariable(name="marketId") Long marketId,
             @PathVariable(name="categoryId") Long categoryId,
             @RequestParam(name="page") int page) {
-        Pageable pageable = PageRequest.of(page, PAGE_SIZE);
-
         return ResponseEntity.ok(ResponseDto.ofSuccess(SuccessMessage.OPERATION_SUCCESS,
-                productService.getProductsByMarketAndCategoryId(marketId,categoryId,pageable)));
+                productService.getProductsByMarketAndCategoryId(marketId,categoryId, pageConfig.defaultPageable())));
     }
 
     @GetMapping("/{productId}")

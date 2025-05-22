@@ -2,10 +2,11 @@ package com.fondant.restdocs;
 
 import com.fondant.market.domain.entity.MarketCategoryEntity;
 import com.fondant.market.domain.entity.MarketEntity;
-import com.fondant.product.domain.entity.CategoryEntity;
-import com.fondant.test.repository.CategoryTestRepository;
-import com.fondant.test.repository.MarketCategoryTestRepository;
-import com.fondant.test.repository.MarketTestRepository;
+import com.fondant.market.domain.entity.MarketHashtagEntity;
+import com.fondant.market.domain.repository.MarketHashtagRepository;
+import com.fondant.product.category.domain.CategoryEntity;
+import com.fondant.test.repository.*;
+import com.fondant.global.annotation.WithMockCustomUser;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,11 +14,11 @@ import org.springframework.http.MediaType;
 import org.springframework.restdocs.payload.FieldDescriptor;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.Arrays;
+import java.util.List;
 
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
@@ -25,12 +26,10 @@ import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWit
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
 import static org.springframework.restdocs.request.RequestDocumentation.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@AutoConfigureRestDocs(uriScheme = "http", uriHost = "localhost", uriPort = 8080)
 @Transactional
 public class MarketRestDocsTest {
 
@@ -45,6 +44,16 @@ public class MarketRestDocsTest {
 
     @Autowired
     private MarketCategoryTestRepository marketCategoryRepository;
+
+    @Autowired
+    private MarketHashtagRepository marketHashtagRepository;
+
+    @Autowired
+    private UserTestRepository userRepository;
+
+    @Autowired
+    private MarketLikeTestRepository marketLikeRepository;
+
 
     private CategoryEntity categoryCookie;
     private CategoryEntity categoryBread;
@@ -84,6 +93,8 @@ public class MarketRestDocsTest {
                         .background("market-" + marketCount + "-bg.jpg")
                         .totalSales(100L * marketCount)
                         .totalReviews(10L * marketCount)
+                        .businessNumber("123-45-67890")
+                        .instagramProfile("https://instagram.com/market" + marketCount)
                         .build());
 
                 marketCategoryRepository.save(MarketCategoryEntity.builder()
@@ -104,6 +115,7 @@ public class MarketRestDocsTest {
     }
 
     @Test
+    @WithMockCustomUser
     void getMarketsByCategory() throws Exception {
         mockMvc.perform(get(BASE_URL + "/categories/{categoryId}", categoryBread.getId())
                         .param("page", "0")
@@ -134,8 +146,15 @@ public class MarketRestDocsTest {
     }
 
     @Test
+    @WithMockCustomUser
     void getMarketById() throws Exception {
         MarketEntity market = marketRepository.findAll().get(0);
+
+        marketHashtagRepository.saveAll(List.of(
+                MarketHashtagEntity.builder().market(market).name("기념일맞춤").build(),
+                MarketHashtagEntity.builder().market(market).name("수제간식").build()
+        ));
+
         mockMvc.perform(get(BASE_URL + "/{marketId}", market.getId())
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -152,11 +171,22 @@ public class MarketRestDocsTest {
                                 fieldWithPath("name").description("마켓 이름"),
                                 fieldWithPath("description").description("마켓 한줄 소개"),
                                 fieldWithPath("thumbnail").description("마켓 썸네일 이미지 URL"),
-                                fieldWithPath("background").description("마켓 배경 이미지 URL")
+                                fieldWithPath("background").description("마켓 배경 이미지 URL"),
+                                fieldWithPath("liked").description("유저의 좋아요 여부"),
+                                fieldWithPath("likeCount").description("마켓 좋아요 총 개수"),
+                                fieldWithPath("isTop10").description("카테고리별 인기 마켓 TOP10 여부"),
+                                fieldWithPath("hashtags").description("해시태그 목록 (최대 5개)"),
+                                fieldWithPath("profile").description("마켓 상세 정보 목록")
+                        }).andWithPrefix("response.profile.", new FieldDescriptor[]{
+                                fieldWithPath("businessNumber").description("사업자 등록번호"),
+                                fieldWithPath("instagramProfile").description("인스타그램 프로필 링크"),
+                                fieldWithPath("latitude").description("마켓 위치 위도"),
+                                fieldWithPath("longitude").description("마켓 위치 경도")
                         })));
     }
 
     @Test
+    @WithMockCustomUser
     void getTop10MarketsByPopularity() throws Exception {
         mockMvc.perform(get(BASE_URL + "/top10")
                         .param("page", "0")
@@ -185,9 +215,10 @@ public class MarketRestDocsTest {
     }
 
     @Test
+    @WithMockCustomUser
     void getTop30MarketsByCategory() throws Exception {
         mockMvc.perform(get(BASE_URL + "/{categoryId}/top30", categoryCookie.getId())
-                .param("page", "0")
+                        .param("page", "0")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andDo(document("markets/get-top30-markets-by-category",
@@ -216,6 +247,7 @@ public class MarketRestDocsTest {
     }
 
     @Test
+    @WithMockCustomUser
     void getRandomTop5MarketsByCategory() throws Exception {
         mockMvc.perform(get(BASE_URL + "/{categoryId}/top5", categoryCookie.getId())
                         .param("page", "0")

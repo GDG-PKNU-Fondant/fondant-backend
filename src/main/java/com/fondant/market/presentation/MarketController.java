@@ -1,11 +1,13 @@
 package com.fondant.market.presentation;
 
+import com.fondant.global.annotation.CurrentUser;
 import com.fondant.global.config.PageConfig;
 import com.fondant.global.dto.ResponseDto;
 import com.fondant.global.dto.SuccessMessage;
 import com.fondant.market.application.MarketService;
 import com.fondant.market.application.dto.MarketDetail;
 import com.fondant.market.presentation.dto.response.MarketsResponse;
+import com.fondant.user.application.dto.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -20,8 +22,8 @@ public class MarketController {
     private final PageConfig pageConfig;
 
     @GetMapping("/{marketId}")
-    public ResponseEntity<ResponseDto<MarketDetail>> getMarket(@PathVariable long marketId) {
-        MarketDetail marketDetail = marketService.getMarketById(marketId);
+    public ResponseEntity<ResponseDto<MarketDetail>> getMarket(@PathVariable long marketId, @CurrentUser CustomUserDetails user) {
+        MarketDetail marketDetail = marketService.getMarketById(marketId, user.getUserId());
         return ResponseEntity.ok(ResponseDto.ofSuccess(SuccessMessage.OPERATION_SUCCESS, marketDetail));
     }
 

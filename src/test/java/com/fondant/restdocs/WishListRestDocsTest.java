@@ -1,7 +1,9 @@
 package com.fondant.restdocs;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fondant.infra.jwt.application.JWTUtil;
 import com.fondant.market.domain.entity.MarketEntity;
+import com.fondant.product.category.domain.CategoryEntity;
 import com.fondant.product.domain.entity.*;
 import com.fondant.product.domain.repository.OptionRepository;
 import com.fondant.product.domain.repository.ProductImageRepository;
@@ -13,25 +15,30 @@ import com.fondant.test.repository.UserTestRepository;
 import com.fondant.user.domain.entity.Gender;
 import com.fondant.user.domain.entity.SNSType;
 import com.fondant.user.domain.entity.UserEntity;
+import com.fondant.user.domain.entity.UserRole;
 import com.fondant.wishlist.application.dto.request.WishListRegistRequest;
 import com.fondant.wishlist.domain.entity.WishListEntity;
 import com.fondant.wishlist.domain.repository.WishListRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.payload.FieldDescriptor;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Date;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 
+import static org.mockito.Mockito.doReturn;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
@@ -40,12 +47,14 @@ import static org.springframework.restdocs.operation.preprocess.Preprocessors.pr
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 import static org.springframework.restdocs.request.RequestDocumentation.*;
 import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
 @AutoConfigureRestDocs(uriScheme = "http", uriHost = "localhost", uriPort = 8080)
 @Transactional
+@ExtendWith(MockitoExtension.class)
 public class WishListRestDocsTest {
     @Autowired
     private MockMvc mockMvc;
@@ -77,6 +86,10 @@ public class WishListRestDocsTest {
     @Autowired
     private UserTestRepository userRepository;
 
+    @MockitoSpyBean
+    private JWTUtil jwtUtil;
+
+
     private MarketEntity market;
     private CategoryEntity category1;
     private CategoryEntity category2;
@@ -89,11 +102,14 @@ public class WishListRestDocsTest {
     private OptionEntity option1;
     private UserEntity testUser;
     private WishListEntity wishList1;
+    private String mockToken;
 
     private static final String BASE_URL = "/api/wishlist";
 
     @BeforeEach
     void setUp() {
+        mockToken = "jwtToken";
+
         market = marketRepository.save(MarketEntity.builder()
                 .name("퐁당 마켓")
                 .description("신메뉴 업데이트 매달 1일 ! 전국 택배가능 초콜릿 쿠키 전문 퐁당 마켓")
@@ -165,8 +181,11 @@ public class WishListRestDocsTest {
                         .profileUrl("https://example.com")
                         .createAt(Date.valueOf(LocalDate.of(2025, 1, 1)).toLocalDate())
                         .gender(Gender.FEMALE)
+                        .role(UserRole.USER)
                         .build()
         );
+
+        mockToken = jwtUtil.generateToken("access", testUser.getId(), "USER", 60 * 10 * 1000L);
 
         wishList1 = wishListRepository.save(
                 WishListEntity.builder()
@@ -195,6 +214,7 @@ public class WishListRestDocsTest {
 
         //Then
         mockMvc.perform(post(BASE_URL)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + mockToken)
                         .content(objectMapper.writeValueAsString(request))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -211,9 +231,11 @@ public class WishListRestDocsTest {
     }
 
     @Test
+    @WithMockUser(username = "testUser", roles = {"USER"})
     void getWishList() throws Exception {
         mockMvc.perform(get(BASE_URL)
-                        .param("userId", testUser.getId().toString())
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + mockToken)
+                        .with(user("testUser").roles("USER"))
                         .param("page", "0")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -221,12 +243,11 @@ public class WishListRestDocsTest {
                         preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint()),
                         queryParameters(
-                                parameterWithName("page").description("페이지 번호 (0부터 시작)"),
-                                parameterWithName("userId").description("*토큰으로 수정예정")
+                                parameterWithName("page").description("페이지 번호 (0부터 시작)")
                         ),
                         responseFields(
                                 commonResponseFields()
-                        ).andWithPrefix("response.", new FieldDescriptor[] {
+                        ).andWithPrefix("response.", new FieldDescriptor[]{
                                 fieldWithPath("pageInfo").description("페이지 정보"),
                                 fieldWithPath("pageInfo.currentPage").description("현재 페이지"),
                                 fieldWithPath("pageInfo.totalPage").description("전체 페이지"),

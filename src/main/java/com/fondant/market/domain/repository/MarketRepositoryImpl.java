@@ -4,8 +4,9 @@ import com.fondant.global.exception.ApiException;
 import com.fondant.market.domain.entity.MarketEntity;
 import com.fondant.market.domain.entity.QMarketCategoryEntity;
 import com.fondant.market.domain.entity.QMarketEntity;
+import com.fondant.market.domain.entity.QMarketLikeEntity;
 import com.fondant.market.exception.MarketError;
-import com.fondant.product.domain.entity.QCategoryEntity;
+import com.fondant.product.category.domain.QCategoryEntity;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.JPAExpressions;
@@ -28,6 +29,13 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
 
     public MarketRepositoryImpl(JPAQueryFactory queryFactory) {
         this.queryFactory = queryFactory;
+    }
+
+    private NumberExpression<Double> calculatePopularityScore(QMarketEntity market) {
+        return market.totalSales
+                .coalesce(0L).castToNum(Double.class)
+                .add(market.totalReviews.coalesce(0L).castToNum(Double.class).multiply(2.0))
+                .add(Expressions.numberTemplate(Double.class, "GREATEST(0, {0})", 100));
     }
 
     @Override
@@ -61,10 +69,7 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
     public Page<MarketEntity> findTop10MarketsByPopularity(Pageable pageable) {
         QMarketEntity market = QMarketEntity.marketEntity;
 
-        NumberExpression<Double> popularityScore = market.totalSales
-                .coalesce(0L).castToNum(Double.class)
-                .add(market.totalReviews.coalesce(0L).castToNum(Double.class).multiply(2.0))
-                .add(Expressions.numberTemplate(Double.class, "GREATEST(0, {0})", 100));
+        NumberExpression<Double> popularityScore = calculatePopularityScore(market);
 
         List<MarketEntity> markets = queryFactory
                 .selectFrom(market)
@@ -85,11 +90,7 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
         QMarketEntity market = QMarketEntity.marketEntity;
         QMarketCategoryEntity marketCategory = QMarketCategoryEntity.marketCategoryEntity;
         QCategoryEntity category = QCategoryEntity.categoryEntity;
-
-        NumberExpression<Double> popularityScore = market.totalSales
-                .coalesce(0L).castToNum(Double.class)
-                .add(market.totalReviews.coalesce(0L).castToNum(Double.class).multiply(2.0))
-                .add(Expressions.numberTemplate(Double.class, "GREATEST(0, {0})", 100));
+        NumberExpression<Double> popularityScore = calculatePopularityScore(market);
 
         JPQLQuery<Long> subQuery = JPAExpressions
                 .select(market.id)
@@ -119,10 +120,7 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
         QMarketCategoryEntity marketCategory = QMarketCategoryEntity.marketCategoryEntity;
         QCategoryEntity category = QCategoryEntity.categoryEntity;
 
-        NumberExpression<Double> popularityScore = market.totalSales
-                .coalesce(0L).castToNum(Double.class)
-                .add(market.totalReviews.coalesce(0L).castToNum(Double.class).multiply(2.0))
-                .add(Expressions.numberTemplate(Double.class, "GREATEST(0, {0})", 100));
+        NumberExpression<Double> popularityScore = calculatePopularityScore(market);
 
         List<MarketEntity> top30Markets = queryFactory
                 .select(market)
@@ -170,5 +168,62 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
         List<MarketEntity> pageContent = top30Markets.subList(offset, end);
 
         return new PageImpl<>(pageContent, pageable, total);
+    }
+
+    @Override
+    public boolean isMarketInTop10ByCategory(Long marketId) {
+        QMarketEntity market = QMarketEntity.marketEntity;
+        QMarketCategoryEntity marketCategory = QMarketCategoryEntity.marketCategoryEntity;
+        QCategoryEntity category = QCategoryEntity.categoryEntity;
+
+        Long categoryId = queryFactory
+                .select(marketCategory.category.id)
+                .from(marketCategory)
+                .where(marketCategory.market.id.eq(marketId))
+                .fetchFirst();
+
+        if (categoryId == null) return false;
+
+        NumberExpression<Double> popularityScore = market.totalSales
+                .coalesce(0L).castToNum(Double.class)
+                .add(market.totalReviews.coalesce(0L).castToNum(Double.class).multiply(2.0))
+                .add(Expressions.numberTemplate(Double.class, "GREATEST(0, {0})", 100));
+
+        List<Long> top10Ids = queryFactory
+                .select(market.id)
+                .from(marketCategory)
+                .join(marketCategory.market, market)
+                .join(marketCategory.category, category)
+                .where(category.id.eq(categoryId))
+                .orderBy(popularityScore.desc())
+                .limit(10)
+                .fetch();
+
+        return top10Ids.contains(marketId);
+    }
+
+    @Override
+    public boolean isMarketLikedByUser(Long marketId, Long userId) {
+        QMarketLikeEntity marketLike = QMarketLikeEntity.marketLikeEntity;
+
+        Integer fetchOne = queryFactory
+                .selectOne()
+                .from(marketLike)
+                .where(marketLike.market.id.eq(marketId)
+                        .and(marketLike.user.id.eq(userId)))
+                .fetchFirst();
+
+        return fetchOne != null;
+    }
+
+    @Override
+    public long countLikesByMarket(Long marketId) {
+        QMarketLikeEntity marketLike = QMarketLikeEntity.marketLikeEntity;
+
+        return queryFactory
+                .select(marketLike.count())
+                .from(marketLike)
+                .where(marketLike.market.id.eq(marketId))
+                .fetchOne();
     }
 }
