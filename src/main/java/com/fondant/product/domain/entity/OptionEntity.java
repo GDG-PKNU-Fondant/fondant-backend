@@ -27,10 +27,10 @@ public class OptionEntity {
 
     @NotNull
     @Column(name="price")
-    private int price;
+    private Double price;
 
     @Builder
-    public OptionEntity(Long productId, String name, int price) {
+    public OptionEntity(Long productId, String name, Double price) {
         this.productId = productId;
         this.name = name;
         this.price = price;

@@ -74,9 +74,9 @@ public class ProductService {
                 ).toList();
     }
 
-    private int getDiscountedPrice(int price, double discountRate) {
-        double appliedRate = 1.0 - discountRate;
-        return (int) Math.floor(price * appliedRate + 0.5);
+    private Double getDiscountedPrice(Double price, Double discountRate) {
+        Double appliedRate = 1.0 - discountRate;
+        return Math.floor(price * appliedRate + 0.5);
     }
 
     @Transactional(readOnly = true)

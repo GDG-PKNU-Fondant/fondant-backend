@@ -138,7 +138,7 @@ public class ProductRestDocsTest {
                 .name("두바이 초콜릿")
                 .description("카다이프 듬뿍 두바이 초콜릿입니다.")
                 .thumbnail("product-thumbnail.png")
-                .price(15000)
+                .price(15000.0)
                 .market(market)
                 .startDate(LocalDate.of(2025, 1, 1))
                 .maxCount(50)
@@ -148,7 +148,7 @@ public class ProductRestDocsTest {
                 .name("헤이즐넛 쿠키")
                 .description("헤이즐넛 쿠키 입니다.")
                 .thumbnail("product-thumbnail.png")
-                .price(15000)
+                .price(15000.0)
                 .market(market)
                 .startDate(LocalDate.of(2025, 1, 1))
                 .maxCount(50)
@@ -184,7 +184,7 @@ public class ProductRestDocsTest {
                  OptionEntity.builder()
                  .name("3개 세트")
                  .productId(product1.getId())
-                 .price(20000)
+                 .price(20000.0)
                  .build());
 
         testUser = userRepository.save(

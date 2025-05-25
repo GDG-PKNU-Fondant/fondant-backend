@@ -16,6 +16,6 @@ public record ProductDetailResponse(
         String description,
         List<ImageInfo> detailPages,
         MarketInfoForProductDetail marketInfo,
-        int basePrice
+        Double basePrice
 ) {
 }
