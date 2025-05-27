@@ -59,7 +59,9 @@ public class MarketService {
         boolean liked = marketRepository.isMarketLikedByUser(marketId, userId);
         long likeCount = marketRepository.countLikesByMarket(marketId);
 
-        return convertToDetailDto(market, hashtags, liked, likeCount);
+        List<Long> subCategoryIds = marketRepository.findSubCategoryIdsByMarketId(marketId);
+
+        return convertToDetailDto(market, hashtags, liked, likeCount, subCategoryIds);
     }
 
     @Transactional(readOnly = true)
@@ -120,7 +122,7 @@ public class MarketService {
                 .toList();
     }
 
-    private MarketDetail convertToDetailDto(MarketEntity market, List<String> hashtags, boolean liked, long likeCount) {
+    private MarketDetail convertToDetailDto(MarketEntity market, List<String> hashtags, boolean liked, long likeCount, List<Long> subCategoryIds) {
         return MarketDetail.builder()
                 .id(market.getId())
                 .name(market.getName())
@@ -131,6 +133,7 @@ public class MarketService {
                 .likeCount(likeCount)
                 .isTop10(false)
                 .hashtags(hashtags)
+                .subCategoryIds(subCategoryIds)
                 .profile(MarketProfile.builder()
                         .businessNumber(market.getBusinessNumber())
                         .instagramProfile(market.getInstagramProfile())

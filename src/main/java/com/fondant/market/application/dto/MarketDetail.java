@@ -16,6 +16,7 @@ public record MarketDetail(
         Long likeCount,
         boolean isTop10,
         List<String> hashtags,
+        List<Long> subCategoryIds,
         MarketProfile profile
 ) {
     public static MarketDetail of(
@@ -23,7 +24,8 @@ public record MarketDetail(
             boolean liked,
             Long likeCount,
             boolean isTop10,
-            List<String> hashtags
+            List<String> hashtags,
+            List<Long> subCategoryIds
     ){
         return new MarketDetail(
                 market.getId(),
@@ -35,6 +37,7 @@ public record MarketDetail(
                 likeCount != null ? likeCount : 0L,
                 isTop10,
                 hashtags,
+                subCategoryIds,
                 MarketProfile.from(market)
         );
     }
