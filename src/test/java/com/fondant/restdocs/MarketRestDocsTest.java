@@ -71,11 +71,11 @@ public class MarketRestDocsTest {
         marketRepository.deleteAll();
 
         categoryCookie = categoryRepository.save(
-                CategoryEntity.builder().name("쿠키").build());
+                CategoryEntity.builder().name("쿠키").iconUrl("domain/icon-url/cookie").build());
         categoryBread = categoryRepository.save(
-                CategoryEntity.builder().name("빵").build());
+                CategoryEntity.builder().name("빵").iconUrl("domain/icon-url/bread").build());
         categoryBakedGoods = categoryRepository.save(
-                CategoryEntity.builder().name("구움과자").build());
+                CategoryEntity.builder().name("구움과자").iconUrl("domain/icon-url/baked").build());
 
         int marketCount = 1;
         for (CategoryEntity category : Arrays.asList(categoryCookie, categoryBread, categoryBakedGoods)) {

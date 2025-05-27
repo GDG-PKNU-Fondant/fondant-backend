@@ -49,11 +49,11 @@ public class MarketEntity {
 
     @NotNull
     @Column(name="delivery_fee", nullable = false)
-    private Long deliveryFee;
+    private Double deliveryFee;
 
     @NotNull
     @Column(name="free_delivery_limit", nullable = false)
-    private Long freeDeliveryLimit;
+    private Double freeDeliveryLimit;
 
     @Column(name = "latitude")
     private Double latitude;
@@ -73,7 +73,7 @@ public class MarketEntity {
     @Builder
     public MarketEntity(String name, Long totalSales, Long totalReviews, LocalDate createAt, LocalDate updateAt,
                         String description, String thumbnail, String background,
-                        Long deliveryFee, Long freeDeliveryLimit,
+                        Double deliveryFee, Double freeDeliveryLimit,
                         Double latitude, Double longitude,
                         String businessNumber, String naverLink, String instagramProfile) {
         this.name = name;
