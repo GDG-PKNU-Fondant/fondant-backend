@@ -226,4 +226,16 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
                 .where(marketLike.market.id.eq(marketId))
                 .fetchOne();
     }
+
+    @Override
+    public List<Long> findSubCategoryIdsByMarketId(Long marketId) {
+        QMarketCategoryEntity marketCategory = QMarketCategoryEntity.marketCategoryEntity;
+
+        return queryFactory
+                .select(marketCategory.category.id)
+                .from(marketCategory)
+                .where(marketCategory.market.id.eq(marketId))
+                .distinct()
+                .fetch();
+    }
 }
