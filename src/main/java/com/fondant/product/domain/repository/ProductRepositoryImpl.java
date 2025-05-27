@@ -22,15 +22,9 @@ public class ProductRepositoryImpl implements ProductRepositoryCustom {
     }
 
     @Override
-    public Page<ProductEntity> findProductsByMarketAndCategory(Long marketId, Long mainCategoryId, Pageable pageable) {
-        List<Long> subCategoryIds = findSubCategoryIdsByMainCategory(mainCategoryId);
-
-        if (subCategoryIds.isEmpty()) {
-            return Page.empty(pageable);
-        }
-
-        List<ProductEntity> content = findProductsByMarketAndSubCategories(marketId, subCategoryIds, pageable);
-        Long total = countProductsByMarketAndSubCategories(marketId, subCategoryIds);
+    public Page<ProductEntity> findProductsByMarketAndCategory(Long marketId, Long subCategoryId, Pageable pageable) {
+        List<ProductEntity> content = findProductsByMarketAndSubCategory(marketId, subCategoryId, pageable);
+        Long total = countProductsByMarketAndSubCategory(marketId, subCategoryId);
 
         return new PageImpl<>(content, pageable, total != null ? total : 0);
     }
@@ -44,6 +38,43 @@ public class ProductRepositoryImpl implements ProductRepositoryCustom {
                 .where(category.parent.id.eq(mainCategoryId))
                 .fetch();
     }
+
+    private List<ProductEntity> findProductsByMarketAndSubCategory(Long marketId, Long subCategoryId, Pageable pageable) {
+        QProductEntity product = QProductEntity.productEntity;
+        QProductCategoryEntity productCategory = QProductCategoryEntity.productCategoryEntity;
+        QCategoryEntity category = QCategoryEntity.categoryEntity;
+
+        return queryFactory
+                .selectDistinct(product)
+                .from(product)
+                .join(productCategory).on(product.eq(productCategory.product))
+                .join(productCategory.category, category)
+                .where(
+                        product.market.id.eq(marketId),
+                        category.id.eq(subCategoryId)
+                )
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+    }
+
+    private Long countProductsByMarketAndSubCategory(Long marketId, Long subCategoryId) {
+        QProductEntity product = QProductEntity.productEntity;
+        QProductCategoryEntity productCategory = QProductCategoryEntity.productCategoryEntity;
+        QCategoryEntity category = QCategoryEntity.categoryEntity;
+
+        return queryFactory
+                .select(product.countDistinct())
+                .from(product)
+                .join(productCategory).on(product.eq(productCategory.product))
+                .join(productCategory.category, category)
+                .where(
+                        product.market.id.eq(marketId),
+                        category.id.eq(subCategoryId)
+                )
+                .fetchOne();
+    }
+
 
     private List<ProductEntity> findProductsByMarketAndSubCategories(Long marketId, List<Long> subCategoryIds, Pageable pageable) {
         QProductEntity product = QProductEntity.productEntity;
