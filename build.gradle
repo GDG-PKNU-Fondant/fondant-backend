@@ -27,6 +27,7 @@ configurations {
 
 repositories {
 	mavenCentral()
+	maven { url 'https://jitpack.io' }
 }
 
 dependencies {
@@ -74,6 +75,9 @@ dependencies {
 
 	//COOLSMS
 	implementation 'net.nurigo:sdk:4.3.2'
+
+	//IAMPORT
+	implementation 'com.github.iamport:iamport-rest-client-java:0.1.6'
 }
 
 
