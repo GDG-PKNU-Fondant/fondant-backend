@@ -7,7 +7,8 @@ public record MarketProfile (
     String businessNumber,
     String instagramProfile,
     Double latitude,
-    Double longitude
+    Double longitude,
+    String address
 ) {
     public static MarketProfile from(MarketEntity market) {
         return MarketProfile.builder()
@@ -15,6 +16,7 @@ public record MarketProfile (
                 .instagramProfile(market.getInstagramProfile())
                 .latitude(market.getLatitude())
                 .longitude(market.getLongitude())
+                .address(market.getAddress())
                 .build();
     }
 }
