@@ -112,6 +112,9 @@ public class MarketRestDocsTest {
                             .totalReviews(10L * marketCount)
                             .businessNumber("123-45-67890")
                             .instagramProfile("https://instagram.com/market" + marketCount)
+                            .latitude(12.345 + marketCount * 0.001)
+                            .longitude(123.4567 + marketCount * 0.001)
+                            .address("부산광역시 용소로 " + marketCount + "번길")
                             .build());
 
                     marketCategoryRepository.save(MarketCategoryEntity.builder()
@@ -201,7 +204,8 @@ public class MarketRestDocsTest {
                                 fieldWithPath("businessNumber").description("사업자 등록번호"),
                                 fieldWithPath("instagramProfile").description("인스타그램 프로필 링크"),
                                 fieldWithPath("latitude").description("마켓 위치 위도"),
-                                fieldWithPath("longitude").description("마켓 위치 경도")
+                                fieldWithPath("longitude").description("마켓 위치 경도"),
+                                fieldWithPath("address").description("마켓 주소"),
                         })));
     }
 
