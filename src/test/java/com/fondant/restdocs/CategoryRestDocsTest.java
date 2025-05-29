@@ -73,6 +73,7 @@ public class CategoryRestDocsTest {
     void setUp() {
         category1 = categoryRepository.save(CategoryEntity.builder()
                 .name("초콜릿")
+                .iconUrl("domain/icon-url/chocolate")
                 .build());
 
         category1.addChild(CategoryEntity.builder()
@@ -85,6 +86,7 @@ public class CategoryRestDocsTest {
 
         category2 = categoryRepository.save(CategoryEntity.builder()
                 .name("쿠키")
+                .iconUrl("domain/icon-url/cookie")
                 .build());
 
         category2.addChild(CategoryEntity.builder()
@@ -135,6 +137,7 @@ public class CategoryRestDocsTest {
                                 fieldWithPath("categories[]").description("대분류 카테고리 목록"),
                                 fieldWithPath("categories[].id").description("대분류 카테고리 아이디"),
                                 fieldWithPath("categories[].name").description("대분류 카테고리 이름"),
+                                fieldWithPath("categories[].iconUrl").description("대분류 아이콘 Url"),
                                 fieldWithPath("categories[].subCategories[]").description("소분류 카테고리 목록"),
                                 fieldWithPath("categories[].subCategories[].id").description("소분류 카테고리 아이디"),
                                 fieldWithPath("categories[].subCategories[].name").description("소분류 카테고리 이름"),
@@ -153,7 +156,8 @@ public class CategoryRestDocsTest {
                         ).andWithPrefix("response.", new FieldDescriptor[] {
                                 fieldWithPath("categories[]").description("대분류 카테고리 목록"),
                                 fieldWithPath("categories[].id").description("대분류 카테고리 아이디"),
-                                fieldWithPath("categories[].name").description("대분류 카테고리 이름")
+                                fieldWithPath("categories[].name").description("대분류 카테고리 이름"),
+                                fieldWithPath("categories[].iconUrl").description("대분류 아이콘 Url")
                         })));
     }
 }
