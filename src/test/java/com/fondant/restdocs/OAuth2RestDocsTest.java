@@ -12,19 +12,20 @@ import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDoc
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.restdocs.payload.FieldDescriptor;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
+import static com.fondant.global.response.CommonResponseFields.commonResponseFields;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static org.springframework.restdocs.cookies.CookieDocumentation.*;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
-import static org.springframework.restdocs.payload.PayloadDocumentation.*;
+import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
+import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -45,14 +46,6 @@ public class OAuth2RestDocsTest {
     private RefreshRepository refreshRepository;
 
     private static final String BASE_URL = "/api/user";
-
-    public static FieldDescriptor[] commonResponseFields() {
-        return new FieldDescriptor[]{
-                fieldWithPath("code").description("요청 성공 여부 (true/false)"),
-                fieldWithPath("message").description("응답 메시지"),
-                fieldWithPath("response").description("응답 데이터")
-        };
-    }
 
     @Test
     @DisplayName("API - Access Token 재발급")
@@ -84,10 +77,10 @@ public class OAuth2RestDocsTest {
                                 cookieWithName("refresh").description("새로 발급된 refresh 토큰을 담은 쿠키")
                         ),
                         responseFields(
-                                commonResponseFields()
-                        ).andWithPrefix("response.", new FieldDescriptor[]{
-                                fieldWithPath("accessToken").description("재발급된 Access 토큰")
-                        })
+                                commonResponseFields())
+                                .andWithPrefix("content.",
+                                        fieldWithPath("accessToken").description("재발급된 Access 토큰")
+                                )
                 ));
     }
 

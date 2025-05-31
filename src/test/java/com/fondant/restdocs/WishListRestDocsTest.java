@@ -38,15 +38,14 @@ import org.springframework.transaction.annotation.Transactional;
 import java.sql.Date;
 import java.time.LocalDate;
 
-import static org.mockito.Mockito.doReturn;
+import static com.fondant.global.response.CommonResponseFields.commonResponseFields;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
-import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
-import static org.springframework.restdocs.request.RequestDocumentation.*;
 import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
+import static org.springframework.restdocs.request.RequestDocumentation.queryParameters;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -134,6 +133,7 @@ public class WishListRestDocsTest {
                 .market(market)
                 .startDate(LocalDate.of(2025, 1, 1))
                 .maxCount(50)
+                .discountRate(0.0)
                 .build());
 
         product2 = productRepository.save(ProductEntity.builder()
@@ -144,6 +144,7 @@ public class WishListRestDocsTest {
                 .market(market)
                 .startDate(LocalDate.of(2025, 1, 1))
                 .maxCount(50)
+                .discountRate(0.0)
                 .build());
 
         categoryProduct1 = productCategoryRepository.save(ProductCategoryEntity.builder()
@@ -195,15 +196,6 @@ public class WishListRestDocsTest {
         );
     }
 
-
-    public static FieldDescriptor[] commonResponseFields() {
-        return new FieldDescriptor[]{
-                fieldWithPath("code").description("요청 성공 여부 (true/false)"),
-                fieldWithPath("message").description("응답 메시지"),
-                fieldWithPath("response").description("응답 데이터")
-        };
-    }
-
     @Test
     void registerWishListTest() throws Exception {
         // Given
@@ -247,7 +239,7 @@ public class WishListRestDocsTest {
                         ),
                         responseFields(
                                 commonResponseFields()
-                        ).andWithPrefix("response.", new FieldDescriptor[]{
+                        ).andWithPrefix("content.", new FieldDescriptor[]{
                                 fieldWithPath("pageInfo").description("페이지 정보"),
                                 fieldWithPath("pageInfo.currentPage").description("현재 페이지"),
                                 fieldWithPath("pageInfo.totalPage").description("전체 페이지"),

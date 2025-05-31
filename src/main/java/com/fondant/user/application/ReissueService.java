@@ -1,22 +1,25 @@
 package com.fondant.user.application;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fondant.global.exception.ApiException;
 import com.fondant.infra.jwt.application.JWTUtil;
 import com.fondant.infra.jwt.domain.entity.RefreshEntity;
 import com.fondant.infra.jwt.domain.repository.RefreshRepository;
+import com.fondant.infra.jwt.exception.JWTErrorCode;
+import com.fondant.user.exception.UserError;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.io.PrintWriter;
+import java.time.Duration;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.HashMap;
+import java.util.Arrays;
 import java.util.Map;
 
 import static org.springframework.scheduling.config.TaskExecutionOutcome.Status.SUCCESS;
@@ -33,33 +36,25 @@ public class ReissueService {
     }
 
     public ResponseEntity<?> reissueToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        String refresh = null;
-        Cookie[] cookies = request.getCookies();
-
-        if (cookies != null) {
-            for (Cookie cookie : cookies) {
-                if (cookie.getName().equals("refresh")) {
-                    refresh = cookie.getValue();
-                }
-            }
-        } else {
-            return new ResponseEntity<>("리프레쉬 토큰이 쿠키에 존재하지 않습니다.", HttpStatus.BAD_REQUEST);
-        }
+        String refresh = extractRefreshTokenFromCookie(request);
 
         try {
             jwtUtil.isTokenExpired(refresh);
         } catch (ExpiredJwtException e) {
-            return new ResponseEntity<>("리프레쉬 토큰이 만료되었습니다.", HttpStatus.BAD_REQUEST);
+            throw new ApiException(UserError.REFRESH_EXPIRED);
         }
 
         String type = jwtUtil.getType(refresh);
 
         if (type == null || !type.equals("refresh")) {
-            return new ResponseEntity<>("유효하지 않은 토큰입니다.", HttpStatus.BAD_REQUEST);
+            System.out.println("not a refresh token:" + refresh);
+            throw new ApiException(UserError.REFRESH_INVALID);
         }
+        System.out.println(refresh);
 
         if (!refreshRepository.existsByRefresh(refresh)) {
-            return new ResponseEntity<>("존재하지 않는 토큰입니다.", HttpStatus.BAD_REQUEST);
+            System.out.println("cannot find refresh token:" + refresh);
+            throw new ApiException(UserError.REFRESH_INVALID);
         }
 
         Long userId = jwtUtil.getUserIdFromToken(refresh);
@@ -69,38 +64,43 @@ public class ReissueService {
         String newRefresh = jwtUtil.generateToken("refresh", userId, role, 60 * 60 * 24 * 1000L);
 
         refreshRepository.deleteByRefresh(refresh);
-        addRefreshEntity(userId, newRefresh, 60 * 60 * 24 * 1000L);
 
-        Map<String, Object> responseBody = new HashMap<>();
-        Map<String, Object> innerResponse = new HashMap<>();
+        addRefreshEntity(userId, newRefresh);
 
-        innerResponse.put("accessToken", newAccess);
+        ResponseCookie cookie = ResponseCookie.from("refresh", newRefresh)
+                .httpOnly(true)
+                .secure(true)
+                .sameSite("None")
+                .path("/")
+                .maxAge(Duration.ofDays(1))
+                .build();
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 
-        responseBody.put("code", SUCCESS);
-        responseBody.put("message", "요청이 성공적으로 처리되었습니다.");
-        responseBody.put("response", innerResponse);
-
-        response.setContentType("application/json");
-        PrintWriter writer = response.getWriter();
-        writer.print(new ObjectMapper().writeValueAsString(responseBody));
-
-        response.addCookie(createCookie("refresh", newRefresh));
-
-        return new ResponseEntity<>(HttpStatus.OK);
+        Map<String, Object> body = Map.of(
+                "code", SUCCESS,
+                "message", "요청이 성공적으로 처리되었습니다.",
+                "content", Map.of("accessToken", newAccess)
+        );
+        return ResponseEntity.ok(body);
     }
 
-    private Cookie createCookie(String key, String value) {
-
-        Cookie cookie = new Cookie(key, value);
-        cookie.setMaxAge(60 * 60 * 24);
-        //cookie.setSecure(true); Https 사용시
-        cookie.setPath("/");
-        cookie.setHttpOnly(true);
-        return cookie;
+    private String extractRefreshTokenFromCookie(HttpServletRequest request) {
+        Cookie[] cookies = request.getCookies();
+        if (cookies == null) {
+            System.out.println("cookies is null:" + Arrays.toString(cookies));
+            throw new ApiException(UserError.REFRESH_INVALID);
+        }
+        for (Cookie cookie : cookies) {
+            if ("refresh".equals(cookie.getName())) {
+                return cookie.getValue();
+            }
+        }
+        System.out.println("refresh is null" + Arrays.toString(cookies));
+        throw new ApiException(UserError.REFRESH_INVALID);
     }
 
-    private void addRefreshEntity(Long userId, String refresh, Long expiredMs) {
-        LocalDateTime date = LocalDateTime.now().plusSeconds(expiredMs).atZone(ZoneId.systemDefault()).toLocalDateTime();
+    private void addRefreshEntity(Long userId, String refresh) {
+        LocalDateTime date = jwtUtil.getExpiration(refresh);
 
         RefreshEntity refreshEntity = RefreshEntity.builder()
                 .userId(userId)
