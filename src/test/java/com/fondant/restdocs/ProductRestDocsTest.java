@@ -224,7 +224,7 @@ public class ProductRestDocsTest {
 
     @Test
     void getProductsByMarketAndCategory() throws Exception {
-        mockMvc.perform(get(BASE_URL + "/{marketId}/{categoryId}", market.getId(), category1.getId())
+        mockMvc.perform(get(BASE_URL + "/{marketId}/{categoryId}", market.getId(), category1.getChildren().get(1).getId())
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + mockToken)
                         .param("page", "0")
                         .contentType(MediaType.APPLICATION_JSON))
