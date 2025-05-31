@@ -47,7 +47,6 @@ public class ProductEntity {
     @Column(name="max_count")
     private int maxCount;
 
-    @NotNull
     @Column(name="discount_rate")
     private Double discountRate;
 
@@ -60,7 +59,7 @@ public class ProductEntity {
         this.market = market;
         this.startDate = startDate;
         this.maxCount = maxCount;
-        this.discountRate = discountRate;
+        this.discountRate = 0.0;
     }
 
     public void updateDiscountRate(double discountRate) {
