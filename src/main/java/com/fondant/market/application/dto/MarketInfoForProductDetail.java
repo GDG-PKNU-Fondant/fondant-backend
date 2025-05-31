@@ -10,6 +10,6 @@ public record MarketInfoForProductDetail(
         Long totalReviews,
         String description,
         String thumbnail,
-        Long freeDeliveryLimit
+        Double freeDeliveryLimit
 ) {
 }

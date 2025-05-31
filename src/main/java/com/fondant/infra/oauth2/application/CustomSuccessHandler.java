@@ -63,7 +63,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
                 .secure(true)
                 .sameSite("None")
                 .path("/")
-                .maxAge(Duration.ofDays(1))
+                .maxAge(Duration.ofDays(7))
                 .build();
 
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
