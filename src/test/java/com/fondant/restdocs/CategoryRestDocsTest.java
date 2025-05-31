@@ -138,6 +138,6 @@ public class CategoryRestDocsTest {
                                 fieldWithPath("categories[].id").description("대분류 카테고리 아이디"),
                                 fieldWithPath("categories[].name").description("대분류 카테고리 이름"),
                                 fieldWithPath("categories[].iconUrl").description("대분류 아이콘 Url")
-                        })));
+                        )));
     }
 }
