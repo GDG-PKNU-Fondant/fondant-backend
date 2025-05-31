@@ -77,7 +77,7 @@ include::{snippets}/user/update-user-info/http-request.adoc[]
 
 ==== Request Header
 
-include::{snippets}/user/update-user-info/request-headers.adoc[]
+include::{snippets}/user/update-user-info/request-fields.adoc[]
 
 ==== Request Body
 
