@@ -25,8 +25,4 @@ public class HashtagEntity {
         this.category = category;
         this.content = content;
     }
-
-    public enum TagCategory {
-        SERVICE, TASTE, PRICE
-    }
 }

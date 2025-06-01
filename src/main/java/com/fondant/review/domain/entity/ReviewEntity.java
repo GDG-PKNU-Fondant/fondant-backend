@@ -1,5 +1,6 @@
 package com.fondant.review.domain.entity;
 
+import com.fondant.product.domain.entity.ProductEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
@@ -32,16 +33,21 @@ public class ReviewEntity {
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_id")
+    private ProductEntity productEntity;
+
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
     }
 
     @Builder
-    public ReviewEntity(Double score, String content, Long userId) {
+    public ReviewEntity(Double score, String content, Long userId,ProductEntity productEntity) {
         this.score = score;
         this.content = content;
         this.userId = userId;
+        this.productEntity = productEntity;
     }
 }
 
