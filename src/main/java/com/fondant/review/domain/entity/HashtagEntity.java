@@ -3,6 +3,7 @@ package com.fondant.review.domain.entity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
@@ -15,9 +16,11 @@ public class HashtagEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
+    @Getter
     private TagCategory category;
 
     @Column(nullable = false)
+    @Getter
     private String content;
 
     @Builder

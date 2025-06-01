@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
@@ -12,6 +13,7 @@ import java.time.LocalDateTime;
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name="reveiw")
+@Getter
 public class ReviewEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -33,9 +35,8 @@ public class ReviewEntity {
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id")
-    private ProductEntity productEntity;
+    @Column(name="product_id")
+    private Long productId;
 
     @PrePersist
     protected void onCreate() {
@@ -43,11 +44,11 @@ public class ReviewEntity {
     }
 
     @Builder
-    public ReviewEntity(Double score, String content, Long userId,ProductEntity productEntity) {
+    public ReviewEntity(Double score, String content, Long userId, Long productId) {
         this.score = score;
         this.content = content;
         this.userId = userId;
-        this.productEntity = productEntity;
+        this.productId = productId;
     }
 }
 

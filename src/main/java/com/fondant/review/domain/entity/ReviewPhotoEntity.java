@@ -2,8 +2,10 @@ package com.fondant.review.domain.entity;
 
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
@@ -14,16 +16,18 @@ public class ReviewPhotoEntity {
     @GeneratedValue
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "review_id")
-    private ReviewEntity review;
+    @NotNull
+    @Column(name="review_id",nullable = false)
+    @Getter
+    private Long reviewId;
 
     @Column(name = "image_url", nullable = false)
+    @Getter
     private String imageUrl;
 
     @Builder
-    public ReviewPhotoEntity(ReviewEntity review, String imageUrl) {
-        this.review = review;
+    public ReviewPhotoEntity(Long reviewId, String imageUrl) {
+        this.reviewId = reviewId;
         this.imageUrl = imageUrl;
     }
 }
