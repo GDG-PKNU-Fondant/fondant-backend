@@ -49,7 +49,7 @@ public class ProductEntity {
 
     @NotNull
     @Column(name="discount_rate")
-    private Double discountRate;
+    private Double discountRate = 0.0;
 
     @Builder
     public ProductEntity(String name, String description, String thumbnail, Double price, MarketEntity market, LocalDate startDate, int maxCount) {
@@ -60,7 +60,6 @@ public class ProductEntity {
         this.market = market;
         this.startDate = startDate;
         this.maxCount = maxCount;
-        this.discountRate = discountRate;
     }
 
     public void updateDiscountRate(double discountRate) {

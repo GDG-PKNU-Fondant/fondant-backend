@@ -146,7 +146,6 @@ public class ProductRestDocsTest {
                 .market(market)
                 .startDate(LocalDate.of(2025, 1, 1))
                 .maxCount(50)
-                .discountRate(0.0)
                 .build());
 
         product2 = productRepository.save(ProductEntity.builder()
@@ -157,7 +156,6 @@ public class ProductRestDocsTest {
                 .market(market)
                 .startDate(LocalDate.of(2025, 1, 1))
                 .maxCount(50)
-                .discountRate(0.0)
                 .build());
 
         categoryProduct1 = productCategoryRepository.save(ProductCategoryEntity.builder()
