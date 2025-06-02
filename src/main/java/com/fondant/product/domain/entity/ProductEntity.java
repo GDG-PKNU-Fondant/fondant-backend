@@ -47,6 +47,7 @@ public class ProductEntity {
     @Column(name="max_count")
     private int maxCount;
 
+    @NotNull
     @Column(name="discount_rate")
     private Double discountRate;
 
