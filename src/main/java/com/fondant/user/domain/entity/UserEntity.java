@@ -1,7 +1,5 @@
 package com.fondant.user.domain.entity;
 
-import com.fondant.global.exception.ApiException;
-import com.fondant.user.exception.UserError;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
@@ -70,11 +68,16 @@ public class UserEntity {
     @Column(name = "role")
     private UserRole role;
 
+    @NotNull
+    private int point;
+
     @Builder(toBuilder = true)
     public UserEntity(
-            Long id, SNSType snsType, String name, String phoneNumber, boolean verifiedPhone, String email,
+            Long id, SNSType snsType, String name, String phoneNumber,
+            boolean verifiedPhone, String email,
             String password, Date birth, String nickname,
-            String profileUrl, LocalDate createAt, Gender gender, UserRole role) {
+            String profileUrl, LocalDate createAt, Gender gender,
+            UserRole role, int point) {
         this.id = id;
         this.snsType = snsType;
         this.name = name;
@@ -88,12 +91,12 @@ public class UserEntity {
         this.createAt = createAt;
         this.gender = gender;
         this.role = role;
+        this.point = point;
     }
 
-    public DeliveryAddressEntity findDeliveryAddressById(Long addressId) {
-        return this.deliveryAddresses.stream()
-                .filter(address -> address.getId().equals(addressId))
-                .findFirst()
-                .orElseThrow(() -> new ApiException(UserError.ADDRESS_NOT_FOUND));
+    public void changePoint(int newPoint) {
+        this.toBuilder()
+                .point(newPoint)
+                .build();
     }
 }
