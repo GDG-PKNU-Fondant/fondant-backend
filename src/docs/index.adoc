@@ -1,0 +1,17 @@
+= Fondant REST API 문서
+:doctype: book
+:icons: font
+:source-highlighter: highlightjs
+:toc: left
+:sectnums:
+
+== 개요
+
+이 문서는 Fondant 서비스의 주요 기능별 REST API 문서입니다.
+각 섹션은 테스트 기반으로 자동 생성된 결과를 포함하고 있습니다.
+
+include::UserRestDocs.adoc[]
+include::ProductRestDocs.adoc[]
+include::MarketRestDocs.adoc[]
+include::WishListRestDocs.adoc[]
+include::SmsVerificationRestDocs.adoc[]

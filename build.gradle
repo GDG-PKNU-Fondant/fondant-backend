@@ -10,6 +10,7 @@ version = '0.0.1-SNAPSHOT'
 
 configurations {
 	asciidoctorExtensions
+	compileOnly { extendsFrom annotationProcessor }
 }
 
 
@@ -19,20 +20,20 @@ java {
 	}
 }
 
-configurations {
-	compileOnly {
-		extendsFrom annotationProcessor
-	}
-}
-
 repositories {
 	mavenCentral()
+}
+
+dependencyManagement {
+	imports {
+		mavenBom "io.awspring.cloud:spring-cloud-aws-dependencies:3.2.0"
+	}
 }
 
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-	testImplementation 'com.h2database:h2'
+	testImplementation 'com.h2database:h2:2.2.224'
 
 	//OAUTH2
 	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
@@ -74,6 +75,9 @@ dependencies {
 
 	//COOLSMS
 	implementation 'net.nurigo:sdk:4.3.2'
+
+	//PARAMETER_STORE_STARTER
+	implementation 'io.awspring.cloud:spring-cloud-aws-starter-parameter-store'
 }
 
 
@@ -91,29 +95,34 @@ clean.doLast {
 	file(querydslDir).deleteDir()
 }
 
-
 ext {
 	snippetsDir = file('build/generated-snippets')
-}
-
-test {
-	outputs.dir snippetsDir
+	docsOutDir  = file('build/docs/asciidoc')
 }
 
 asciidoctor {
-	inputs.dir snippetsDir
-	dependsOn test
-	configurations 'asciidoctorExtensions'
+    sourceDir  = file("src/docs")
+    outputDir  = docsOutDir
+    inputs.dir snippetsDir
+    dependsOn test
+    configurations 'asciidoctorExtensions'
+	baseDirFollowsSourceFile()
+
+    doFirst {
+        delete file("${outputDir}")
+    }
 }
 
 bootJar {
 	dependsOn asciidoctor
-	copy {
-		from("${asciidoctor.outputDir}")
-		into 'src/main/resources/static/docs'
+	duplicatesStrategy = DuplicatesStrategy.INCLUDE
+	from("$docsOutDir") {
+		into "BOOT-INF/classes/static/docs"
 	}
 }
 
 tasks.named('test') {
 	useJUnitPlatform()
+  	outputs.dir snippetsDir
+	systemProperty "spring.profiles.active", "test"
 }

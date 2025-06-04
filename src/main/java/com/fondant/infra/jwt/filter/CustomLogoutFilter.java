@@ -88,7 +88,7 @@ public class CustomLogoutFilter extends GenericFilterBean {
 
         responseBody.put("code", SUCCESS);
         responseBody.put("message", "요청이 성공적으로 처리되었습니다.");
-        responseBody.put("response", innerResponse);
+        responseBody.put("content", innerResponse);
 
         response.setContentType("application/json");
         PrintWriter writer = response.getWriter();

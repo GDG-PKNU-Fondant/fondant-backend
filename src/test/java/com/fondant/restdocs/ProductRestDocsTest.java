@@ -15,6 +15,7 @@ import com.fondant.user.domain.entity.SNSType;
 import com.fondant.user.domain.entity.UserEntity;
 import com.fondant.user.domain.entity.UserRole;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
@@ -31,6 +32,7 @@ import java.sql.Date;
 import java.time.LocalDate;
 import java.util.Arrays;
 
+import static com.fondant.global.response.CommonResponseFields.commonResponseFields;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
@@ -144,6 +146,7 @@ public class ProductRestDocsTest {
                 .market(market)
                 .startDate(LocalDate.of(2025, 1, 1))
                 .maxCount(50)
+                .discountRate(0.0)
                 .build());
 
         product2 = productRepository.save(ProductEntity.builder()
@@ -154,6 +157,7 @@ public class ProductRestDocsTest {
                 .market(market)
                 .startDate(LocalDate.of(2025, 1, 1))
                 .maxCount(50)
+                .discountRate(0.0)
                 .build());
 
         categoryProduct1 = productCategoryRepository.save(ProductCategoryEntity.builder()
@@ -213,17 +217,9 @@ public class ProductRestDocsTest {
 
     }
 
-    public static FieldDescriptor[] commonResponseFields() {
-        return new FieldDescriptor[]{
-                fieldWithPath("code").description("요청 성공 여부 (true/false)"),
-                fieldWithPath("message").description("응답 메시지"),
-                fieldWithPath("response").description("응답 데이터")
-        };
-    }
-
     @Test
     void getProductsByMarketAndCategory() throws Exception {
-        mockMvc.perform(get(BASE_URL + "/{marketId}/{categoryId}", market.getId(), category1.getId())
+        mockMvc.perform(get(BASE_URL + "/{marketId}/{categoryId}", market.getId(), category1.getChildren().get(1).getId())
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + mockToken)
                         .param("page", "0")
                         .contentType(MediaType.APPLICATION_JSON))
@@ -240,7 +236,7 @@ public class ProductRestDocsTest {
                         ),
                         responseFields(
                                 commonResponseFields()
-                        ).andWithPrefix("response.", new FieldDescriptor[] {
+                        ).andWithPrefix("content.", new FieldDescriptor[] {
                                 fieldWithPath("pageInfo").description("페이지 정보"),
                                 fieldWithPath("pageInfo.currentPage").description("현재 페이지"),
                                 fieldWithPath("pageInfo.totalPage").description("전체 페이지"),
@@ -268,7 +264,7 @@ public class ProductRestDocsTest {
                         ),
                         responseFields(
                                 commonResponseFields()
-                        ).andWithPrefix("response.", new FieldDescriptor[] {
+                        ).andWithPrefix("content.", new FieldDescriptor[] {
                                 fieldWithPath("photos").description("상품 사진 정보 목록"),
                                 fieldWithPath("photos[].imgUrl").description("상품 사진 개별 URL"),
                                 fieldWithPath("photos[].imgOrder").description("상품 사진 순서"),
@@ -292,5 +288,88 @@ public class ProductRestDocsTest {
                                 fieldWithPath("basePrice").description("상품 기본 가격 (옵션 가격 추가 전)"),
                         })));
     }
+
+    @Test
+    @DisplayName("상품 필터링 - 상품 수 조회 API")
+    void getFilteredProductCount() throws Exception {
+        mockMvc.perform(get(BASE_URL + "/filter/count")
+                        .param("startPrice", "10000")
+                        .param("endPrice", "20000")
+                        .param("categoryIds", String.valueOf(category1.getId()))
+                        .param("packingTypes", "box")
+                        .param("benefitTypes", "free_shipping")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + mockToken)
+                )
+                .andExpect(status().isOk())
+                .andDo(document("products/get-filtered-product-count",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+                        queryParameters(
+                                parameterWithName("startPrice").optional().description("가격 필터 최소값"),
+                                parameterWithName("endPrice").optional().description("가격 필터 최대값"),
+                                parameterWithName("categoryIds").optional().description("필터할 카테고리 ID 목록"),
+                                parameterWithName("packingTypes").optional().description("포장 타입 목록"),
+                                parameterWithName("benefitTypes").optional().description("혜택 타입 목록")
+                        ),
+                        responseFields(
+                                commonResponseFields()
+                        ).andWithPrefix("response.", new FieldDescriptor[]{
+                                fieldWithPath("count").description("필터링된 상품 개수")
+                        })
+                ));
+    }
+
+    @Test
+    @DisplayName("상품 필터링 - 상품 리스트 조회 API")
+    void getFilteredProducts() throws Exception {
+        mockMvc.perform(get(BASE_URL + "/filter")
+                        .param("startPrice", "10000")
+                        .param("endPrice", "20000")
+                        .param("categoryIds", String.valueOf(category1.getId()))
+                        .param("packingTypes", "box")
+                        .param("benefitTypes", "free_shipping")
+                        .param("sortType", "PRICE_ASC")
+                        .param("page", "0")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + mockToken))
+                .andExpect(status().isOk())
+                .andDo(document("products/get-filtered-products",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+                        queryParameters(
+                                parameterWithName("startPrice").optional().description("가격 필터 최소값"),
+                                parameterWithName("endPrice").optional().description("가격 필터 최대값"),
+                                parameterWithName("categoryIds").optional().description("필터할 카테고리 ID 목록"),
+                                parameterWithName("packingTypes").optional().description("포장 타입 목록"),
+                                parameterWithName("benefitTypes").optional().description("혜택 타입 목록"),
+                                parameterWithName("sortType").optional().description(
+                                        "- DISCOUNT : 할인순 +" + "\n" +
+                                        "- REVIEW : 리뷰 많은순 +" + "\n" +
+                                        "- SALES : 판매량순 +" + "\n" +
+                                        "- PRICE_ASC : 낮은 가격순 +" + "\n" +
+                                        "- PRICE_DESC : 높은 가격순 +" + "\n" +
+                                        "※ 요청 시 위 enum 값을 그대로 입력해야 합니다."
+                                ),
+                                parameterWithName("page").description("요청 페이지 번호 (0부터 시작)")
+                        ),
+                        responseFields(
+                                commonResponseFields()
+                        ).andWithPrefix("response.", new FieldDescriptor[]{
+                                fieldWithPath("pageInfo.currentPage").description("현재 페이지 번호"),
+                                fieldWithPath("pageInfo.totalPage").description("총 페이지 수"),
+                                fieldWithPath("products").description("상품 목록"),
+                                fieldWithPath("products[].id").description("상품 ID"),
+                                fieldWithPath("products[].name").description("상품 이름"),
+                                fieldWithPath("products[].price").description("상품 가격"),
+                                fieldWithPath("products[].score").description("리뷰 평점"),
+                                fieldWithPath("products[].thumbnailUrl").description("상품 썸네일 URL"),
+                                fieldWithPath("products[].discountRate").description("상품 할인율"),
+                                fieldWithPath("products[].discountPrice").description("상품 할인 후 가격")
+                        })
+                ));
+    }
+
+
 }
 

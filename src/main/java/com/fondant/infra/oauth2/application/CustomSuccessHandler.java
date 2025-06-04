@@ -1,16 +1,18 @@
 package com.fondant.infra.oauth2.application;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fondant.infra.jwt.application.JWTUtil;
+import com.fondant.infra.jwt.domain.entity.RefreshEntity;
+import com.fondant.infra.jwt.domain.repository.RefreshRepository;
 import com.fondant.infra.oauth2.dto.CustomOAuth2User;
-import com.fondant.user.domain.entity.SNSType;
 import com.fondant.user.domain.entity.UserEntity;
 import com.fondant.user.domain.repository.UserRepository;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -18,19 +20,21 @@ import org.springframework.security.web.authentication.SimpleUrlAuthenticationSu
 import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.*;
-
-import static org.springframework.scheduling.config.TaskExecutionOutcome.Status.SUCCESS;
 
 @Component
 public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
     private JWTUtil jwtUtil;
     private UserRepository userRepository;
+    private RefreshRepository refreshRepository;
 
-    public CustomSuccessHandler(JWTUtil jwtUtil, UserRepository userRepository) {
+    public CustomSuccessHandler(JWTUtil jwtUtil, UserRepository userRepository, RefreshRepository refreshRepository) {
         this.jwtUtil = jwtUtil;
         this.userRepository = userRepository;
+        this.refreshRepository = refreshRepository;
     }
 
     @Override
@@ -51,36 +55,41 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         String accessToken = jwtUtil.generateToken("access", userId, role, 60 * 60 * 24 * 1000L);
         String refreshToken = jwtUtil.generateToken("refresh", userId, role, 60 * 60 * 24 * 1000L);
 
-        Map<String, Object> responseBody = new HashMap<>();
-        Map<String, Object> innerResponse = new HashMap<>();
+        addRefreshEntity(userId, refreshToken);
 
-        innerResponse.put("accessToken", accessToken);
-        if (customUserDetails.getProvider().equals(SNSType.NAVER.toString())) {
-            innerResponse.put("isPhoneVerificationRequired", "false");
-        } else {
-            innerResponse.put("isPhoneVerificationRequired", "true");
-        }
+        ResponseCookie cookie = ResponseCookie
+                .from("refresh", refreshToken)
+                .httpOnly(true)
+                .secure(true)
+                .sameSite("None")
+                .path("/")
+                .maxAge(Duration.ofDays(7))
+                .build();
 
-        responseBody.put("code", SUCCESS);
-        responseBody.put("message", "요청이 성공적으로 처리되었습니다.");
-        responseBody.put("response", innerResponse);
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 
-        response.addCookie(createCookie("refresh", refreshToken));
+        String script = "<!DOCTYPE html><html><body><script>\n" +
+                "  const accessToken = '" + accessToken + "';\n" +
+                "  window.opener.postMessage({ accessToken }, 'https://localhost:5173');\n" +
+                "  window.close();\n" +
+                "</script></body></html>";
 
-        response.setContentType("application/json");
+        response.setContentType("text/html;charset=UTF-8");
         response.setStatus(HttpStatus.OK.value());
         PrintWriter writer = response.getWriter();
-        writer.print(new ObjectMapper().writeValueAsString(responseBody));
+        writer.write(script);
+        writer.flush();
     }
 
+    private void addRefreshEntity(Long userId, String refresh) {
+        LocalDateTime date = jwtUtil.getExpiration(refresh);
 
-    private Cookie createCookie(String key, String value) {
+        RefreshEntity refreshEntity = RefreshEntity.builder()
+                .userId(userId)
+                .refresh(refresh)
+                .expires(date)
+                .build();
 
-        Cookie cookie = new Cookie(key, value);
-        cookie.setMaxAge(60 * 60 * 24);
-        //cookie.setSecure(true); Https 사용시
-        cookie.setPath("/");
-        cookie.setHttpOnly(true);
-        return cookie;
+        refreshRepository.save(refreshEntity);
     }
 }
