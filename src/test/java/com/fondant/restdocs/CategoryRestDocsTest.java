@@ -1,15 +1,9 @@
 package com.fondant.restdocs;
 
 import com.fondant.infra.jwt.application.JWTUtil;
-import com.fondant.market.domain.entity.MarketEntity;
 import com.fondant.product.category.domain.CategoryEntity;
-import com.fondant.product.domain.entity.*;
-import com.fondant.product.domain.repository.OptionRepository;
 import com.fondant.product.domain.repository.ProductImageRepository;
-import com.fondant.product.domain.repository.ProductRepository;
 import com.fondant.test.repository.CategoryTestRepository;
-import com.fondant.test.repository.MarketTestRepository;
-import com.fondant.test.repository.ProductCategoryTestRepository;
 import com.fondant.test.repository.UserTestRepository;
 import com.fondant.user.domain.entity.Gender;
 import com.fondant.user.domain.entity.SNSType;
@@ -22,8 +16,6 @@ import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDoc
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.restdocs.payload.FieldDescriptor;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,14 +23,13 @@ import org.springframework.transaction.annotation.Transactional;
 import java.sql.Date;
 import java.time.LocalDate;
 
+import static com.fondant.global.response.CommonResponseFields.commonResponseFields;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
-import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessResponse;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
-import static org.springframework.restdocs.request.RequestDocumentation.*;
-import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -73,6 +64,7 @@ public class CategoryRestDocsTest {
     void setUp() {
         category1 = categoryRepository.save(CategoryEntity.builder()
                 .name("초콜릿")
+                .iconUrl("domain/icon-url/chocolate")
                 .build());
 
         category1.addChild(CategoryEntity.builder()
@@ -85,6 +77,7 @@ public class CategoryRestDocsTest {
 
         category2 = categoryRepository.save(CategoryEntity.builder()
                 .name("쿠키")
+                .iconUrl("domain/icon-url/cookie")
                 .build());
 
         category2.addChild(CategoryEntity.builder()
@@ -114,14 +107,6 @@ public class CategoryRestDocsTest {
 
     }
 
-    public static FieldDescriptor[] commonResponseFields() {
-        return new FieldDescriptor[]{
-                fieldWithPath("code").description("요청 성공 여부 (true/false)"),
-                fieldWithPath("message").description("응답 메시지"),
-                fieldWithPath("response").description("응답 데이터")
-        };
-    }
-
     @Test
     void getAllCategories() throws Exception {
         mockMvc.perform(get(BASE_URL + "/all")
@@ -131,14 +116,13 @@ public class CategoryRestDocsTest {
                         preprocessResponse(prettyPrint()),
                         responseFields(
                                 commonResponseFields()
-                        ).andWithPrefix("response.", new FieldDescriptor[] {
-                                fieldWithPath("categories[]").description("대분류 카테고리 목록"),
+                        ).andWithPrefix("content.", fieldWithPath("categories[]").description("대분류 카테고리 목록"),
                                 fieldWithPath("categories[].id").description("대분류 카테고리 아이디"),
                                 fieldWithPath("categories[].name").description("대분류 카테고리 이름"),
+                                fieldWithPath("categories[].iconUrl").description("대분류 아이콘 Url"),
                                 fieldWithPath("categories[].subCategories[]").description("소분류 카테고리 목록"),
                                 fieldWithPath("categories[].subCategories[].id").description("소분류 카테고리 아이디"),
-                                fieldWithPath("categories[].subCategories[].name").description("소분류 카테고리 이름"),
-                        })));
+                                fieldWithPath("categories[].subCategories[].name").description("소분류 카테고리 이름"))));
     }
 
     @Test
@@ -150,10 +134,10 @@ public class CategoryRestDocsTest {
                         preprocessResponse(prettyPrint()),
                         responseFields(
                                 commonResponseFields()
-                        ).andWithPrefix("response.", new FieldDescriptor[] {
-                                fieldWithPath("categories[]").description("대분류 카테고리 목록"),
+                        ).andWithPrefix("content.", fieldWithPath("categories[]").description("대분류 카테고리 목록"),
                                 fieldWithPath("categories[].id").description("대분류 카테고리 아이디"),
-                                fieldWithPath("categories[].name").description("대분류 카테고리 이름")
+                                fieldWithPath("categories[].name").description("대분류 카테고리 이름"),
+                                fieldWithPath("categories[].iconUrl").description("대분류 아이콘 Url")
                         })));
     }
 }

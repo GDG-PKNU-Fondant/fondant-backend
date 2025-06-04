@@ -29,4 +29,8 @@ public class PageConfig implements WebMvcConfigurer {
         resolver.setMaxPageSize(MAX_SIZE);
         resolvers.add(resolver);
     }
+
+    public Pageable customPageable(int page) {
+        return PageRequest.of(page, DEFAULT_SIZE);
+    }
 }

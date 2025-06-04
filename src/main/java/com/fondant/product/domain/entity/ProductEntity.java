@@ -33,7 +33,7 @@ public class ProductEntity {
 
     @NotNull
     @Column(name="price")
-    private int price;
+    private Double price;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="market_id")
@@ -44,15 +44,15 @@ public class ProductEntity {
     private LocalDate startDate;
 
     @NotNull
-    @Column(name="maxCount")
+    @Column(name="max_count")
     private int maxCount;
 
     @NotNull
-    @Column(name="discount rate")
-    private double discountRate;
+    @Column(name="discount_rate")
+    private Double discountRate;
 
     @Builder
-    public ProductEntity(String name, String description, String thumbnail, int price, MarketEntity market, LocalDate startDate, int maxCount) {
+    public ProductEntity(String name, String description, String thumbnail, Double price, MarketEntity market, LocalDate startDate, int maxCount) {
         this.name = name;
         this.description = description;
         this.thumbnail = thumbnail;
@@ -60,6 +60,10 @@ public class ProductEntity {
         this.market = market;
         this.startDate = startDate;
         this.maxCount = maxCount;
-        this.discountRate = 0.0;
+        this.discountRate = discountRate;
+    }
+
+    public void updateDiscountRate(double discountRate) {
+        this.discountRate = discountRate;
     }
 }

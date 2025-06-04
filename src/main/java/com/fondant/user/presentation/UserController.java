@@ -3,15 +3,17 @@ package com.fondant.user.presentation;
 import com.fondant.global.annotation.CurrentUser;
 import com.fondant.global.dto.ResponseDto;
 import com.fondant.global.dto.SuccessMessage;
+import com.fondant.global.exception.ApiException;
 import com.fondant.user.application.ReissueService;
 import com.fondant.user.application.SmsVerificationService;
 import com.fondant.user.application.UserService;
+import com.fondant.user.exception.UserError;
 import com.fondant.user.presentation.dto.request.SmsSendRequest;
 import com.fondant.user.presentation.dto.request.SmsVerifyRequest;
 import com.fondant.user.application.dto.CustomUserDetails;
-import com.fondant.user.domain.entity.UserEntity;
 import com.fondant.user.presentation.dto.request.UserUpdateRequest;
 import com.fondant.user.presentation.dto.response.UserResponse;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.ResponseEntity;
@@ -46,13 +48,13 @@ public class UserController {
         return ResponseEntity.ok(ResponseDto.ofSuccess(SuccessMessage.OPERATION_SUCCESS));
     }
 
-    @GetMapping("/")
+    @GetMapping()
     public ResponseEntity<ResponseDto<UserResponse>> getUserInfo(@CurrentUser CustomUserDetails user) {
         return ResponseEntity.ok(ResponseDto.ofSuccess(SuccessMessage.OPERATION_SUCCESS,
                 userService.getUserInfo(user.getUserId())));
     }
 
-    @PatchMapping("/")
+    @PatchMapping()
     public ResponseEntity<ResponseDto<Void>> updateUserInfo(@CurrentUser CustomUserDetails user, @RequestBody UserUpdateRequest request) {
         userService.updateUserInfo(user.getUserId(), request);
         return ResponseEntity.ok(ResponseDto.ofSuccess(SuccessMessage.OPERATION_SUCCESS));

@@ -1,12 +1,12 @@
 package com.fondant.restdocs;
 
+import com.fondant.global.annotation.WithMockCustomUser;
 import com.fondant.market.domain.entity.MarketCategoryEntity;
 import com.fondant.market.domain.entity.MarketEntity;
 import com.fondant.market.domain.entity.MarketHashtagEntity;
 import com.fondant.market.domain.repository.MarketHashtagRepository;
 import com.fondant.product.category.domain.CategoryEntity;
 import com.fondant.test.repository.*;
-import com.fondant.global.annotation.WithMockCustomUser;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,12 +15,11 @@ import org.springframework.http.MediaType;
 import org.springframework.restdocs.payload.FieldDescriptor;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.Arrays;
 import java.util.List;
 
+import static com.fondant.global.response.CommonResponseFields.commonResponseFields;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
@@ -32,6 +31,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureRestDocs
 @AutoConfigureMockMvc
+@AutoConfigureRestDocs(uriScheme = "http", uriHost = "localhost", uriPort = 8080)
 @Transactional
 public class MarketRestDocsTest {
 
@@ -70,11 +70,11 @@ public class MarketRestDocsTest {
         marketRepository.deleteAll();
 
         categoryCookie = categoryRepository.save(
-                CategoryEntity.builder().name("쿠키").build());
+                CategoryEntity.builder().name("쿠키").iconUrl("domain/icon-url/cookie").build());
         categoryBread = categoryRepository.save(
-                CategoryEntity.builder().name("빵").build());
+                CategoryEntity.builder().name("빵").iconUrl("domain/icon-url/bread").build());
         categoryBakedGoods = categoryRepository.save(
-                CategoryEntity.builder().name("구움과자").build());
+                CategoryEntity.builder().name("구움과자").iconUrl("domain/icon-url/baked").build());
 
         int marketCount = 1;
         for (CategoryEntity category : Arrays.asList(categoryCookie, categoryBread, categoryBakedGoods)) {
@@ -108,14 +108,6 @@ public class MarketRestDocsTest {
         }
     }
 
-    public static FieldDescriptor[] commonResponseFields() {
-        return new FieldDescriptor[]{
-                fieldWithPath("code").description("요청 성공 여부 (true/false)"),
-                fieldWithPath("message").description("응답 메시지"),
-                fieldWithPath("response").description("응답 데이터")
-        };
-    }
-
     @Test
     @WithMockCustomUser
     void getMarketsByCategory() throws Exception {
@@ -134,7 +126,7 @@ public class MarketRestDocsTest {
                         ),
                         responseFields(
                                 commonResponseFields()
-                        ).andWithPrefix("response.", new FieldDescriptor[]{
+                        ).andWithPrefix("content.", new FieldDescriptor[]{
                                 fieldWithPath("pageInfo").description("페이지 정보"),
                                 fieldWithPath("pageInfo.currentPage").description("현재 페이지"),
                                 fieldWithPath("pageInfo.totalPage").description("전체 페이지"),
@@ -168,7 +160,7 @@ public class MarketRestDocsTest {
                         ),
                         responseFields(
                                 commonResponseFields()
-                        ).andWithPrefix("response.", new FieldDescriptor[]{
+                        ).andWithPrefix("content.", new FieldDescriptor[]{
                                 fieldWithPath("id").description("마켓 ID"),
                                 fieldWithPath("name").description("마켓 이름"),
                                 fieldWithPath("description").description("마켓 한줄 소개"),
@@ -179,7 +171,7 @@ public class MarketRestDocsTest {
                                 fieldWithPath("isTop10").description("카테고리별 인기 마켓 TOP10 여부"),
                                 fieldWithPath("hashtags").description("해시태그 목록 (최대 5개)"),
                                 fieldWithPath("profile").description("마켓 상세 정보 목록")
-                        }).andWithPrefix("response.profile.", new FieldDescriptor[]{
+                        }).andWithPrefix("content.profile.", new FieldDescriptor[]{
                                 fieldWithPath("businessNumber").description("사업자 등록번호"),
                                 fieldWithPath("instagramProfile").description("인스타그램 프로필 링크"),
                                 fieldWithPath("latitude").description("마켓 위치 위도"),
@@ -202,7 +194,7 @@ public class MarketRestDocsTest {
                         ),
                         responseFields(
                                 commonResponseFields()
-                        ).andWithPrefix("response.", new FieldDescriptor[]{
+                        ).andWithPrefix("content.", new FieldDescriptor[]{
                                 fieldWithPath("pageInfo").description("페이지 정보"),
                                 fieldWithPath("pageInfo.currentPage").description("현재 페이지"),
                                 fieldWithPath("pageInfo.totalPage").description("전체 페이지"),
@@ -221,7 +213,7 @@ public class MarketRestDocsTest {
     void getTop30MarketsByCategory() throws Exception {
         mockMvc.perform(get(BASE_URL + "/{categoryId}/top30", categoryCookie.getId())
                         .param("page", "0")
-                .contentType(MediaType.APPLICATION_JSON))
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andDo(document("markets/get-top30-markets-by-category",
                         preprocessRequest(prettyPrint()),
@@ -234,7 +226,7 @@ public class MarketRestDocsTest {
                         ),
                         responseFields(
                                 commonResponseFields()
-                        ).andWithPrefix("response.", new FieldDescriptor[]{
+                        ).andWithPrefix("content.", new FieldDescriptor[]{
                                 fieldWithPath("pageInfo").description("페이지 정보"),
                                 fieldWithPath("pageInfo.currentPage").description("현재 페이지"),
                                 fieldWithPath("pageInfo.totalPage").description("전체 페이지"),
@@ -266,7 +258,7 @@ public class MarketRestDocsTest {
                         ),
                         responseFields(
                                 commonResponseFields()
-                        ).andWithPrefix("response.", new FieldDescriptor[]{
+                        ).andWithPrefix("content.", new FieldDescriptor[]{
                                 fieldWithPath("pageInfo").description("페이지 정보"),
                                 fieldWithPath("pageInfo.currentPage").description("현재 페이지"),
                                 fieldWithPath("pageInfo.totalPage").description("전체 페이지"),

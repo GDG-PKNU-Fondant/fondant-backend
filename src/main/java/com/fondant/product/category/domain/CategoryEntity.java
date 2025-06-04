@@ -22,6 +22,10 @@ public class CategoryEntity {
     @Getter
     private String name;
 
+    @Column(name="icon_url")
+    @Getter
+    private String iconUrl;
+
     @Getter
     @ManyToOne
     @JoinColumn(name = "parent_id")
@@ -32,8 +36,9 @@ public class CategoryEntity {
     private List<CategoryEntity> children = new ArrayList<>();;
 
     @Builder
-    public CategoryEntity(String name) {
+    public CategoryEntity(String name,String iconUrl) {
         this.name = name;
+        this.iconUrl = iconUrl;
     }
 
     public void addChild(CategoryEntity child) {

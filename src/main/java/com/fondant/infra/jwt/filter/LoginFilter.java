@@ -9,7 +9,9 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -21,6 +23,7 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Iterator;
@@ -80,9 +83,18 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
         addRefreshEntity(userId, refreshToken);
 
+        ResponseCookie cookie = ResponseCookie
+                .from("refresh", refreshToken)
+                .httpOnly(true)
+                .secure(true)
+                .sameSite("None")
+                .path("/")
+                .maxAge(Duration.ofDays(1))
+                .build();
+
         PrintWriter writer = response.getWriter();
         writer.print("access: " + accessToken);
-        response.addCookie(createCookie("refresh", refreshToken));
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
         response.setStatus(HttpStatus.OK.value());
     }
 
@@ -101,15 +113,5 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     @Override
     protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) {
         response.setStatus(401);
-    }
-
-    private Cookie createCookie(String key, String value) {
-
-        Cookie cookie = new Cookie(key, value);
-        cookie.setMaxAge(60 * 60 * 24);
-        //cookie.setSecure(true); Https 사용시
-        cookie.setPath("/");
-        cookie.setHttpOnly(true);
-        return cookie;
     }
 }
