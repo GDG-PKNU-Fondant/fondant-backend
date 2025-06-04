@@ -4,10 +4,13 @@ import com.fondant.market.domain.entity.MarketEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.List;
 
+@Getter
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "cart_market")
@@ -26,7 +29,7 @@ public class CartMarketEntity {
     private MarketEntity market;
 
     @OneToMany(mappedBy = "cartMarket", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<CartItemEntity> cartItems;
+    private List<CartItemEntity> cartItems = new ArrayList<>();
 
     @Builder
     public CartMarketEntity(CartEntity cart, MarketEntity market) {
