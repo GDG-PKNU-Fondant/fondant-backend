@@ -4,11 +4,14 @@ import com.fondant.product.domain.entity.ProductEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
+@Getter
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class CartItemEntity {
@@ -32,13 +35,21 @@ public class CartItemEntity {
     private LocalDate arrivalDate;
 
     @OneToMany(mappedBy = "cartItem", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<CartItemOptionEntity> cartItemOptions;
+    private List<CartItemOptionEntity> cartItemOptions = new ArrayList<>();
 
     @Builder
-    public CartItemEntity(CartMarketEntity cartMarket, ProductEntity product, int quantity) {
+    public CartItemEntity(CartMarketEntity cartMarket, ProductEntity product, int quantity,
+                          LocalDate arrivalDate, List<CartItemOptionEntity> cartItemOptions) {
         this.cartMarket = cartMarket;
         this.product = product;
         this.quantity = quantity;
-        this.arrivalDate = LocalDate.now().plusDays(3);
+        this.arrivalDate = (arrivalDate != null) ? arrivalDate : LocalDate.now().plusDays(3);
+        if (cartItemOptions != null) {
+            cartItemOptions.forEach(this::addCartItemOption);
+        }
+    }
+    public void addCartItemOption(CartItemOptionEntity option) {
+        this.cartItemOptions.add(option);
+        option.setCartItem(this);
     }
 }
