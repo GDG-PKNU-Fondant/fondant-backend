@@ -146,7 +146,6 @@ public class ProductRestDocsTest {
                 .market(market)
                 .startDate(LocalDate.of(2025, 1, 1))
                 .maxCount(50)
-                .discountRate(0.0)
                 .build());
 
         product2 = productRepository.save(ProductEntity.builder()
@@ -157,7 +156,6 @@ public class ProductRestDocsTest {
                 .market(market)
                 .startDate(LocalDate.of(2025, 1, 1))
                 .maxCount(50)
-                .discountRate(0.0)
                 .build());
 
         categoryProduct1 = productCategoryRepository.save(ProductCategoryEntity.builder()
@@ -314,7 +312,7 @@ public class ProductRestDocsTest {
                         ),
                         responseFields(
                                 commonResponseFields()
-                        ).andWithPrefix("response.", new FieldDescriptor[]{
+                        ).andWithPrefix("content.", new FieldDescriptor[]{
                                 fieldWithPath("count").description("필터링된 상품 개수")
                         })
                 ));
@@ -355,7 +353,7 @@ public class ProductRestDocsTest {
                         ),
                         responseFields(
                                 commonResponseFields()
-                        ).andWithPrefix("response.", new FieldDescriptor[]{
+                        ).andWithPrefix("content.", new FieldDescriptor[]{
                                 fieldWithPath("pageInfo.currentPage").description("현재 페이지 번호"),
                                 fieldWithPath("pageInfo.totalPage").description("총 페이지 수"),
                                 fieldWithPath("products").description("상품 목록"),
