@@ -36,7 +36,9 @@ public class SecurityConfig {
             "/favicon.ico",
             "/error",
             "/docs/**",
-            "/api/markets/**"
+            "/api/markets/**",
+            "/api/product/**",
+            "/api/category/**"
     };
 
     public static final String[] ADMIN_ENDPOINTS = {

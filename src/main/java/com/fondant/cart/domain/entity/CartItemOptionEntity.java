@@ -4,8 +4,10 @@ import com.fondant.product.domain.entity.OptionEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+@Getter
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class CartItemOptionEntity {
@@ -22,7 +24,7 @@ public class CartItemOptionEntity {
     @JoinColumn(name = "option_id")
     private OptionEntity option;
 
-    @JoinColumn(name = "option_quantity", nullable = false)
+    @Column(name = "option_quantity", nullable = false)
     private int quantity;
 
     @Builder
@@ -30,5 +32,8 @@ public class CartItemOptionEntity {
         this.cartItem = cartItem;
         this.option = option;
         this.quantity = quantity;
+    }
+    public void setCartItem(CartItemEntity cartItem) {
+        this.cartItem = cartItem;
     }
 }
