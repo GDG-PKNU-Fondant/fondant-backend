@@ -40,6 +40,7 @@ public class CartService {
             List<CartItemEntity> itemsInMarket = entry.getValue();
             String marketName = itemsInMarket.get(0).getCartMarket().getMarket().getName();
 
+            double freeDeliveryLimit = itemsInMarket.get(0).getCartMarket().getMarket().getFreeDeliveryLimit();
             List<CartProductInfo> products = new ArrayList<>();
 
             for (CartItemEntity item : itemsInMarket) {
@@ -84,6 +85,7 @@ public class CartService {
             CartMarketInfo marketInfo = CartMarketInfo.builder()
                     .marketId(marketId)
                     .marketName(marketName)
+                    .freeDeliveryLimit(freeDeliveryLimit)
                     .products(products)
                     .build();
 

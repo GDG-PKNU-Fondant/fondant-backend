@@ -83,6 +83,7 @@ public class CartRestDocsTest {
                         .name("달미롱")
                         .thumbnail("thumbnail.jpg")
                         .background("bg.jpg")
+                        .freeDeliveryLimit(3500.0)
                         .deliveryFee(3000.0)
                         .build()
         );
@@ -202,6 +203,7 @@ public class CartRestDocsTest {
                                 fieldWithPath("pageInfo.totalPage").description("총 페이지 수"),
                                 fieldWithPath("markets[].marketId").description("마켓 ID"),
                                 fieldWithPath("markets[].marketName").description("마켓 이름"),
+                                fieldWithPath("markets[].freeDeliveryLimit").description("해당 마켓의 무료 배송 기준 금액"),
                                 fieldWithPath("markets[].products").description("상품 목록"),
                                 fieldWithPath("markets[].products[].productId").description("상품 ID"),
                                 fieldWithPath("markets[].products[].productName").description("상품 이름"),

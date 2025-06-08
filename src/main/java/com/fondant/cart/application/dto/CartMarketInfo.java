@@ -8,5 +8,6 @@ import java.util.List;
 public record CartMarketInfo (
         Long marketId,
         String marketName,
+        Double freeDeliveryLimit,
         List<CartProductInfo> products
 ) {}
