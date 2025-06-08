@@ -92,7 +92,7 @@ public class CartRestDocsTest {
                         .name("쫀득쿠키")
                         .description("옵션이 없는 상품입니다.")
                         .thumbnail("thumbnail.jpg")
-                        .price(5000)
+                        .price(5000.0)
                         .market(market)
                         .startDate(LocalDate.now())
                         .build()
@@ -103,7 +103,7 @@ public class CartRestDocsTest {
                         .name("딸기모찌")
                         .description("옵션이 있는 상품입니다.")
                         .thumbnail("thumbnail.jpg")
-                        .price(8000)
+                        .price(8000.0)
                         .market(market)
                         .startDate(LocalDate.now())
                         .build()
@@ -112,7 +112,7 @@ public class CartRestDocsTest {
         OptionEntity option1 = optionRepository.save(
                 OptionEntity.builder()
                         .name("3개 세트")
-                        .price(2000)
+                        .price(2000.0)
                         .productId(product2.getId())
                         .build()
         );
@@ -120,7 +120,7 @@ public class CartRestDocsTest {
         OptionEntity option2 = optionRepository.save(
                 OptionEntity.builder()
                         .name("5개 세트")
-                        .price(3000)
+                        .price(3000.0)
                         .productId(product2.getId())
                         .build()
         );
@@ -179,7 +179,7 @@ public class CartRestDocsTest {
         return new FieldDescriptor[]{
                 fieldWithPath("code").description("요청 성공 여부"),
                 fieldWithPath("message").description("응답 메시지"),
-                fieldWithPath("response").description("응답 데이터")
+                fieldWithPath("content").description("응답 데이터")
         };
     }
 
@@ -196,7 +196,7 @@ public class CartRestDocsTest {
                         preprocessResponse(prettyPrint()),
                         responseFields(
                                 commonResponseFields()
-                        ).andWithPrefix("response.", new FieldDescriptor[] {
+                        ).andWithPrefix("content.", new FieldDescriptor[] {
                                 fieldWithPath("pageInfo").description("페이지 정보"),
                                 fieldWithPath("pageInfo.currentPage").description("현재 페이지 번호"),
                                 fieldWithPath("pageInfo.totalPage").description("총 페이지 수"),
@@ -206,16 +206,13 @@ public class CartRestDocsTest {
                                 fieldWithPath("markets[].products[].productId").description("상품 ID"),
                                 fieldWithPath("markets[].products[].productName").description("상품 이름"),
                                 fieldWithPath("markets[].products[].thumbnail").description("상품 썸네일 URL"),
-                                fieldWithPath("markets[].products[].options").description("옵션 목록 (없으면 빈 배열)").type(ARRAY).optional(),
+                                fieldWithPath("markets[].products[].quantity").description("상품 수량"),
+                                fieldWithPath("markets[].products[].arrivalDate").description("도착 예정일"),
+                                fieldWithPath("markets[].products[].options").description("옵션 목록 (없으면 빈 배열)").type(JsonFieldType.ARRAY).optional(),
                                 fieldWithPath("markets[].products[].options[].optionId").type(JsonFieldType.NUMBER).description("옵션 ID"),
                                 fieldWithPath("markets[].products[].options[].optionName").type(JsonFieldType.STRING).description("옵션 이름"),
                                 fieldWithPath("markets[].products[].options[].additionalPrice").type(JsonFieldType.NUMBER).description("옵션 추가 금액"),
-                                fieldWithPath("markets[].products[].options[].quantity").type(JsonFieldType.NUMBER).description("옵션 수량"),
-                                fieldWithPath("markets[].products[].totalQuantity").description("상품 총 수량"),
-                                fieldWithPath("markets[].products[].arrivalDate").description("도착 예정일"),
-                                fieldWithPath("markets[].products[].totalProductPrice").description("상품 총 가격"),
-                                fieldWithPath("markets[].products[].deliveryFee").description("배송비"),
-                                fieldWithPath("markets[].products[].finalPrice").description("최종 결제 금액")
+                                fieldWithPath("markets[].products[].options[].quantity").type(JsonFieldType.NUMBER).description("옵션 수량")
                         })));
     }
 }
