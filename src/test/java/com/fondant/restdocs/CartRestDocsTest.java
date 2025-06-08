@@ -205,6 +205,7 @@ public class CartRestDocsTest {
                                 fieldWithPath("markets[].products").description("상품 목록"),
                                 fieldWithPath("markets[].products[].productId").description("상품 ID"),
                                 fieldWithPath("markets[].products[].productName").description("상품 이름"),
+                                fieldWithPath("markets[].products[].basePrice").description("상품 기본 가격"),
                                 fieldWithPath("markets[].products[].thumbnail").description("상품 썸네일 URL"),
                                 fieldWithPath("markets[].products[].quantity").description("상품 수량"),
                                 fieldWithPath("markets[].products[].arrivalDate").description("도착 예정일"),

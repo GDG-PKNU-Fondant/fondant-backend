@@ -72,6 +72,7 @@ public class CartService {
                         .productId(item.getProduct().getId())
                         .productName(item.getProduct().getName())
                         .thumbnail(item.getProduct().getThumbnail())
+                        .basePrice(item.getProduct().getPrice())
                         .options(optionInfos)
                         .quantity(item.getQuantity())
                         .arrivalDate(item.getArrivalDate())
