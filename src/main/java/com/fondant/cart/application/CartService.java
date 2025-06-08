@@ -39,7 +39,6 @@ public class CartService {
             Long marketId = entry.getKey();
             List<CartItemEntity> itemsInMarket = entry.getValue();
             String marketName = itemsInMarket.get(0).getCartMarket().getMarket().getName();
-
             double freeDeliveryLimit = itemsInMarket.get(0).getCartMarket().getMarket().getFreeDeliveryLimit();
             List<CartProductInfo> products = new ArrayList<>();
 
@@ -55,19 +54,7 @@ public class CartService {
                                 .build())
                         .collect(Collectors.toList());
 
-                int totalQuantity = optionInfos.stream()
-                        .mapToInt(CartOptionInfo::quantity)
-                        .sum();
-
-                Double totalOptionPrice = optionInfos.stream()
-                        .mapToDouble(opt -> opt.additionalPrice() * opt.quantity())
-                        .sum();
-
                 Double basePrice = (double) item.getProduct().getPrice();
-                Double totalProductPrice = basePrice * totalQuantity + totalOptionPrice;
-
-                Double deliveryFee = Optional.ofNullable(item.getCartMarket().getMarket().getDeliveryFee()).orElse(0.0);
-                Double finalPrice = totalProductPrice + deliveryFee;
 
                 CartProductInfo productInfo = CartProductInfo.builder()
                         .productId(item.getProduct().getId())
