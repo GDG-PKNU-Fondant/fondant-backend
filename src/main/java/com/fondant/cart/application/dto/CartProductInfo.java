@@ -11,9 +11,6 @@ public record CartProductInfo (
         String productName,
         String thumbnail,
         List<CartOptionInfo> options,
-        int totalQuantity,
-        LocalDate arrivalDate,
-        Double totalProductPrice,
-        Double deliveryFee,
-        Double finalPrice
+        int quantity,
+        LocalDate arrivalDate
 ) {}
