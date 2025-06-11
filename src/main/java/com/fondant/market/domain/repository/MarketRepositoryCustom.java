@@ -21,4 +21,6 @@ public interface MarketRepositoryCustom {
     boolean isMarketLikedByUser(Long marketId, Long userId);
 
     long countLikesByMarket(Long marketId);
+
+    List<Long> findSubCategoryIdsByMarketId(Long marketId);
 }

@@ -1,0 +1,23 @@
+= API 문서
+Fondant Backend Team
+2025-01-26
+:toc: left
+:toclevels: 2
+:source-highlighter: highlightjs
+:sectlinks:
+
+== Cart API
+
+=== 1. 장바구니 목록 조회
+
+==== HTTP request
+
+include::{snippets}/cart/get-cart-items/http-request.adoc[]
+
+==== HTTP response
+
+include::{snippets}/cart/get-cart-items/http-response.adoc[]
+
+==== response body
+
+include::{snippets}/cart/get-cart-items/response-fields.adoc[]

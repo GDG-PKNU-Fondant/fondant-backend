@@ -60,7 +60,7 @@ public class ProductEntity {
         this.market = market;
         this.startDate = startDate;
         this.maxCount = maxCount;
-        this.discountRate = discountRate;
+        this.discountRate = 0.0;
     }
 
     public void updateDiscountRate(double discountRate) {
