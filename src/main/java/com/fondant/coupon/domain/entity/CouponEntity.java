@@ -8,30 +8,33 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "coupon")
 @Getter
-@Inheritance(strategy = InheritanceType.JOINED)
-@DiscriminatorColumn(name = "coupon_type")
-public abstract class CouponEntity {
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class CouponEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "coupon_id")
     private Long id;
 
     @NotNull
-    @Column(name = "name")
     private String name;
+
+    @Enumerated(EnumType.STRING)
+    private DiscountType discountType;
 
     @NotNull
     @Column(name = "discount_amount")
-    private Integer discountAmount;
+    private Double discountAmount;
 
     @NotNull
     @Column(name = "min_order_amount")
-    private Integer minOrderAmount;
+    private Double minOrderAmount;
 
     @NotNull
     @Column(name = "start_date")
@@ -41,20 +44,26 @@ public abstract class CouponEntity {
     @Column(name = "end_date")
     private LocalDateTime endDate;
 
-    @NotNull
-    @Column(name = "is_used")
-    private Boolean isUsed;
+    @OneToMany(mappedBy = "coupon", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<CouponMarketEntity> couponMarkets = new ArrayList<>();
 
     @Builder
-    protected CouponEntity(String name, Integer discountAmount, Integer minOrderAmount,
-                           LocalDateTime startDate, LocalDateTime endDate) {
+    public CouponEntity(String name, DiscountType discountType, Double discountAmount,
+                        Double minOrderAmount, LocalDateTime startDate, LocalDateTime endDate) {
         this.name = name;
+        this.discountType = discountType;
         this.discountAmount = discountAmount;
         this.minOrderAmount = minOrderAmount;
         this.startDate = startDate;
         this.endDate = endDate;
-        this.isUsed = false;
     }
 
-    public abstract boolean isAvailableForMarket(Long marketId);
+    public boolean isGlobal() {
+        return couponMarkets.isEmpty();
+    }
+
+    public boolean isAvailable() {
+        LocalDateTime now = LocalDateTime.now();
+        return !now.isBefore(startDate) && !now.isAfter(endDate);
+    }
 }
