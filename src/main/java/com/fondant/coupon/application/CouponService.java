@@ -7,7 +7,6 @@ import com.fondant.coupon.domain.entity.CouponEntity;
 import com.fondant.coupon.domain.repository.CouponRepository;
 import com.fondant.coupon.exception.CouponError;
 import com.fondant.coupon.presentation.dto.response.CouponListResponse;
-import com.fondant.global.dto.PageInfo;
 import com.fondant.global.dto.SliceInfo;
 import com.fondant.global.exception.ApiException;
 import com.fondant.user.domain.entity.UserEntity;
@@ -20,7 +19,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -32,9 +30,9 @@ public class CouponService {
     public CouponListResponse getIssuableCoupons(Long userId, Pageable pageable) {
         Slice<CouponEntity> couponSlice = couponRepository.findIssuableCoupons(userId, pageable);
 
-        List<CouponInfo> coupons = couponSlice.getContent().stream()
+        List<CouponInfo> coupons = couponSlice
                 .map(CouponInfo::from)
-                .collect(Collectors.toList());
+                .getContent();
 
         SliceInfo sliceInfo = SliceInfo.of(couponSlice.hasNext());
 
@@ -44,9 +42,9 @@ public class CouponService {
     public CouponListResponse getIssuedCoupons(Long userId, Pageable pageable) {
         Slice<CouponEntity> couponSlice = couponRepository.findIssuedCoupons(userId, pageable);
 
-        List<CouponInfo> coupons = couponSlice.getContent().stream()
+        List<CouponInfo> coupons = couponSlice
                 .map(CouponInfo::from)
-                .collect(Collectors.toList());
+                .getContent();
 
         SliceInfo sliceInfo = SliceInfo.of(couponSlice.hasNext());
 
