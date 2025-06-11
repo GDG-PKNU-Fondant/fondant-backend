@@ -24,12 +24,12 @@ public class CouponRepositoryImpl implements CouponRepositoryCustom {
         QCouponMarketEntity couponMarket = QCouponMarketEntity.couponMarketEntity;
         QUserCouponEntity userCoupon = QUserCouponEntity.userCouponEntity;
 
-        BooleanBuilder builder = new BooleanBuilder();
         LocalDateTime now = LocalDateTime.now();
 
-        builder.and(coupon.startDate.loe(now));
-        builder.and(coupon.endDate.goe(now));
-        builder.and(userCoupon.id.isNull());
+        BooleanBuilder builder = new BooleanBuilder()
+                .and(coupon.startDate.loe(now))
+                .and(coupon.endDate.goe(now))
+                .and(userCoupon.id.isNull());
 
         List<CouponEntity> content = queryFactory
                 .selectDistinct(coupon)
@@ -60,6 +60,7 @@ public class CouponRepositoryImpl implements CouponRepositoryCustom {
 
         QCouponEntity coupon = QCouponEntity.couponEntity;
         QUserCouponEntity userCoupon = QUserCouponEntity.userCouponEntity;
+
         LocalDateTime now = LocalDateTime.now();
 
         BooleanBuilder builder = new BooleanBuilder()
