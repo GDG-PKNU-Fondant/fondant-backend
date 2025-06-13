@@ -33,65 +33,54 @@ public class CartService {
         Map<Long, List<CartItemEntity>> marketGrouped = cartItems.stream()
                 .collect(Collectors.groupingBy(item -> item.getCartMarket().getMarket().getId()));
 
-        List<CartMarketInfo> markets = new ArrayList<>();
-
-        for (Map.Entry<Long, List<CartItemEntity>> entry : marketGrouped.entrySet()) {
-            Long marketId = entry.getKey();
-            List<CartItemEntity> itemsInMarket = entry.getValue();
-            String marketName = itemsInMarket.get(0).getCartMarket().getMarket().getName();
-
-            List<CartProductInfo> products = new ArrayList<>();
-
-            for (CartItemEntity item : itemsInMarket) {
-                List<CartOptionInfo> optionInfos = Optional.ofNullable(item.getCartItemOptions())
-                        .orElse(Collections.emptyList())
-                        .stream()
-                        .map(opt -> CartOptionInfo.builder()
-                                .optionId(opt.getOption().getId())
-                                .optionName(opt.getOption().getName())
-                                .additionalPrice((double) opt.getOption().getPrice())
-                                .quantity(opt.getQuantity())
-                                .build())
-                        .collect(Collectors.toList());
-
-                int totalQuantity = optionInfos.stream()
-                        .mapToInt(CartOptionInfo::quantity)
-                        .sum();
-
-                Double totalOptionPrice = optionInfos.stream()
-                        .mapToDouble(opt -> opt.additionalPrice() * opt.quantity())
-                        .sum();
-
-                Double basePrice = (double) item.getProduct().getPrice();
-                Double totalProductPrice = basePrice * totalQuantity + totalOptionPrice;
-
-                Double deliveryFee = Optional.ofNullable(item.getCartMarket().getMarket().getDeliveryFee()).orElse(0.0);
-                Double finalPrice = totalProductPrice + deliveryFee;
-
-                CartProductInfo productInfo = CartProductInfo.builder()
-                        .productId(item.getProduct().getId())
-                        .productName(item.getProduct().getName())
-                        .thumbnail(item.getProduct().getThumbnail())
-                        .options(optionInfos)
-                        .totalQuantity(totalQuantity)
-                        .arrivalDate(item.getArrivalDate())
-                        .totalProductPrice(totalProductPrice)
-                        .deliveryFee(deliveryFee)
-                        .finalPrice(finalPrice)
-                        .build();
-
-                products.add(productInfo);
-            }
-
-            CartMarketInfo marketInfo = CartMarketInfo.builder()
-                    .marketId(marketId)
-                    .marketName(marketName)
-                    .products(products)
-                    .build();
-
-            markets.add(marketInfo);
-        }
+        List<CartMarketInfo> markets = toCartMarketInfoList(marketGrouped);
 
         return CartResponse.of(markets, PageInfo.of(page.getNumber(), page.getTotalPages()));
+    }
+
+    private List<CartMarketInfo> toCartMarketInfoList(Map<Long, List<CartItemEntity>> marketGrouped) {
+        return marketGrouped.entrySet().stream()
+                .map(entry -> {
+                    Long marketId = entry.getKey();
+                    List<CartItemEntity> items = entry.getValue();
+                    var market = items.get(0).getCartMarket().getMarket();
+
+                    List<CartProductInfo> products = toCartProductInfoList(items);
+
+                    return CartMarketInfo.builder()
+                            .marketId(marketId)
+                            .marketName(market.getName())
+                            .freeDeliveryLimit(market.getFreeDeliveryLimit())
+                            .products(products)
+                            .build();
+                })
+                .collect(Collectors.toList());
+    }
+
+    private List<CartProductInfo> toCartProductInfoList(List<CartItemEntity> items) {
+        return items.stream()
+                .map(item -> {
+                    List<CartOptionInfo> options = Optional.ofNullable(item.getCartItemOptions())
+                            .orElse(Collections.emptyList())
+                            .stream()
+                            .map(opt -> CartOptionInfo.builder()
+                                    .optionId(opt.getOption().getId())
+                                    .optionName(opt.getOption().getName())
+                                    .additionalPrice((double) opt.getOption().getPrice())
+                                    .quantity(opt.getQuantity())
+                                    .build())
+                            .collect(Collectors.toList());
+
+                    return CartProductInfo.builder()
+                            .productId(item.getProduct().getId())
+                            .productName(item.getProduct().getName())
+                            .thumbnail(item.getProduct().getThumbnail())
+                            .basePrice(item.getProduct().getPrice())
+                            .options(options)
+                            .quantity(item.getQuantity())
+                            .arrivalDate(item.getArrivalDate())
+                            .build();
+                })
+                .collect(Collectors.toList());
     }
 }
