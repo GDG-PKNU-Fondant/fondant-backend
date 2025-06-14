@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-public interface SmsVerificationRepository extends JpaRepository<SmsVerificationEntity, Long>, com.fondant.infra.sms.domain.repository.SmsVerificationRepositoryCustom {
+public interface SmsVerificationRepository extends JpaRepository<SmsVerificationEntity, Long>, SmsVerificationRepositoryCustom {
 
     @Transactional
     void deleteByExpiresAtBefore(LocalDateTime now);

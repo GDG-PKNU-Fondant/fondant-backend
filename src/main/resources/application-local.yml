@@ -1,12 +1,19 @@
 spring:
   config:
-    import:
-      - optional:file:./application-secret.yml
-
-  datasource:
-    driver-class-name: org.postgresql.Driver
-
+    import: optional:aws-parameterstore:/fondant/, optional:classpath:application-secret.yml
+  cloud:
+    aws:
+      region:
+        static: ap-northeast-2
+      credentials:
+        profile-name: default
+      parameterstore:
+        enabled: true
+        prefix: /fondant  # 여기가 중요
+        name: s3
   jpa:
     hibernate:
       ddl-auto: update
     show-sql: true
+
+
