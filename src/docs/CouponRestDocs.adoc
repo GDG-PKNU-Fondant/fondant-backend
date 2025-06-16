@@ -1,0 +1,91 @@
+= API 문서
+Fondant Backend Team
+2025-01-26
+:toc: left
+:toclevels: 2
+:source-highlighter: highlightjs
+:sectlinks:
+
+== Coupon API
+
+=== 1. 쿠폰 발급
+
+==== HTTP Request
+
+include::{snippets}/coupon-issue/http-request.adoc[]
+
+==== Request Header
+
+include::{snippets}/coupon-issue/request-headers.adoc[]
+
+==== Request Body
+
+include::{snippets}/coupon-issue/request-body.adoc[]
+
+==== Request Field
+
+include::{snippets}/coupon-issue/request-fields.adoc[]
+
+==== HTTP Response
+
+include::{snippets}/coupon-issue/http-response.adoc[]
+
+==== Response Body
+
+include::{snippets}/coupon-issue/response-body.adoc[]
+
+==== Response Field
+
+include::{snippets}/coupon-issue/response-fields.adoc[]
+
+=== 2. 발급 받을 수 있는 쿠폰 조회
+
+==== HTTP Request
+
+include::{snippets}/coupon-get-issuable/http-request.adoc[]
+
+==== Request Header
+
+include::{snippets}/coupon-get-issuable/request-headers.adoc[]
+
+==== Request Parameter
+
+include::{snippets}/coupon-get-issuable/query-parameters.adoc[]
+
+==== HTTP Response
+
+include::{snippets}/coupon-get-issuable/http-response.adoc[]
+
+==== Response Body
+
+include::{snippets}/coupon-get-issuable/response-body.adoc[]
+
+==== Response Field
+
+include::{snippets}/coupon-get-issuable/response-fields.adoc[]
+
+=== 3. 발급 받은 쿠폰 조회
+
+==== HTTP Request
+
+include::{snippets}/coupon-get-issued/http-request.adoc[]
+
+==== Request Header
+
+include::{snippets}/coupon-get-issued/request-headers.adoc[]
+
+==== Request Parameter
+
+include::{snippets}/coupon-get-issued/query-parameters.adoc[]
+
+==== HTTP Response
+
+include::{snippets}/coupon-get-issued/http-response.adoc[]
+
+==== Response Body
+
+include::{snippets}/coupon-get-issued/response-body.adoc[]
+
+==== Response Field
+
+include::{snippets}/coupon-get-issued/response-fields.adoc[]
