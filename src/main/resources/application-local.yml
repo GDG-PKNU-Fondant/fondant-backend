@@ -1,16 +1,17 @@
 spring:
   config:
-    import: optional:aws-parameterstore:/fondant/, optional:classpath:application-secret.yml
+    import: optional:aws-parameterstore:/fondant/dev, optional:classpath:application-secret.yml
   cloud:
     aws:
       region:
         static: ap-northeast-2
-      credentials:
-        profile-name: default
+      stack:
+        auto: false
       parameterstore:
         enabled: true
-        prefix: /fondant  # 여기가 중요
-        name: s3
+      s3:
+        images-bucket: ${s3.images-bucket}
+
   jpa:
     hibernate:
       ddl-auto: update

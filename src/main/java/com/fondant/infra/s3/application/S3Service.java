@@ -18,7 +18,7 @@ import java.util.UUID;
 public class S3Service {
     private final S3Client s3Client;
 
-    @Value("${s3.images-bucket}")
+    @Value("${spring.cloud.aws.s3.images-bucket}")
     private String bucket;
 
     public String uploadReviewImage(MultipartFile file) {
