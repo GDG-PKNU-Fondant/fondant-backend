@@ -32,6 +32,11 @@ public class UserService {
                 .orElseThrow(() -> new ApiException(UserError.USER_NOT_FOUND));
     }
 
+    @Transactional(readOnly = true)
+    public UserEntity getUserEntityById(Long userId) {
+        return findUserById(userId);
+    }
+
     public UserResponse getUserInfo(Long userId) {
         UserEntity userEntity = findUserById(userId);
 
