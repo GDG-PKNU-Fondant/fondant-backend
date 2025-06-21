@@ -9,6 +9,10 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
+
+import static com.fondant.order.application.OrderService.calculateTotalPrice;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -74,9 +78,5 @@ public class OrderDetailEntity {
                 .quantity(item.quantity())
                 .totalPrice(totalPrice)
                 .build();
-    }
-
-    private static double calculateTotalPrice(double price, double optionPrice, int quantity, double discountRate) {
-        return Math.round(price * (1.0 - discountRate) + optionPrice) * quantity;
     }
 }

@@ -12,15 +12,22 @@ import com.fondant.order.domain.repository.OrderRepository;
 import com.fondant.order.exception.OrderError;
 import com.fondant.order.presentation.dto.request.OrderCreateRequest;
 import com.fondant.order.presentation.dto.request.OrderItem;
+import com.fondant.order.presentation.dto.request.OrderPrepareRequest;
+import com.fondant.order.presentation.dto.response.OrderPrepareResponse;
 import com.fondant.product.application.ProductService;
 import com.fondant.product.domain.entity.OptionEntity;
 import com.fondant.product.domain.entity.ProductEntity;
 import com.fondant.product.domain.repository.OptionRepository;
 import com.fondant.product.domain.repository.ProductRepository;
 import com.fondant.product.exception.ProductError;
+import com.fondant.user.application.UserService;
 import com.fondant.user.domain.entity.UserEntity;
 import com.fondant.user.domain.repository.UserRepository;
 import com.fondant.user.exception.UserError;
+import com.fondant.coupon.application.CouponService;
+import com.fondant.coupon.application.dto.CouponInfo;
+import com.fondant.coupon.presentation.dto.response.CouponListResponse;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,43 +40,83 @@ import java.util.Map;
 @Service
 public class OrderService {
 
-    private final UserRepository userRepository;
     private final MarketRepository marketRepository;
     private final OrderRepository orderRepository;
     private final OrderDetailRepository orderDetailRepository;
     private final ProductRepository productRepository;
     private final OptionRepository optionRepository;
     private final ProductService productService;
+    private final CouponService couponService;
+    private final UserService userService;
 
-    public OrderService(UserRepository userRepository, MarketRepository marketRepository, OrderRepository orderRepository, OrderDetailRepository orderDetailRepository, ProductRepository productRepository, OptionRepository optionRepository, ProductService productService) {
-        this.userRepository = userRepository;
+    public OrderService(MarketRepository marketRepository, OrderRepository orderRepository,
+                        OrderDetailRepository orderDetailRepository, ProductRepository productRepository,
+                        OptionRepository optionRepository, ProductService productService,
+                        CouponService couponService, UserService userService) {
         this.marketRepository = marketRepository;
         this.orderRepository = orderRepository;
         this.orderDetailRepository = orderDetailRepository;
         this.productRepository = productRepository;
         this.optionRepository = optionRepository;
         this.productService = productService;
+        this.couponService = couponService;
+        this.userService = userService;
+    }
+
+    @Transactional
+    public OrderPrepareResponse prepareOrder(Long userId, OrderPrepareRequest request) {
+        UserEntity user = userService.getUserEntityById(userId);
+
+        List<OrderPrepareResponse.PreparedOrderItemDto> preparedItems = new ArrayList<>();
+        double totalOrderPrice = 0.0;
+
+        for (OrderPrepareRequest.OrderItem item : request.getItems()) {
+
+            OptionEntity option = productService.findOptionByIdAndProductId(item.optionId(), item.productId());
+            ProductEntity product = productService.findProductById(item.productId());
+
+            double discountedPrice = productService.getDiscountedPrice(product.getPrice() + option.getPrice(), product.getDiscountRate());
+
+            totalOrderPrice += discountedPrice * item.quantity();
+
+            preparedItems.add(
+                    toPreparedOrderItemDto(product, option, item, discountedPrice)
+            );
+        }
+
+        List<OrderPrepareResponse.DeliveryAddressDto> deliveryAddresses = toDeliveryAddressDtos(user);
+
+        CouponListResponse couponResponse = couponService.getIssuedCoupons(userId, Pageable.unpaged());
+        List<CouponInfo> availableCoupons = couponResponse.coupons();
+
+        int userPoint = user.getPoint();
+
+        return OrderPrepareResponse.builder()
+                .orderItems(preparedItems)
+                .totalOrderPrice(totalOrderPrice)
+                .deliveryAddresses(deliveryAddresses)
+                .availableCoupons(availableCoupons)
+                .point(userPoint)
+                .build();
     }
 
     @Transactional
     public void createOrder(Long userId, OrderCreateRequest orderList) {
         LocalDateTime now = LocalDateTime.now();
 
-        UserEntity user = userRepository.findById(userId)
-                .orElseThrow(() -> new ApiException(UserError.USER_NOT_FOUND));
+        UserEntity user = userService.getUserEntityById(userId);
 
         OrderEntity order = OrderEntity.builder()
                 .user(user)
                 .orderDate(now)
                 .delivery(null)
                 .totalPrice(orderList.totalPrice())
-                .deliveryAddress(user.findDeliveryAddressById(orderList.addressId()).getDeliveryAddress())
+                .deliveryAddress(userService.findDeliveryAddressById(userId, orderList.addressId()).getDeliveryAddress())
                 .build();
 
         Map<MarketEntity, List<OrderItem>> itemsByMarket = divideOrderListByMarket(orderList);
 
         OrderDetailCalculationResult result = calculateOrderDetails(itemsByMarket, order);
-        System.out.println(result);
 
         validateTotalPrice(result.totalItemPrice(), orderList.totalPrice());
 
@@ -87,11 +134,8 @@ public class OrderService {
 
             boolean isFirstItem = true;
             for (OrderItem item : items) {
-                ProductEntity product = productRepository.findById(item.productId())
-                        .orElseThrow(() -> new ApiException(ProductError.PRODUCT_NOT_FOUND));
-
-                OptionEntity option = optionRepository.findById(item.optionId())
-                        .orElseThrow(() -> new ApiException(ProductError.OPTION_NOT_FOUND));
+                OptionEntity option = productService.findOptionByIdAndProductId(item.optionId(), item.productId());
+                ProductEntity product = productService.findProductById(item.productId());
 
                 double deliveryFee = isFirstItem? item.deliveryFee(): 0.0;
                 isFirstItem = false;
@@ -124,5 +168,40 @@ public class OrderService {
         }
 
         return itemsByMarket;
+    }
+
+    public static double calculateTotalPrice(double price, double optionPrice, int quantity, double discountRate) {
+        return Math.round(price * (1.0 - discountRate) + optionPrice) * quantity;
+    }
+
+    private OrderPrepareResponse.PreparedOrderItemDto toPreparedOrderItemDto(
+            ProductEntity product, OptionEntity option, OrderPrepareRequest.OrderItem item, double discountedPrice) {
+
+        return OrderPrepareResponse.PreparedOrderItemDto.builder()
+                .productId(product.getId())
+                .productName(product.getName())
+                .thumbnailUrl(product.getThumbnail())
+                .optionId(option.getId())
+                .optionName(option.getName())
+                .quantity(item.quantity())
+                .price(product.getPrice())
+                .optionPrice(option.getPrice())
+                .discountRate(product.getDiscountRate())
+                .discountedPrice(discountedPrice)
+                .build();
+    }
+
+    private List<OrderPrepareResponse.DeliveryAddressDto> toDeliveryAddressDtos(UserEntity user) {
+        return user.getDeliveryAddresses().stream()
+                .map(addr -> OrderPrepareResponse.DeliveryAddressDto.builder()
+                        .id(addr.getId())
+                        .deliveryAddress(addr.getDeliveryAddress())
+                        .isPrimary(addr.getIsPrimary())
+                        .postCode(addr.getPostCode())
+                        .alias(addr.getAlias())
+                        .receiverName(addr.getReceiverName())
+                        .receiverPhoneNumber(addr.getReceiverPhoneNumber())
+                        .build())
+                .toList();
     }
 }
