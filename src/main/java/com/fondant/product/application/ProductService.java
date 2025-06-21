@@ -71,7 +71,7 @@ public class ProductService {
                 ).toList();
     }
 
-    private Double getDiscountedPrice(Double price, Double discountRate) {
+    public Double getDiscountedPrice(Double price, Double discountRate) {
         Double appliedRate = 1.0 - discountRate;
         return Math.floor(price * appliedRate + 0.5);
     }
@@ -144,5 +144,18 @@ public class ProductService {
                 .pageInfo(PageInfo.of(products.getNumber(), products.getTotalPages()))
                 .products(getProductInfos(products.getContent()))
                 .build();
+    }
+
+    @Transactional(readOnly = true)
+    public OptionEntity findOptionByIdAndProductId(Long optionId, Long productId) {
+        return optionRepository
+                .findByIdAndProductId(optionId, productId)
+                .orElseThrow(() -> new ApiException(ProductError.OPTION_NOT_FOUND));
+    }
+
+    @Transactional(readOnly = true)
+    public ProductEntity findProductById(Long productId) {
+        return productRepository.findById(productId)
+                .orElseThrow(() -> new ApiException(ProductError.PRODUCT_NOT_FOUND));
     }
 }
