@@ -6,6 +6,7 @@ import com.fondant.global.dto.SuccessMessage;
 import com.fondant.product.presentation.dto.response.ProductsResponse;
 import com.fondant.review.application.ReviewService;
 import com.fondant.review.presentation.dto.request.ReviewCreateRequest;
+import com.fondant.review.presentation.dto.request.ReviewUpdateRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -30,4 +31,25 @@ public class ReviewController {
         reviewService.createReview(photos,request,userId,productId);
         return ResponseEntity.ok(ResponseDto.ofSuccess(SuccessMessage.CREATE_SUCCESS));
     }
+
+    @PatchMapping("/{reviewId}")
+    public ResponseEntity<ResponseDto<Void>> updateReview(
+            @CurrentUser Long userId,
+            @PathVariable Long reviewId,
+            @RequestPart("data") ReviewUpdateRequest request,
+            @RequestPart(value = "files", required = false) List<MultipartFile> newPhotos
+    ) {
+        reviewService.updateReview(reviewId, request, newPhotos);
+        return ResponseEntity.ok(ResponseDto.ofSuccess(SuccessMessage.UPDATE_SUCCESS));
+    }
+
+    @DeleteMapping("/{reviewId}")
+    public ResponseEntity<ResponseDto<Void>> deleteReview(
+            @CurrentUser Long userId,
+            @PathVariable Long reviewId
+    ) {
+        reviewService.deleteReview(reviewId);
+        return ResponseEntity.ok(ResponseDto.ofSuccess(SuccessMessage.DELETE_SUCCESS));
+    }
+
 }
