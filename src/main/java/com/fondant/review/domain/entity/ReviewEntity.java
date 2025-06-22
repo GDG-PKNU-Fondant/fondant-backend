@@ -50,5 +50,10 @@ public class ReviewEntity {
         this.userId = userId;
         this.productId = productId;
     }
+
+    public void updateContent(String content, Double score) {
+        this.content = content;
+        this.score = score;
+    }
 }
 

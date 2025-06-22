@@ -21,10 +21,10 @@ public class ReviewTagEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "hashtag_id")
-    private HashtagEntity hashtag;
+    private TagEntity hashtag;
 
     @Builder
-    public ReviewTagEntity(ReviewEntity review, HashtagEntity hashtag) {
+    public ReviewTagEntity(ReviewEntity review, TagEntity hashtag) {
         this.review = review;
         this.hashtag = hashtag;
     }
