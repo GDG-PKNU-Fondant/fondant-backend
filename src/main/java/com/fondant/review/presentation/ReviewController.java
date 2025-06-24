@@ -7,6 +7,8 @@ import com.fondant.product.presentation.dto.response.ProductsResponse;
 import com.fondant.review.application.ReviewService;
 import com.fondant.review.presentation.dto.request.ReviewCreateRequest;
 import com.fondant.review.presentation.dto.request.ReviewUpdateRequest;
+import com.fondant.user.application.dto.CustomUserDetails;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -22,19 +24,19 @@ public class ReviewController {
         this.reviewService = reviewService;
     }
 
-    @PostMapping("/{productId}")
+    @PostMapping(value = "/{productId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ResponseDto<Void>> createReview(
-            @CurrentUser Long userId,
+            @CurrentUser CustomUserDetails user,
             @PathVariable(name="productId") Long productId,
             @RequestPart("data")ReviewCreateRequest request,
             @RequestPart(value="files",required = false) List<MultipartFile> photos) {
-        reviewService.createReview(photos,request,userId,productId);
+        reviewService.createReview(photos,request,user.getUserId(),productId);
         return ResponseEntity.ok(ResponseDto.ofSuccess(SuccessMessage.CREATE_SUCCESS));
     }
 
-    @PatchMapping("/{reviewId}")
+    @PatchMapping(value = "/{reviewId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ResponseDto<Void>> updateReview(
-            @CurrentUser Long userId,
+            @CurrentUser CustomUserDetails user,
             @PathVariable Long reviewId,
             @RequestPart("data") ReviewUpdateRequest request,
             @RequestPart(value = "files", required = false) List<MultipartFile> newPhotos
@@ -45,7 +47,7 @@ public class ReviewController {
 
     @DeleteMapping("/{reviewId}")
     public ResponseEntity<ResponseDto<Void>> deleteReview(
-            @CurrentUser Long userId,
+            @CurrentUser CustomUserDetails user,
             @PathVariable Long reviewId
     ) {
         reviewService.deleteReview(reviewId);

@@ -1,6 +1,5 @@
 package com.fondant.review.domain.entity;
 
-import com.fondant.product.domain.entity.ProductEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
