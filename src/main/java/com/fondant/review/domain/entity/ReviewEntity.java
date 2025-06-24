@@ -54,5 +54,10 @@ public class ReviewEntity {
         this.content = content;
         this.score = score;
     }
+
+    // 테스트 전용 setter
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
 }
 

@@ -22,6 +22,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.restdocs.payload.FieldDescriptor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.ActiveProfiles;
@@ -178,4 +179,48 @@ public class ReviewRestDocsTest {
                         responseFields(commonResponseFields())
                 ));
     }
+
+    @Test
+    @DisplayName("리뷰 조회 API - 정렬 기준별")
+    void getReviews_withSortType() throws Exception {
+        // given
+        Long productId = 1L;
+
+        reviewRepository.save(ReviewEntity.builder().productId(productId).userId(user.getId()).score(3.0).content("보통").build());
+        Thread.sleep(10);
+        reviewRepository.save(ReviewEntity.builder().productId(productId).userId(user.getId()).score(5.0).content("최고").build());
+        Thread.sleep(10);
+        reviewRepository.save(ReviewEntity.builder().productId(productId).userId(user.getId()).score(1.0).content("별로").build());
+
+        // when & then
+        mockMvc.perform(get("/api/reviews")
+                        .param("productId", String.valueOf(productId))
+                        .param("sortType", "HIGH_SCORE")
+                        .param("page", "0")
+                        .param("size", "10")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
+                .andExpect(status().isOk())
+                .andDo(document("reviews/get-sorted",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+                        queryParameters(
+                                parameterWithName("productId").description("리뷰를 조회할 상품 ID"),
+                                parameterWithName("sortType").description("정렬 기준 (LATEST: 최신순, HIGH_SCORE: 별점 높은순, LOW_SCORE: 별점 낮은순)").optional(),
+                                parameterWithName("page").description("페이지 번호"),
+                                parameterWithName("size").description("페이지당 항목 수")
+                        ),
+                        responseFields(commonResponseFields())
+                                .andWithPrefix("content.", new FieldDescriptor[]{
+                                        fieldWithPath("pageInfo.currentPage").description("현재 페이지 번호"),
+                                        fieldWithPath("pageInfo.totalPage").description("전체 페이지 수"),
+                                        fieldWithPath("productId").description("리뷰를 조회한 상품 ID"),
+                                        fieldWithPath("reviews[].userId").description("리뷰 작성자의 ID"),
+                                        fieldWithPath("reviews[].imageUrls").description("리뷰에 첨부된 이미지 URL 목록"),
+                                        fieldWithPath("reviews[].content").description("리뷰 본문 내용"),
+                                        fieldWithPath("reviews[].score").description("리뷰 별점"),
+                                        fieldWithPath("reviews[].tags").description("리뷰에 포함된 태그 정보 목록")
+                                })
+                ));
+    }
+
 }

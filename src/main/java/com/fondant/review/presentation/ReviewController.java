@@ -6,14 +6,22 @@ import com.fondant.global.dto.SuccessMessage;
 import com.fondant.product.presentation.dto.response.ProductsResponse;
 import com.fondant.review.application.ReviewService;
 import com.fondant.review.presentation.dto.request.ReviewCreateRequest;
+import com.fondant.review.presentation.dto.request.ReviewSortType;
 import com.fondant.review.presentation.dto.request.ReviewUpdateRequest;
+import com.fondant.review.presentation.dto.response.ReviewsResponse;
 import com.fondant.user.application.dto.CustomUserDetails;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+
+import static com.fondant.review.presentation.dto.request.ReviewSortType.LATEST;
 
 @RestController
 @RequestMapping("/api/reviews")
@@ -52,6 +60,21 @@ public class ReviewController {
     ) {
         reviewService.deleteReview(reviewId);
         return ResponseEntity.ok(ResponseDto.ofSuccess(SuccessMessage.DELETE_SUCCESS));
+    }
+
+    @GetMapping("")
+    public ResponseEntity<ResponseDto<ReviewsResponse>> getReviews(
+            @RequestParam Long productId,
+            @RequestParam(defaultValue = "LATEST") ReviewSortType sortType,
+            @PageableDefault(size = 10) Pageable pageable) {
+
+        Pageable sortedPageable = switch (sortType) {
+            case HIGH_SCORE -> PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by("score").descending());
+            case LOW_SCORE -> PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by("score").ascending());
+            case LATEST -> PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by("createdAt").descending());
+        };
+
+        return ResponseEntity.ok(ResponseDto.ofSuccess(SuccessMessage.OPERATION_SUCCESS,reviewService.getReviews(productId, sortedPageable)));
     }
 
 }
