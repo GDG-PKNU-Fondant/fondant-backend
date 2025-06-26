@@ -1,13 +1,6 @@
-= API 문서
-Fondant Backend Team
-2025-02-16
-:toc: left
-:toclevels: 2
-:source-highlighter: highlightjs
-:sectlinks:
 
 == User API
-=== 1. Access Token 재발급
+=== Access Token 재발급
 
 ==== HTTP Request
 
@@ -33,7 +26,7 @@ include::{snippets}/user/reissue-access-and-refresh-token/response-body.adoc[]
 
 include::{snippets}/user/reissue-access-and-refresh-token/response-fields.adoc[]
 
-=== 2. 로그아웃
+=== 로그아웃
 
 ==== HTTP Request
 
@@ -51,7 +44,7 @@ include::{snippets}/user/logout/http-response.adoc[]
 
 include::{snippets}/user/logout/response-fields.adoc[]
 
-=== 3. 유저 정보 조회
+=== 유저 정보 조회
 
 ==== HTTP Request
 
@@ -69,7 +62,7 @@ include::{snippets}/user/get-user-info/http-response.adoc[]
 
 include::{snippets}/user/get-user-info/response-fields.adoc[]
 
-=== 4. 유저 정보 수정
+=== 유저 정보 수정
 
 ==== HTTP Request
 
@@ -99,7 +92,7 @@ include::{snippets}/user/update-user-info/response-body.adoc[]
 
 include::{snippets}/user/update-user-info/response-fields.adoc[]
 
-=== 5. 유저 배송지 추가
+=== 유저 배송지 추가
 
 ==== HTTP Request
 
@@ -129,7 +122,7 @@ include::{snippets}/user/add-user-delivery-address/response-body.adoc[]
 
 include::{snippets}/user/add-user-delivery-address/response-fields.adoc[]
 
-=== 6. 유저 배송지 조회
+=== 유저 배송지 조회
 
 ==== HTTP Request
 
@@ -151,7 +144,7 @@ include::{snippets}/user/get-user-delivery-address/response-body.adoc[]
 
 include::{snippets}/user/get-user-delivery-address/response-fields.adoc[]
 
-=== 7. 유저 배송지 수정
+=== 유저 배송지 수정
 
 ==== HTTP Request
 
@@ -181,7 +174,7 @@ include::{snippets}/user/update-user-delivery-address/response-body.adoc[]
 
 include::{snippets}/user/update-user-delivery-address/response-fields.adoc[]
 
-=== 8. 유저 배송지 삭제
+=== 유저 배송지 삭제
 
 ==== HTTP Request
 
