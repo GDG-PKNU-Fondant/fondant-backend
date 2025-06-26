@@ -37,3 +37,4 @@ out/
 
 ### Security ###
 /src/main/resources/application-secret.yml
+/src/test/resources/application-secret.yml
