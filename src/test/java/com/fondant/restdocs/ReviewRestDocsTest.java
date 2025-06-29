@@ -135,6 +135,9 @@ public class ReviewRestDocsTest {
     @DisplayName("리뷰 수정 API")
     @WithMockCustomUser
     void updateReview() throws Exception {
+        //given
+        doReturn("https://mocked-url").when(s3Service).uploadReviewImage(any());
+
         ReviewUpdateRequest request = new ReviewUpdateRequest(List.of(2L),"수정된 리뷰 내용", 3.5);
 
         MockMultipartFile jsonPart = new MockMultipartFile("data", "", "application/json", objectMapper.writeValueAsBytes(request));
