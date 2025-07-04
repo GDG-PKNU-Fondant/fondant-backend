@@ -2,7 +2,6 @@ package com.fondant.product.application.dto;
 
 import lombok.Builder;
 
-@Builder
 public record ProductInfo(
         Long id,
         String name,
@@ -12,4 +11,6 @@ public record ProductInfo(
         Double discountRate,
         Double discountPrice
 ) {
+    @Builder
+    public ProductInfo {}
 }
