@@ -65,6 +65,46 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
         return new PageImpl<>(content, pageable, total);
     }
 
+    /*
+    // 부모/자식 카테고리 포함 통합 조회
+    public Page<MarketEntity> findMarketsByCategoryWithSubCategories(Long categoryId, Pageable pageable) {
+        QMarketEntity market = QMarketEntity.marketEntity;
+        QMarketCategoryEntity marketCategory = QMarketCategoryEntity.marketCategoryEntity;
+        QCategoryEntity category = QCategoryEntity.categoryEntity;
+
+        // 모든 자식 카테고리 id를 포함한 id 리스트 조회
+        List<Long> categoryIds = queryFactory
+                .select(category.id)
+                .from(category)
+                .where(
+                    category.id.eq(categoryId)
+                        .or(category.parent.id.eq(categoryId))
+                )
+                .fetch();
+
+        // 조회 쿼리 (IN 조건으로 부모/자식 모두 포함)
+        List<MarketEntity> content = queryFactory
+                .selectDistinct(market)
+                .from(marketCategory)
+                .join(marketCategory.market, market)
+                .join(marketCategory.category, category)
+                .where(category.id.in(categoryIds))
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+        long total = queryFactory
+                .select(market.count())
+                .from(marketCategory)
+                .join(marketCategory.market, market)
+                .join(marketCategory.category, category)
+                .where(category.id.in(categoryIds))
+                .fetchOne();
+
+        return new PageImpl<>(content, pageable, total);
+    }
+*/
+
     @Override
     public Page<MarketEntity> findTop10MarketsByPopularity(Pageable pageable) {
         QMarketEntity market = QMarketEntity.marketEntity;
@@ -113,6 +153,50 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
 
         return new PageImpl<>(markets, pageable, markets.size());
     }
+
+    /*
+    // 부모/자식 카테고리 포함 통합 랜덤 Top5 조회
+    public Page<MarketEntity> findRandomTop5MarketsByCategoryWithSubCategories(Long categoryId, Pageable pageable) {
+        QMarketEntity market = QMarketEntity.marketEntity;
+        QMarketCategoryEntity marketCategory = QMarketCategoryEntity.marketCategoryEntity;
+        QCategoryEntity category = QCategoryEntity.categoryEntity;
+
+        NumberExpression<Double> popularityScore = calculatePopularityScore(market);
+
+        // 모든 자식 카테고리 id를 포함한 id 리스트 조회
+        List<Long> categoryIds = queryFactory
+                .select(category.id)
+                .from(category)
+                .where(
+                    category.id.eq(categoryId)
+                        .or(category.parent.id.eq(categoryId))
+                )
+                .fetch();
+
+        // 인기순으로 30개까지 조회
+        JPQLQuery<Long> subQuery = JPAExpressions
+                .select(market.id)
+                .from(marketCategory)
+                .join(marketCategory.market, market)
+                .join(marketCategory.category, category)
+                .where(
+                    category.id.in(categoryIds)
+                        .and(market.createAt.isNotNull())
+                )
+                .orderBy(popularityScore.desc())
+                .limit(30);
+
+        // 30개 중 랜덤 5개 추출
+        List<MarketEntity> markets = queryFactory
+                .selectFrom(market)
+                .where(market.id.in(subQuery))
+                .orderBy(Expressions.numberTemplate(Double.class, "random()").asc())
+                .limit(5)
+                .fetch();
+
+        return new PageImpl<>(markets, pageable, markets.size());
+    }
+*/
 
     @Override
     public Page<MarketEntity> findTop30MarketsByCategory(Long categoryId, Pageable pageable) {
@@ -169,6 +253,63 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
 
         return new PageImpl<>(pageContent, pageable, total);
     }
+
+    /*
+    // 부모/자식 카테고리 포함 통합 top30 조회
+    public Page<MarketEntity> findTop30MarketsByCategoryWithSubCategories(Long categoryId, Pageable pageable) {
+        QMarketEntity market = QMarketEntity.marketEntity;
+        QMarketCategoryEntity marketCategory = QMarketCategoryEntity.marketCategoryEntity;
+        QCategoryEntity category = QCategoryEntity.categoryEntity;
+
+        NumberExpression<Double> popularityScore = calculatePopularityScore(market);
+
+        // 모든 자식 카테고리 id를 포함한 id 리스트 조회
+        List<Long> categoryIds = queryFactory
+                .select(category.id)
+                .from(category)
+                .where(
+                    category.id.eq(categoryId)
+                        .or(category.parent.id.eq(categoryId))
+                )
+                .fetch();
+
+        // 조회 쿼리 (IN 조건으로 부모/자식 모두 포함)
+        List<MarketEntity> top30Markets = queryFactory
+                .select(market)
+                .from(marketCategory)
+                .join(marketCategory.market, market)
+                .join(marketCategory.category, category)
+                .where(
+                    category.id.in(categoryIds)
+                        .and(market.createAt.isNotNull())
+                )
+                .groupBy(
+                    market.id,
+                    market.createAt,
+                    market.description,
+                    market.name,
+                    market.thumbnail,
+                    market.totalReviews,
+                    market.totalSales
+                )
+                .orderBy(popularityScore.desc())
+                .limit(30)
+                .fetch();
+
+        if (top30Markets.isEmpty()) {
+            throw new ApiException(MarketError.NO_MARKETS_FOUND);
+        }
+
+        long total = Math.min(top30Markets.size(), 30);
+
+        int offset = (int) pageable.getOffset();
+        int pageSize = pageable.getPageSize();
+        int end = Math.min(offset + pageSize, top30Markets.size());
+        List<MarketEntity> pageContent = top30Markets.subList(offset, end);
+
+        return new PageImpl<>(pageContent, pageable, total);
+    }
+*/
 
     @Override
     public boolean isMarketInTop10ByCategory(Long marketId) {
