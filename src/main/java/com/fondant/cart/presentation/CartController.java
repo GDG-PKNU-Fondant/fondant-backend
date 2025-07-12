@@ -50,4 +50,13 @@ public class CartController {
         cartService.updateCartItem(user.getUserId(), cartItemId, request);
         return ResponseEntity.ok(ResponseDto.ofSuccess(SuccessMessage.OPERATION_SUCCESS));
     }
+
+    @DeleteMapping("/items/{cartItemId}")
+    public ResponseEntity<ResponseDto<Void>> deleteCartItem(
+            @CurrentUser CustomUserDetails user,
+            @PathVariable Long cartItemId
+    ) {
+        cartService.deleteCartItem(user.getUserId(), cartItemId);
+        return ResponseEntity.ok(ResponseDto.ofSuccess(SuccessMessage.OPERATION_SUCCESS));
+    }
 }
