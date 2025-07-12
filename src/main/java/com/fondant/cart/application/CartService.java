@@ -1,8 +1,5 @@
 package com.fondant.cart.application;
 
-import com.fondant.cart.application.dto.CartMarketInfo;
-import com.fondant.cart.application.dto.CartOptionInfo;
-import com.fondant.cart.application.dto.CartProductInfo;
 import com.fondant.cart.application.dto.*;
 import com.fondant.cart.domain.entity.CartEntity;
 import com.fondant.cart.domain.entity.CartItemEntity;
@@ -146,5 +143,22 @@ public class CartService {
 
         cartMarket.getCartItems().add(cartItem);
         cartRepository.save(cart);
+    }
+
+    @Transactional
+    public void updateCartItem(Long userId, Long cartItemId, CartUpdateInfo request) {
+        CartItemEntity cartItem = cartRepository.findCartItemByIdAndUserId(cartItemId, userId)
+                .orElseThrow(() -> new IllegalArgumentException("장바구니 상품이 존재하지 않습니다."));
+
+        cartItem.changeQuantity(request.quantity());
+
+        if (request.options() != null && !request.options().isEmpty()) {
+            for (CartUpdateInfo.OptionUpdateInfo optionRequest : request.options()) {
+                cartItem.getCartItemOptions().stream()
+                        .filter(option -> option.getOption().getId().equals(optionRequest.optionId()))
+                        .findFirst()
+                        .ifPresent(option -> option.changeQuantity(optionRequest.quantity()));
+            }
+        }
     }
 }

@@ -10,4 +10,6 @@ public interface CartRepositoryCustom {
     Page<CartItemEntity> findCartItemsByUser(Long userId, Pageable pageable);
 
     Optional<CartEntity> findByUserId(Long userId);
+
+    Optional<CartItemEntity> findCartItemByIdAndUserId(Long cartItemId, Long userId);
 }
