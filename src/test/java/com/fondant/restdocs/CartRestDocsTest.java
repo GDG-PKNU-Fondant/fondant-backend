@@ -186,7 +186,6 @@ public class CartRestDocsTest {
 
     @Test
     void getCartItems() throws Exception {
-        System.out.println(cartService.getCartItemsByUser(user.getId(), Pageable.unpaged()));
         mockMvc.perform(get(BASE_URL + "/list")
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + mockToken)
                         .param("page", "0")
