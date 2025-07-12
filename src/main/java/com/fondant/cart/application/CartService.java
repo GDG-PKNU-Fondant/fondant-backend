@@ -29,12 +29,11 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class CartService {
-
     private final CartRepository cartRepository;
+    private final CartItemRepository cartItemRepository;
     private final UserRepository userRepository;
     private final ProductRepository productRepository;
     private final OptionRepository optionRepository;
-    private final CartItemRepository cartItemRepository;
     private final PageConfig pageConfig;
 
     @Transactional(readOnly = true)
@@ -56,7 +55,7 @@ public class CartService {
                 .map(entry -> {
                     Long marketId = entry.getKey();
                     List<CartItemEntity> items = entry.getValue();
-                    var market = items.get(0).getCartMarket().getMarket();
+                    MarketEntity market = items.get(0).getCartMarket().getMarket();
 
                     List<CartProductInfo> products = toCartProductInfoList(items);
 
@@ -148,7 +147,7 @@ public class CartService {
 
     @Transactional
     public void updateCartItem(Long userId, Long cartItemId, CartUpdateInfo request) {
-        CartItemEntity cartItem = cartRepository.findCartItemByIdAndUserId(cartItemId, userId)
+        CartItemEntity cartItem = cartItemRepository.findByIdAndUserId(cartItemId, userId)
                 .orElseThrow(() -> new IllegalArgumentException("장바구니 상품이 존재하지 않습니다."));
 
         cartItem.changeQuantity(request.quantity());
@@ -165,12 +164,11 @@ public class CartService {
 
     @Transactional
     public void deleteCartItem(Long userId, Long cartItemId) {
-        CartItemEntity cartItem = cartRepository.findCartItemByIdAndUserId(cartItemId, userId)
+        CartItemEntity cartItem = cartItemRepository.findByIdAndUserId(cartItemId, userId)
                 .orElseThrow(() -> new IllegalArgumentException("장바구니 항목이 존재하지 않습니다."));
 
-        cartItem.getCartMarket().getCartItems().remove(cartItem);
-
-        cartItemRepository.delete(cartItem);
+        cartItem.getCartMarket().getCartItems().remove(cartItem); // 연관관계 끊기
+        cartItemRepository.delete(cartItem); // 실제 삭제
     }
 
     @Transactional

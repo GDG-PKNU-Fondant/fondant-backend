@@ -74,23 +74,4 @@ public class CartRepositoryImpl implements CartRepositoryCustom {
 
         return Optional.ofNullable(cartEntity);
     }
-
-    @Override
-    public Optional<CartItemEntity> findCartItemByIdAndUserId(Long cartItemId, Long userId) {
-        QCartItemEntity cartItem = QCartItemEntity.cartItemEntity;
-        QCartMarketEntity cartMarket = QCartMarketEntity.cartMarketEntity;
-        QCartEntity cart = QCartEntity.cartEntity;
-        QUserEntity user = QUserEntity.userEntity;
-
-        CartItemEntity result = queryFactory
-                .select(cartItem)
-                .from(cartItem)
-                .join(cartItem.cartMarket, cartMarket).fetchJoin()
-                .join(cartMarket.cart, cart).fetchJoin()
-                .join(cart.user, user)
-                .where(cartItem.id.eq(cartItemId), user.id.eq(userId))
-                .fetchOne();
-
-        return Optional.ofNullable(result);
-    }
 }
