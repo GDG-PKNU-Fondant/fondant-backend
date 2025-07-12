@@ -14,7 +14,7 @@ import com.fondant.product.domain.entity.OptionEntity;
 import com.fondant.product.domain.entity.ProductEntity;
 import com.fondant.product.domain.repository.OptionRepository;
 import com.fondant.product.domain.repository.ProductRepository;
-import com.fondant.user.application.UserService;
+import com.fondant.cart.domain.repository.CartItemRepository;
 import com.fondant.user.domain.entity.UserEntity;
 import com.fondant.user.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +34,7 @@ public class CartService {
     private final UserRepository userRepository;
     private final ProductRepository productRepository;
     private final OptionRepository optionRepository;
+    private final CartItemRepository cartItemRepository;
     private final PageConfig pageConfig;
 
     @Transactional(readOnly = true)
@@ -160,5 +161,28 @@ public class CartService {
                         .ifPresent(option -> option.changeQuantity(optionRequest.quantity()));
             }
         }
+    }
+
+    @Transactional
+    public void deleteCartItem(Long userId, Long cartItemId) {
+        CartItemEntity cartItem = cartRepository.findCartItemByIdAndUserId(cartItemId, userId)
+                .orElseThrow(() -> new IllegalArgumentException("장바구니 항목이 존재하지 않습니다."));
+
+        cartItem.getCartMarket().getCartItems().remove(cartItem);
+
+        cartItemRepository.delete(cartItem);
+    }
+
+    @Transactional
+    public void deleteCartItemsByMarket(Long userId, Long marketId) {
+        CartEntity cart = cartRepository.findByUserId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("장바구니가 존재하지 않습니다."));
+
+        CartMarketEntity targetMarket = cart.getCartMarkets().stream()
+                .filter(cm -> cm.getMarket().getId().equals(marketId))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("해당 마켓의 장바구니 항목이 존재하지 않습니다."));
+
+        cart.getCartMarkets().remove(targetMarket);
     }
 }
