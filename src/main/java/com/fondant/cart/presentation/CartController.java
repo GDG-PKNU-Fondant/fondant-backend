@@ -41,4 +41,13 @@ public class CartController {
         return ResponseEntity.ok(ResponseDto.ofSuccess(SuccessMessage.OPERATION_SUCCESS));
     }
 
+    @PatchMapping("/items/{cartItemId}")
+    public ResponseEntity<ResponseDto<Void>> updateCartItem(
+            @CurrentUser CustomUserDetails user,
+            @PathVariable Long cartItemId,
+            @RequestBody CartUpdateInfo request
+    ) {
+        cartService.updateCartItem(user.getUserId(), cartItemId, request);
+        return ResponseEntity.ok(ResponseDto.ofSuccess(SuccessMessage.OPERATION_SUCCESS));
+    }
 }
