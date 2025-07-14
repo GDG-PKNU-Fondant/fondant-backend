@@ -1,7 +1,6 @@
 package com.fondant.order.domain.entity;
 
 import com.fondant.market.domain.entity.MarketEntity;
-import com.fondant.order.presentation.dto.request.OrderItem;
 import com.fondant.product.domain.entity.ProductEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -9,10 +8,6 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
-
-import static com.fondant.order.application.OrderService.calculateTotalPrice;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -64,19 +59,5 @@ public class OrderDetailEntity {
         this.delivery = delivery;
         this.quantity = quantity;
         this.totalPrice = totalPrice;
-    }
-
-    public static OrderDetailEntity from(OrderItem item, OrderEntity order, ProductEntity product, MarketEntity market) {
-        double totalPrice = calculateTotalPrice(item.price(), item.optionPrice(), item.quantity(), product.getDiscountRate());
-
-        System.out.println(totalPrice);
-
-        return OrderDetailEntity.builder()
-                .order(order)
-                .product(product)
-                .market(market)
-                .quantity(item.quantity())
-                .totalPrice(totalPrice)
-                .build();
     }
 }

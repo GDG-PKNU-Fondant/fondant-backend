@@ -37,14 +37,20 @@ public class OrderEntity {
 
     @Column(name = "total_price")
     @NotNull
-    private double totalPrice;
+    private Double totalPrice;
+
+    @Enumerated()
+    private OrderStatus status;
 
     @Builder
-    public OrderEntity(UserEntity user, LocalDateTime orderDate, String deliveryAddress, DeliveryEntity delivery, double totalPrice) {
+    public OrderEntity(UserEntity user, LocalDateTime orderDate,
+                       String deliveryAddress, DeliveryEntity delivery,
+                       Double totalPrice, OrderStatus status) {
         this.user = user;
         this.deliveryAddress = deliveryAddress;
         this.delivery = delivery;
         this.orderDate = orderDate;
         this.totalPrice = totalPrice;
+        this.status = status;
     }
 }
