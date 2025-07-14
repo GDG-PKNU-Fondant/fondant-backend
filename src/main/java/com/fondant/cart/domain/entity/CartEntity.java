@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -23,7 +24,7 @@ public class CartEntity {
     private UserEntity user;
 
     @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<CartMarketEntity> cartMarkets;
+    private List<CartMarketEntity> cartMarkets = new ArrayList<>();
 
     @Builder
     public CartEntity(UserEntity user) {
