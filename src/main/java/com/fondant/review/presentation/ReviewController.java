@@ -29,6 +29,5 @@ public class ReviewController {
             @RequestPart(value="files",required = false) List<MultipartFile> photos) {
         reviewService.createReview(photos,request,userId,productId);
         return ResponseEntity.ok(ResponseDto.ofSuccess(SuccessMessage.CREATE_SUCCESS));
-
     }
 }

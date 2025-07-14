@@ -13,5 +13,10 @@ public record ReviewInfo(
 ) {
     @Builder
     public ReviewInfo(Long userId, List<String> imageUrls, String content, Double score, List<TagInfo> tags) {
+        this.userId = userId;
+        this.imageUrls = imageUrls;
+        this.content = content;
+        this.score = score;
+        this.tags = tags;
     }
 }

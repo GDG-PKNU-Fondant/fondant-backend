@@ -1,6 +1,7 @@
 package com.fondant.review.application;
 
 import com.fondant.global.dto.PageInfo;
+import com.fondant.infra.s3.application.S3Service;
 import com.fondant.product.application.ProductService;
 import com.fondant.review.domain.entity.ReviewEntity;
 import com.fondant.review.domain.entity.ReviewPhotoEntity;
@@ -26,19 +27,19 @@ public class ReviewService {
     private final ReviewRepository reviewRepository;
     private final ReviewTagRepository reviewTagRepository;
     private final ReviewPhotoRepository reviewPhotoRepository;
+    private final S3Service s3Service;
 
-    public ReviewService(ReviewRepository reviewRepository, ProductService productService, ReviewTagRepository reviewTagRepository, ReviewPhotoRepository reviewPhotoRepository) {
+    public ReviewService(ReviewRepository reviewRepository, ProductService productService, ReviewTagRepository reviewTagRepository, ReviewPhotoRepository reviewPhotoRepository, S3Service s3Service) {
         this.reviewRepository = reviewRepository;
         this.reviewTagRepository = reviewTagRepository;
         this.reviewPhotoRepository = reviewPhotoRepository;
+        this.s3Service = s3Service;
     }
 
     @Transactional
     public void createReview (List<MultipartFile> photoFiles, ReviewCreateRequest request, Long userId, Long productId)
     {
-        savePhotos(photoFiles);
-
-        reviewRepository.save(
+        ReviewEntity review = reviewRepository.save(
                 ReviewEntity.builder()
                         .score(request.score())
                         .userId(userId)
@@ -46,10 +47,25 @@ public class ReviewService {
                         .productId(productId)
                         .build()
         );
+
+        savePhotos(photoFiles,review.getId());
     }
 
-    public void savePhotos(List<MultipartFile> photoFiles){
-        /*S3연결 및 이미지 url저장 필요*/
+    public void savePhotos(List<MultipartFile> photoFiles,Long reviewId){
+        if (photoFiles == null || photoFiles.isEmpty()) return;
+
+        List<String> uploadedUrls = photoFiles.stream()
+                .map(s3Service::uploadReviewImage)
+                .toList();
+
+        List<ReviewPhotoEntity> photos = uploadedUrls.stream()
+                .map(url -> ReviewPhotoEntity.builder()
+                        .reviewId(reviewId)
+                        .imageUrl(url)
+                        .build())
+                .toList();
+
+        reviewPhotoRepository.saveAll(photos);
     }
 
     @Transactional(readOnly = true)
