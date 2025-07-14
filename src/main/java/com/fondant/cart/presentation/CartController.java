@@ -1,6 +1,9 @@
 package com.fondant.cart.presentation;
 
 import com.fondant.cart.application.CartService;
+import com.fondant.cart.application.dto.CartInfo;
+import com.fondant.cart.application.dto.CartUpdateInfo;
+import com.fondant.cart.presentation.dto.response.CartItemResponse;
 import com.fondant.cart.presentation.dto.response.CartResponse;
 import com.fondant.global.annotation.CurrentUser;
 import com.fondant.global.dto.ResponseDto;
@@ -28,5 +31,33 @@ public class CartController {
         return ResponseEntity.ok(
                 ResponseDto.ofSuccess(SuccessMessage.OPERATION_SUCCESS, response)
         );
+    }
+
+    @PostMapping("/add")
+    public ResponseEntity<ResponseDto<CartItemResponse>> addCartItem(
+            @CurrentUser CustomUserDetails user,
+            @RequestBody CartInfo request
+    ) {
+        CartItemResponse response = cartService.addCartItem(user.getUserId(), request);
+        return ResponseEntity.ok(ResponseDto.ofSuccess(SuccessMessage.OPERATION_SUCCESS, response));
+    }
+
+    @PatchMapping("/items/{cartItemId}")
+    public ResponseEntity<ResponseDto<CartItemResponse>> updateCartItem(
+            @CurrentUser CustomUserDetails user,
+            @PathVariable Long cartItemId,
+            @RequestBody CartUpdateInfo request
+    ) {
+        CartItemResponse response = cartService.updateCartItem(user.getUserId(), cartItemId, request);
+        return ResponseEntity.ok(ResponseDto.ofSuccess(SuccessMessage.OPERATION_SUCCESS, response));
+    }
+
+    @DeleteMapping("/items/{cartItemId}")
+    public ResponseEntity<ResponseDto<Void>> deleteCartItem(
+            @CurrentUser CustomUserDetails user,
+            @PathVariable Long cartItemId
+    ) {
+        cartService.deleteCartItem(user.getUserId(), cartItemId);
+        return ResponseEntity.ok(ResponseDto.ofSuccess(SuccessMessage.OPERATION_SUCCESS));
     }
 }

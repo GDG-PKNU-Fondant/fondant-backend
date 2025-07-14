@@ -4,10 +4,13 @@ import com.fondant.user.domain.entity.UserEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.List;
 
+@Getter
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class CartEntity {
@@ -21,7 +24,7 @@ public class CartEntity {
     private UserEntity user;
 
     @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<CartMarketEntity> cartMarkets;
+    private List<CartMarketEntity> cartMarkets = new ArrayList<>();
 
     @Builder
     public CartEntity(UserEntity user) {

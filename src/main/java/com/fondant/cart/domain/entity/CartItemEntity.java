@@ -52,4 +52,8 @@ public class CartItemEntity {
         this.cartItemOptions.add(option);
         option.setCartItem(this);
     }
+
+    public void changeQuantity(int quantity) {
+        this.quantity = quantity;
+    }
 }

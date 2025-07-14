@@ -1,10 +1,6 @@
 package com.fondant.cart.domain.repository;
 
-import com.fondant.cart.domain.entity.CartItemEntity;
-import com.fondant.cart.domain.entity.QCartEntity;
-import com.fondant.cart.domain.entity.QCartItemEntity;
-import com.fondant.cart.domain.entity.QCartItemOptionEntity;
-import com.fondant.cart.domain.entity.QCartMarketEntity;
+import com.fondant.cart.domain.entity.*;
 import com.fondant.market.domain.entity.QMarketEntity;
 import com.fondant.product.domain.entity.QOptionEntity;
 import com.fondant.product.domain.entity.QProductEntity;
@@ -17,6 +13,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.support.PageableExecutionUtils;
 
 import java.util.List;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 public class CartRepositoryImpl implements CartRepositoryCustom {
@@ -61,5 +58,20 @@ public class CartRepositoryImpl implements CartRepositoryCustom {
                 .where(user.id.eq(userId));
 
         return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
+    }
+
+    @Override
+    public Optional<CartEntity> findByUserId(Long userId) {
+        QCartEntity cart = QCartEntity.cartEntity;
+        QUserEntity user = QUserEntity.userEntity;
+
+        CartEntity cartEntity = queryFactory
+                .selectFrom(cart)
+                .join(cart.user, user).fetchJoin()
+                .leftJoin(cart.cartMarkets).fetchJoin()
+                .where(user.id.eq(userId))
+                .fetchOne();
+
+        return Optional.ofNullable(cartEntity);
     }
 }

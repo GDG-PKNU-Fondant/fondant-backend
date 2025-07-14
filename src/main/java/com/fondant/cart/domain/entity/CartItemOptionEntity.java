@@ -36,4 +36,8 @@ public class CartItemOptionEntity {
     public void setCartItem(CartItemEntity cartItem) {
         this.cartItem = cartItem;
     }
+
+    public void changeQuantity(int quantity) {
+        this.quantity = quantity;
+    }
 }

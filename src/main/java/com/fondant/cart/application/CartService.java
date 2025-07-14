@@ -1,13 +1,23 @@
 package com.fondant.cart.application;
 
-import com.fondant.cart.application.dto.CartMarketInfo;
-import com.fondant.cart.application.dto.CartOptionInfo;
-import com.fondant.cart.application.dto.CartProductInfo;
+import com.fondant.cart.application.dto.*;
+import com.fondant.cart.domain.entity.CartEntity;
 import com.fondant.cart.domain.entity.CartItemEntity;
+import com.fondant.cart.domain.entity.CartItemOptionEntity;
+import com.fondant.cart.domain.entity.CartMarketEntity;
 import com.fondant.cart.domain.repository.CartRepository;
+import com.fondant.cart.presentation.dto.response.CartItemResponse;
 import com.fondant.global.config.PageConfig;
 import com.fondant.global.dto.PageInfo;
 import com.fondant.cart.presentation.dto.response.CartResponse;
+import com.fondant.market.domain.entity.MarketEntity;
+import com.fondant.product.domain.entity.OptionEntity;
+import com.fondant.product.domain.entity.ProductEntity;
+import com.fondant.product.domain.repository.OptionRepository;
+import com.fondant.product.domain.repository.ProductRepository;
+import com.fondant.cart.domain.repository.CartItemRepository;
+import com.fondant.user.domain.entity.UserEntity;
+import com.fondant.user.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,8 +30,11 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class CartService {
-
     private final CartRepository cartRepository;
+    private final CartItemRepository cartItemRepository;
+    private final UserRepository userRepository;
+    private final ProductRepository productRepository;
+    private final OptionRepository optionRepository;
     private final PageConfig pageConfig;
 
     @Transactional(readOnly = true)
@@ -43,7 +56,7 @@ public class CartService {
                 .map(entry -> {
                     Long marketId = entry.getKey();
                     List<CartItemEntity> items = entry.getValue();
-                    var market = items.get(0).getCartMarket().getMarket();
+                    MarketEntity market = items.get(0).getCartMarket().getMarket();
 
                     List<CartProductInfo> products = toCartProductInfoList(items);
 
@@ -66,7 +79,7 @@ public class CartService {
                             .map(opt -> CartOptionInfo.builder()
                                     .optionId(opt.getOption().getId())
                                     .optionName(opt.getOption().getName())
-                                    .additionalPrice((double) opt.getOption().getPrice())
+                                    .additionalPrice(opt.getOption().getPrice())
                                     .quantity(opt.getQuantity())
                                     .build())
                             .collect(Collectors.toList());
@@ -83,4 +96,106 @@ public class CartService {
                 })
                 .collect(Collectors.toList());
     }
+
+    @Transactional
+    public CartItemResponse addCartItem(Long userId, CartInfo request) {
+        UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("유저가 존재하지 않습니다."));
+
+        ProductEntity product = productRepository.findById(request.productId())
+                .orElseThrow(() -> new IllegalArgumentException("상품이 존재하지 않습니다."));
+
+        MarketEntity market = product.getMarket();
+
+        CartEntity cart = cartRepository.findByUserId(userId)
+                .orElseGet(() -> cartRepository.save(CartEntity.builder().user(user).build()));
+
+        CartMarketEntity cartMarket = cart.getCartMarkets().stream()
+                .filter(cm -> cm.getMarket().equals(market))
+                .findFirst()
+                .orElseGet(() -> {
+                    CartMarketEntity newMarket = CartMarketEntity.builder()
+                            .cart(cart)
+                            .market(market)
+                            .build();
+                    cart.getCartMarkets().add(newMarket);
+                    return newMarket;
+                });
+
+        CartItemEntity cartItem = CartItemEntity.builder()
+                .cartMarket(cartMarket)
+                .product(product)
+                .quantity(request.quantity())
+                .arrivalDate(null)
+                .build();
+
+        if (request.options() != null && !request.options().isEmpty()) {
+            for (CartInfo.OptionInfo optReq : request.options()) {
+                OptionEntity option = optionRepository.findById(optReq.optionId())
+                        .orElseThrow(() -> new IllegalArgumentException("옵션이 존재하지 않습니다."));
+                CartItemOptionEntity optionEntity = CartItemOptionEntity.builder()
+                        .cartItem(cartItem)
+                        .option(option)
+                        .quantity(optReq.quantity())
+                        .build();
+                cartItem.addCartItemOption(optionEntity);
+            }
+        }
+
+        cartMarket.getCartItems().add(cartItem);
+        cartRepository.save(cart);
+
+        return new CartItemResponse(
+                product.getId(),
+                product.getName(),
+                request.quantity(),
+                cartItem.getCartItemOptions().stream()
+                        .map(opt -> new CartItemResponse.OptionResponse(
+                                opt.getOption().getId(),
+                                opt.getOption().getName(),
+                                opt.getQuantity()))
+                        .toList()
+        );
+    }
+
+    @Transactional
+    public CartItemResponse updateCartItem(Long userId, Long cartItemId, CartUpdateInfo request) {
+        CartItemEntity cartItem = cartItemRepository.findByIdAndUserId(cartItemId, userId)
+                .orElseThrow(() -> new IllegalArgumentException("장바구니 상품이 존재하지 않습니다."));
+
+        cartItem.changeQuantity(request.quantity());
+
+        if (request.options() != null && !request.options().isEmpty()) {
+            for (CartUpdateInfo.OptionUpdateInfo optionRequest : request.options()) {
+                cartItem.getCartItemOptions().stream()
+                        .filter(option -> option.getOption().getId().equals(optionRequest.optionId()))
+                        .findFirst()
+                        .ifPresent(option -> option.changeQuantity(optionRequest.quantity()));
+            }
+        }
+
+        ProductEntity product = cartItem.getProduct();
+
+        return new CartItemResponse(
+                product.getId(),
+                product.getName(),
+                cartItem.getQuantity(),
+                cartItem.getCartItemOptions().stream()
+                        .map(opt -> new CartItemResponse.OptionResponse(
+                                opt.getOption().getId(),
+                                opt.getOption().getName(),
+                                opt.getQuantity()))
+                        .toList()
+        );
+    }
+
+    @Transactional
+    public void deleteCartItem(Long userId, Long cartItemId) {
+        CartItemEntity cartItem = cartItemRepository.findByIdAndUserId(cartItemId, userId)
+                .orElseThrow(() -> new IllegalArgumentException("장바구니 항목이 존재하지 않습니다."));
+
+        cartItem.getCartMarket().getCartItems().remove(cartItem);
+        cartItemRepository.delete(cartItem);
+    }
+
 }
