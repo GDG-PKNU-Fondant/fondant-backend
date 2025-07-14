@@ -21,3 +21,39 @@ include::{snippets}/cart/get-cart-items/http-response.adoc[]
 ==== response body
 
 include::{snippets}/cart/get-cart-items/response-fields.adoc[]
+
+=== 2. 장바구니 항목 추가
+
+==== HTTP request
+
+include::{snippets}/cart/add-cart-item/http-request.adoc[]
+
+==== request body
+
+include::{snippets}/cart/add-cart-item/request-fields.adoc[]
+
+==== HTTP response
+
+include::{snippets}/cart/add-cart-item/http-response.adoc[]
+
+==== response body
+
+include::{snippets}/cart/add-cart-item/response-fields.adoc[]
+
+=== 3. 장바구니 항목 수량 수정
+
+==== HTTP request
+
+include::{snippets}/cart/update-cart-item/http-request.adoc[]
+
+==== HTTP response
+
+include::{snippets}/cart/update-cart-item/http-response.adoc[]
+
+==== response body
+
+include::{snippets}/cart/update-cart-item/response-fields.adoc[]
+
+=== 4. 장바구니 항목 해당 마켓 상품 전체 삭제
+
+=== 5. 장바구니 항목 선택한 상품 삭제
