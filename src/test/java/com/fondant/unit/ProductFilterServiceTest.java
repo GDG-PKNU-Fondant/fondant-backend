@@ -259,7 +259,6 @@ public class ProductFilterServiceTest{
 
         assertThat(response.products().size()).isEqualTo(1);
         assertThat(response.products().get(0).name()).isEqualTo("다크초콜릿 바");
-
     }
 
     @Test

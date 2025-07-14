@@ -38,6 +38,8 @@ public class SecurityConfig {
             "/docs/**",
             "/api/markets/**",
             "/api/reviews/**"
+            "/api/product/**",
+            "/api/category/**"
     };
 
     public static final String[] ADMIN_ENDPOINTS = {

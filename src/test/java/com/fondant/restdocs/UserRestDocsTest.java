@@ -27,7 +27,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.payload.FieldDescriptor;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -67,7 +66,6 @@ public class UserRestDocsTest {
     @Autowired
     private UserTestRepository userRepository;
 
-    @MockitoSpyBean
     @Autowired
     private JWTUtil jwtUtil;
 

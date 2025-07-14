@@ -199,3 +199,29 @@ include::{snippets}/user/delete-user-delivery-address/response-body.adoc[]
 ==== Response Field
 
 include::{snippets}/user/delete-user-delivery-address/response-fields.adoc[]
+
+=== 9. 유저 포인트 조회
+
+==== HTTP Request
+
+include::{snippets}/user/get-user-point/http-request.adoc[]
+
+==== Request Header
+
+include::{snippets}/user/get-user-point/request-headers.adoc[]
+
+==== HTTP Response
+
+include::{snippets}/user/get-user-point/http-response.adoc[]
+
+==== Response Header
+
+include::{snippets}/user/get-user-point/request-headers.adoc[]
+
+==== Response Body
+
+include::{snippets}/user/get-user-point/response-body.adoc[]
+
+==== Response Field
+
+include::{snippets}/user/get-user-point/response-fields.adoc[]

@@ -34,6 +34,7 @@ public class MarketService {
 
         Pageable effectivePageable = (pageable == null) ? pageConfig.defaultPageable() : pageable;
         Page<MarketEntity> markets = marketRepository.findMarketsByCategory(categoryId, effectivePageable);
+        // Page<MarketEntity> markets = marketRepository.findMarketsByCategoryWithSubCategories(categoryId, effectivePageable);
 
         if (markets.isEmpty()) {
             throw new ApiException(MarketError.NO_MARKETS_FOUND);
@@ -59,13 +60,16 @@ public class MarketService {
         boolean liked = marketRepository.isMarketLikedByUser(marketId, userId);
         long likeCount = marketRepository.countLikesByMarket(marketId);
 
-        return convertToDetailDto(market, hashtags, liked, likeCount);
+        List<Long> subCategoryIds = marketRepository.findSubCategoryIdsByMarketId(marketId);
+
+        return convertToDetailDto(market, hashtags, liked, likeCount, subCategoryIds);
     }
 
     @Transactional(readOnly = true)
     public MarketsResponse getTop10MarketsByPopularity(Pageable pageable) {
         Pageable effectivePageable = (pageable == null) ? pageConfig.defaultPageable() : pageable;
         Page<MarketEntity> markets = marketRepository.findTop10MarketsByPopularity(effectivePageable);
+
 
         if (markets == null || markets.isEmpty()) {
             throw new ApiException(MarketError.NO_MARKETS_FOUND);
@@ -81,6 +85,7 @@ public class MarketService {
     public MarketsResponse getRandomTop5MarketsByCategoryId(Long categoryId, Pageable pageable) {
         Pageable effectivePageable = (pageable == null) ? pageConfig.defaultPageable() : pageable;
         Page<MarketEntity> markets = marketRepository.findRandomTop5MarketsByCategory(categoryId, effectivePageable);
+        // Page<MarketEntity> markets = marketRepository.findRandomTop5MarketsByCategoryWithSubCategories(categoryId, effectivePageable);
 
         if (markets == null || markets.isEmpty()) {
             throw new ApiException(MarketError.NO_MARKETS_FOUND);
@@ -100,6 +105,7 @@ public class MarketService {
 
         Pageable effectivePageable = (pageable == null) ? pageConfig.defaultPageable() : pageable;
         Page<MarketEntity> markets = marketRepository.findTop30MarketsByCategory(categoryId, effectivePageable);
+        // Page<MarketEntity> markets = marketRepository.findTop30MarketsByCategoryWithSubCategories(categoryId, effectivePageable);
 
         return MarketsResponse.builder()
                 .pageInfo(PageInfo.of(markets.getNumber(), markets.getTotalPages()))
@@ -120,7 +126,7 @@ public class MarketService {
                 .toList();
     }
 
-    private MarketDetail convertToDetailDto(MarketEntity market, List<String> hashtags, boolean liked, long likeCount) {
+    private MarketDetail convertToDetailDto(MarketEntity market, List<String> hashtags, boolean liked, long likeCount, List<Long> subCategoryIds) {
         return MarketDetail.builder()
                 .id(market.getId())
                 .name(market.getName())
@@ -131,11 +137,13 @@ public class MarketService {
                 .likeCount(likeCount)
                 .isTop10(false)
                 .hashtags(hashtags)
+                .subCategoryIds(subCategoryIds)
                 .profile(MarketProfile.builder()
                         .businessNumber(market.getBusinessNumber())
                         .instagramProfile(market.getInstagramProfile())
                         .latitude(market.getLatitude())
                         .longitude(market.getLongitude())
+                        .address(market.getAddress())
                         .build())
                 .build();
     }

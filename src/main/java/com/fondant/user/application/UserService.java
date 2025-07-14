@@ -5,10 +5,7 @@ import com.fondant.user.domain.entity.DeliveryAddressEntity;
 import com.fondant.user.exception.UserError;
 import com.fondant.user.presentation.dto.request.DeliveryAddressAddRequest;
 import com.fondant.user.presentation.dto.request.DeliveryAddressUpdateRequest;
-import com.fondant.user.presentation.dto.request.JoinRequest;
-import com.fondant.user.domain.entity.SNSType;
 import com.fondant.user.domain.entity.UserEntity;
-import com.fondant.user.domain.entity.UserRole;
 import com.fondant.user.domain.repository.UserRepository;
 import com.fondant.user.presentation.dto.request.UserUpdateRequest;
 import com.fondant.user.presentation.dto.response.DeliveryAddressResponse;
@@ -18,27 +15,25 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class UserService {
 
     private final UserRepository userRepository;
 
-    private final BCryptPasswordEncoder bCryptPasswordEncoder;
-
     @Autowired
     public UserService(UserRepository userRepository, BCryptPasswordEncoder bCryptPasswordEncoder) {
         this.userRepository = userRepository;
-        this.bCryptPasswordEncoder = bCryptPasswordEncoder;
+    }
+
+    protected UserEntity findUserById(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new ApiException(UserError.USER_NOT_FOUND));
     }
 
     public UserResponse getUserInfo(Long userId) {
-        Optional<UserEntity> userEntityOptional = userRepository.findById(userId);
-
-        UserEntity userEntity = userEntityOptional.orElseThrow(() -> new ApiException(UserError.USER_NOT_FOUND));
+        UserEntity userEntity = findUserById(userId);
 
         return UserResponse.builder()
                 .name(userEntity.getName())
@@ -54,11 +49,9 @@ public class UserService {
 
     @Transactional
     public void updateUserInfo(Long userId, UserUpdateRequest request) {
-        Optional<UserEntity> userEntityOptional = userRepository.findById(userId);
+        UserEntity userEntity = findUserById(userId);
 
-        UserEntity userEntity = userEntityOptional.orElseThrow(() -> new ApiException(UserError.USER_NOT_FOUND));
-
-        userEntity = userEntity.toBuilder()
+        userRepository.save(userEntity.toBuilder()
                 .name(request.name())
                 .phoneNumber(request.phoneNumber())
                 .verifiedPhone(request.verifiedPhone())
@@ -67,36 +60,9 @@ public class UserService {
                 .nickname(request.nickname())
                 .profileUrl(request.profileUrl())
                 .gender(request.gender())
-                .build();
-
-        userRepository.save(userEntity);
+                .build());
     }
-  
-    @Transactional
-    public UserEntity joinUser(JoinRequest request) {
 
-        if (userRepository.findByEmail(request.email()).isPresent()) {
-            throw new IllegalArgumentException("이미 존재하는 이메일입니다.");
-        }
-
-        UserEntity userEntity = UserEntity.builder()
-                .snsType(SNSType.LOCAL)
-                .name(request.name())
-                .phoneNumber(request.phoneNumber())
-                .email(request.email())
-                .password(bCryptPasswordEncoder.encode(request.password()))
-                .birth(request.birth())
-                .nickname("")
-                .profileUrl("")
-                .createAt(LocalDate.now())
-                .gender(request.gender())
-                .role(UserRole.USER)
-                .build();
-
-        return userRepository.save(userEntity);
-    }
-  
-    @Transactional
     public List<DeliveryAddressResponse> getDeliveryAddress(Long userId){
         UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new ApiException(UserError.USER_NOT_FOUND));
@@ -116,10 +82,9 @@ public class UserService {
 
     @Transactional
     public void updateDeliveryAddress(Long userId, DeliveryAddressUpdateRequest request) {
-        UserEntity user = userRepository.findById(userId)
-                .orElseThrow(() -> new ApiException(UserError.USER_NOT_FOUND));
+        UserEntity user = findUserById(userId);
 
-        DeliveryAddressEntity address = user.findDeliveryAddressById(request.id());
+        DeliveryAddressEntity address = findDeliveryAddressById(userId, request.id());
 
         if (request.isPrimary()) {
             user.getDeliveryAddresses().forEach(existingAddress -> {
@@ -137,8 +102,7 @@ public class UserService {
     @Transactional
     public void addDeliveryAddress(Long userId, DeliveryAddressAddRequest request) {
 
-        UserEntity user = userRepository.findById(userId)
-                .orElseThrow(() -> new ApiException(UserError.USER_NOT_FOUND));
+        UserEntity user = findUserById(userId);
 
         DeliveryAddressEntity address = DeliveryAddressEntity.builder()
                 .deliveryAddress(request.deliveryAddress())
@@ -163,8 +127,7 @@ public class UserService {
 
     @Transactional
     public void deleteDeliveryAddress(Long userId, Long deliveryAddressId) {
-        UserEntity user = userRepository.findById(userId)
-                .orElseThrow(() -> new ApiException(UserError.USER_NOT_FOUND));
+        UserEntity user = findUserById(userId);
 
         DeliveryAddressEntity deleteAddress = user.getDeliveryAddresses().stream()
                 .filter(address -> address.getId().equals(deliveryAddressId))
@@ -174,5 +137,14 @@ public class UserService {
         user.getDeliveryAddresses().remove(deleteAddress);
 
         userRepository.save(user);
+    }
+
+    public DeliveryAddressEntity findDeliveryAddressById(Long userId, Long addressId) {
+        UserEntity user = findUserById(userId);
+
+        return user.getDeliveryAddresses().stream()
+                .filter(address -> address.getId().equals(addressId))
+                .findFirst()
+                .orElseThrow(() -> new ApiException(UserError.ADDRESS_NOT_FOUND));
     }
 }
