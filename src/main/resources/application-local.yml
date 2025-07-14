@@ -1,6 +1,6 @@
 spring:
   config:
-    import: optional:aws-parameterstore:/fondant/dev, optional:classpath:application-secret.yml
+    import: optional:aws-parameterstore:/fondant/dev/, optional:classpath:application-secret.yml
   cloud:
     aws:
       region:

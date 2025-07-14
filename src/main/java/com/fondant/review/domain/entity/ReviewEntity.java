@@ -1,6 +1,5 @@
 package com.fondant.review.domain.entity;
 
-import com.fondant.product.domain.entity.ProductEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
@@ -49,6 +48,16 @@ public class ReviewEntity {
         this.content = content;
         this.userId = userId;
         this.productId = productId;
+    }
+
+    public void updateContent(String content, Double score) {
+        this.content = content;
+        this.score = score;
+    }
+
+    // 테스트 전용 setter
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
     }
 }
 

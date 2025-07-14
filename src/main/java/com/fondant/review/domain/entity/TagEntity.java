@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(name = "hashtag")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class HashtagEntity {
+public class TagEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -24,7 +24,7 @@ public class HashtagEntity {
     private String content;
 
     @Builder
-    public HashtagEntity(TagCategory category, String content) {
+    public TagEntity(TagCategory category, String content) {
         this.category = category;
         this.content = content;
     }
