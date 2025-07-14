@@ -171,16 +171,4 @@ public class CartService {
         cartItemRepository.delete(cartItem); // 실제 삭제
     }
 
-    @Transactional
-    public void deleteCartItemsByMarket(Long userId, Long marketId) {
-        CartEntity cart = cartRepository.findByUserId(userId)
-                .orElseThrow(() -> new IllegalArgumentException("장바구니가 존재하지 않습니다."));
-
-        CartMarketEntity targetMarket = cart.getCartMarkets().stream()
-                .filter(cm -> cm.getMarket().getId().equals(marketId))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("해당 마켓의 장바구니 항목이 존재하지 않습니다."));
-
-        cart.getCartMarkets().remove(targetMarket);
-    }
 }
