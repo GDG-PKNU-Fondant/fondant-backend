@@ -1,95 +1,85 @@
 package com.fondant.order.application;
 
+import com.fondant.coupon.domain.entity.CouponEntity;
+import com.fondant.coupon.domain.entity.UserCouponEntity;
+import com.fondant.coupon.domain.repository.UserCouponRepository;
 import com.fondant.global.exception.ApiException;
 import com.fondant.market.domain.entity.MarketEntity;
-import com.fondant.market.domain.repository.MarketRepository;
-import com.fondant.market.exception.MarketError;
-import com.fondant.order.application.dto.OrderDetailCalculationResult;
 import com.fondant.order.domain.entity.OrderDetailEntity;
 import com.fondant.order.domain.entity.OrderEntity;
+import com.fondant.order.domain.entity.OrderStatus;
 import com.fondant.order.domain.repository.OrderDetailRepository;
 import com.fondant.order.domain.repository.OrderRepository;
 import com.fondant.order.exception.OrderError;
-import com.fondant.order.presentation.dto.request.OrderCreateRequest;
-import com.fondant.order.presentation.dto.request.OrderItem;
-import com.fondant.order.presentation.dto.request.OrderPrepareRequest;
+import com.fondant.order.presentation.OrderResponse;
+import com.fondant.order.presentation.dto.CheckoutItem;
+import com.fondant.order.presentation.dto.CouponApplyDto;
+import com.fondant.order.presentation.dto.CouponValidationResult;
+import com.fondant.order.presentation.dto.request.*;
 import com.fondant.order.presentation.dto.response.OrderPrepareResponse;
 import com.fondant.product.application.ProductService;
 import com.fondant.product.domain.entity.OptionEntity;
 import com.fondant.product.domain.entity.ProductEntity;
-import com.fondant.product.domain.repository.OptionRepository;
 import com.fondant.product.domain.repository.ProductRepository;
 import com.fondant.product.exception.ProductError;
+import com.fondant.product.util.ProductUtil;
 import com.fondant.user.application.UserService;
+import com.fondant.user.application.dto.CustomUserDetails;
 import com.fondant.user.domain.entity.UserEntity;
-import com.fondant.user.domain.repository.UserRepository;
 import com.fondant.user.exception.UserError;
 import com.fondant.coupon.application.CouponService;
 import com.fondant.coupon.application.dto.CouponInfo;
 import com.fondant.coupon.presentation.dto.response.CouponListResponse;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
+@Slf4j
 @Service
+@RequiredArgsConstructor
 public class OrderService {
 
-    private final MarketRepository marketRepository;
-    private final OrderRepository orderRepository;
-    private final OrderDetailRepository orderDetailRepository;
     private final ProductRepository productRepository;
-    private final OptionRepository optionRepository;
     private final ProductService productService;
     private final CouponService couponService;
     private final UserService userService;
-
-    public OrderService(MarketRepository marketRepository, OrderRepository orderRepository,
-                        OrderDetailRepository orderDetailRepository, ProductRepository productRepository,
-                        OptionRepository optionRepository, ProductService productService,
-                        CouponService couponService, UserService userService) {
-        this.marketRepository = marketRepository;
-        this.orderRepository = orderRepository;
-        this.orderDetailRepository = orderDetailRepository;
-        this.productRepository = productRepository;
-        this.optionRepository = optionRepository;
-        this.productService = productService;
-        this.couponService = couponService;
-        this.userService = userService;
-    }
+    private final UserCouponRepository userCouponRepository;
+    private final OrderRepository orderRepository;
+    private final OrderDetailRepository orderDetailRepository;
+    private final ProductUtil productUtil;
 
     @Transactional
     public OrderPrepareResponse prepareOrder(Long userId, OrderPrepareRequest request) {
         UserEntity user = userService.getUserEntityById(userId);
 
+        validateStockForPrepare(request.items());
+
         List<OrderPrepareResponse.PreparedOrderItemDto> preparedItems = new ArrayList<>();
         double totalOrderPrice = 0.0;
 
-        for (OrderPrepareRequest.OrderItem item : request.getItems()) {
-
+        for (CheckoutItem item : request.items()) {
             OptionEntity option = productService.findOptionByIdAndProductId(item.optionId(), item.productId());
             ProductEntity product = productService.findProductById(item.productId());
 
-            double discountedPrice = productService.getDiscountedPrice(product.getPrice() + option.getPrice(), product.getDiscountRate());
+            Double discountedPrice = productService.getDiscountedPrice(product.getPrice() + option.getPrice(), product.getDiscountRate());
 
             totalOrderPrice += discountedPrice * item.quantity();
 
-            preparedItems.add(
-                    toPreparedOrderItemDto(product, option, item, discountedPrice)
-            );
+            preparedItems.add(toPreparedOrderItemDto(product, option, item, discountedPrice));
         }
-
-        List<OrderPrepareResponse.DeliveryAddressDto> deliveryAddresses = toDeliveryAddressDtos(user);
 
         CouponListResponse couponResponse = couponService.getIssuedCoupons(userId, Pageable.unpaged());
         List<CouponInfo> availableCoupons = couponResponse.coupons();
 
         int userPoint = user.getPoint();
+
+        List<OrderPrepareResponse.DeliveryAddressDto> deliveryAddresses = toDeliveryAddressDtos(user);
 
         return OrderPrepareResponse.builder()
                 .orderItems(preparedItems)
@@ -100,82 +90,184 @@ public class OrderService {
                 .build();
     }
 
-    @Transactional
-    public void createOrder(Long userId, OrderCreateRequest orderList) {
-        LocalDateTime now = LocalDateTime.now();
-
-        UserEntity user = userService.getUserEntityById(userId);
-
-        OrderEntity order = OrderEntity.builder()
-                .user(user)
-                .orderDate(now)
-                .delivery(null)
-                .totalPrice(orderList.totalPrice())
-                .deliveryAddress(userService.findDeliveryAddressById(userId, orderList.addressId()).getDeliveryAddress())
-                .build();
-
-        Map<MarketEntity, List<OrderItem>> itemsByMarket = divideOrderListByMarket(orderList);
-
-        OrderDetailCalculationResult result = calculateOrderDetails(itemsByMarket, order);
-
-        validateTotalPrice(result.totalItemPrice(), orderList.totalPrice());
-
-        orderRepository.save(order);
-        orderDetailRepository.saveAll(result.orderDetails());
-    }
-
-    private OrderDetailCalculationResult calculateOrderDetails(Map<MarketEntity, List<OrderItem>> itemsByMarket, OrderEntity order) {
-        double itemTotalPrice = 0.0;
-        List<OrderDetailEntity> orderDetails = new ArrayList<>();
-
-        for (Map.Entry<MarketEntity, List<OrderItem>> entry : itemsByMarket.entrySet()) {
-            MarketEntity market = entry.getKey();
-            List<OrderItem> items = entry.getValue();
-
-            boolean isFirstItem = true;
-            for (OrderItem item : items) {
-                OptionEntity option = productService.findOptionByIdAndProductId(item.optionId(), item.productId());
-                ProductEntity product = productService.findProductById(item.productId());
-
-                double deliveryFee = isFirstItem? item.deliveryFee(): 0.0;
-                isFirstItem = false;
-
-                double itemPrice = (item.price() * (1.0 - product.getDiscountRate()) + item.optionPrice()) * item.quantity() + deliveryFee;
-
-                itemTotalPrice += itemPrice;
-                orderDetails.add(OrderDetailEntity.from(item, order, product, market));
+    private void validateStockForPrepare(List<CheckoutItem> items) {
+        for (CheckoutItem item : items) {
+            ProductEntity product = productService.findProductById(item.productId());
+            if (product.getMaxCount() < item.quantity()) {
+                throw new ApiException(OrderError.OUT_OF_STOCK);
             }
         }
-        return OrderDetailCalculationResult.builder()
-                .orderDetails(orderDetails)
-                .totalItemPrice(itemTotalPrice)
+    }
+
+    @Transactional
+    public OrderResponse createOrder(CustomUserDetails userDetails, OrderRequest request) {
+        UserEntity userEntity = userService.getUserEntityById(userDetails.getUserId());
+        Integer expected = validateAllCondition(userEntity, request);
+        Long orderId = saveAllOrder(userEntity, request, expected);
+
+        log.info("주문 검증 완료 - 사용자: {}, 예상 금액: {}", userEntity.getPhoneNumber(), expected);
+        return new OrderResponse(orderId);
+    }
+
+    private Long saveAllOrder(UserEntity userEntity, OrderRequest request, Integer expected) {
+        OrderEntity order = OrderEntity.builder()
+                .user(userEntity)
+                .orderDate(LocalDateTime.now())
+                .delivery(null)
+                .deliveryAddress(userService.findDeliveryAddressById(userEntity.getId(),
+                        request.deliveryAddressId()).getDeliveryAddress())
+                .totalPrice(Double.valueOf(request.expectedAmount()))
+                .status(OrderStatus.RESERVED)
                 .build();
-    }
+        orderRepository.save(order);
 
-    private void validateTotalPrice(double totalItemPrice, double orderTotalPrice) {
-        if (totalItemPrice != orderTotalPrice) {
-            throw new ApiException(OrderError.INVALID_ORDER);
+        for (CheckoutItem item : request.checkoutItems()) {
+            ProductEntity product = productService.findProductById(item.productId());
+            OrderDetailEntity orderDetail = OrderDetailEntity.builder()
+                    .order(order)
+                    .product(product)
+                    .market(product.getMarket())
+                    .delivery(null)
+                    .quantity(item.quantity())
+                    .totalPrice(expected)
+                    .build();
+            orderDetailRepository.save(orderDetail);
+            productUtil.reserveStock(item.productId(), item.quantity());
         }
+        return order.getId();
     }
 
-    private HashMap<MarketEntity, List<OrderItem>> divideOrderListByMarket(OrderCreateRequest orderList) {
-        HashMap<MarketEntity, List<OrderItem>> itemsByMarket = new HashMap<>();
-        for (OrderItem item : orderList.items()) {
-            MarketEntity market = marketRepository.findById(item.marketId())
-                    .orElseThrow(() -> new ApiException(MarketError.MARKET_NOT_FOUND));
+    private Integer validateAllCondition(UserEntity userEntity, OrderRequest request) {
+        Map<Long, CheckoutItem> itemMap = validateStock(request.checkoutItems());
+        Map<MarketEntity, List<CheckoutItem>> itemsByMarket = divideCheckoutItemsByMarket(itemMap);
 
-            itemsByMarket.computeIfAbsent(market, k -> new ArrayList<>()).add(item);
+        PriceCalculationResult priceResult = calculateProductTotalAndDeliveryFee(itemsByMarket);
+        double productTotal = priceResult.productTotal();
+        double deliveryFee = priceResult.deliveryFee();
+
+        CouponValidationResult couponResult = validateCoupons(userEntity.getId(), request.couponAllies(), itemMap);
+        double couponDiscount = couponResult.totalDiscount();
+
+        if (request.discountPoints() > userEntity.getPoint()) {
+            throw new ApiException(UserError.INVALID_POINT);
         }
 
-        return itemsByMarket;
+        int expected = (int) (productTotal + deliveryFee - couponDiscount - request.discountPoints());
+        if (expected != request.expectedAmount()) {
+            throw new ApiException(OrderError.INVALID_AMOUNT);
+        }
+        return expected;
     }
 
-    public static double calculateTotalPrice(double price, double optionPrice, int quantity, double discountRate) {
-        return Math.round(price * (1.0 - discountRate) + optionPrice) * quantity;
+    private PriceCalculationResult calculateProductTotalAndDeliveryFee(Map<MarketEntity, List<CheckoutItem>> itemsByMarket) {
+        double productTotal = 0.0;
+        double deliveryFee = 0.0;
+
+        for (Map.Entry<MarketEntity, List<CheckoutItem>> entry : itemsByMarket.entrySet()) {
+            MarketEntity market = entry.getKey();
+            List<CheckoutItem> items = entry.getValue();
+
+            double marketTotal = items.stream()
+                    .mapToDouble(item -> {
+                        ProductEntity product = productRepository.getReferenceById(item.productId());
+                        return product.getPrice() * item.quantity();
+                    })
+                    .sum();
+            productTotal += marketTotal;
+
+            double marketDeliveryFee = (marketTotal >= market.getFreeDeliveryLimit()) ? 0.0 : market.getDeliveryFee();
+            deliveryFee += marketDeliveryFee;
+        }
+
+        return new PriceCalculationResult(productTotal, deliveryFee);
+    }
+
+    private record PriceCalculationResult(Double productTotal, Double deliveryFee) {
+    }
+
+    private Map<Long, CheckoutItem> validateStock(List<CheckoutItem> items) {
+        Set<Long> productIds = items.stream()
+                .map(CheckoutItem::productId)
+                .collect(Collectors.toSet());
+        List<ProductEntity> products = productRepository.findAllById(productIds);
+
+        Map<Long, ProductEntity> productMap = products.stream()
+                .collect(Collectors.toMap(ProductEntity::getId, p -> p));
+
+        Map<Long, CheckoutItem> result = new HashMap<>();
+        for (int i = 0; i < items.size(); i++) {
+            CheckoutItem item = items.get(i);
+            ProductEntity product = productMap.get(item.productId());
+            if (product == null) {
+                throw new ApiException(ProductError.PRODUCT_NOT_FOUND);
+            }
+            if (product.getMaxCount() < item.quantity()) {
+                throw new ApiException(OrderError.OUT_OF_STOCK);
+            }
+            result.put((long) i, item);
+        }
+        return result;
+    }
+
+    public CouponValidationResult validateCoupons(
+            Long userId,
+            List<CouponApplyDto> applies,
+            Map<Long, CheckoutItem> itemMap) {
+
+        if (applies == null || applies.isEmpty())
+            return new CouponValidationResult();
+
+        Set<Long> usedCouponIds = new HashSet<>();
+        Set<Long> discountedItemIds = new HashSet<>();
+        Map<Long, Long> couponToItem = new HashMap<>();
+        int totalDiscount = 0;
+
+        Set<Long> couponIds = applies.stream()
+                .map(CouponApplyDto::couponId)
+                .collect(Collectors.toSet());
+
+        List<UserCouponEntity> userCoupons = userCouponRepository.findValidUserCoupons(userId, couponIds);
+
+        Map<Long, UserCouponEntity> userCouponMap = userCoupons.stream()
+                .collect(Collectors.toMap(
+                        userCoupon -> userCoupon.getCoupon().getId(),
+                        userCoupon -> userCoupon
+                ));
+
+        for (CouponApplyDto apply : applies) {
+            if (!usedCouponIds.add(apply.couponId()))
+                throw new ApiException(OrderError.DUPLICATE_COUPON);
+            if (!discountedItemIds.add(apply.targetItemId()))
+                throw new ApiException(OrderError.DUPLICATE_COUPON_ITEM);
+
+            UserCouponEntity userCoupon = userCouponMap.get(apply.couponId());
+            if (userCoupon == null)
+                throw new ApiException(OrderError.INVALID_COUPON);
+
+            CouponEntity coupon = userCoupon.getCoupon();
+
+            CheckoutItem checkoutItem = itemMap.get(apply.targetItemId());
+            if (checkoutItem == null)
+                throw new ApiException(OrderError.COUPON_ITEM_NOT_MATCH);
+
+            ProductEntity product = productRepository.getReferenceById(checkoutItem.productId());
+            if (!coupon.isGlobal() && !product.getMarket().getId().equals(coupon.getCouponMarkets().get(0).getMarket().getId()))
+                throw new ApiException(OrderError.INVALID_COUPON_SCOPE);
+
+            int subTotal = (int) (product.getPrice() * checkoutItem.quantity());
+            if (subTotal < coupon.getMinOrderAmount())
+                throw new ApiException(OrderError.MIN_PRICE_NOT_MET);
+
+            totalDiscount += coupon.calcDiscount(subTotal);
+
+            couponToItem.put(coupon.getId(), apply.targetItemId());
+        }
+
+        return new CouponValidationResult(totalDiscount, usedCouponIds, couponToItem);
     }
 
     private OrderPrepareResponse.PreparedOrderItemDto toPreparedOrderItemDto(
-            ProductEntity product, OptionEntity option, OrderPrepareRequest.OrderItem item, double discountedPrice) {
+            ProductEntity product, OptionEntity option, CheckoutItem item, double discountedPrice) {
 
         return OrderPrepareResponse.PreparedOrderItemDto.builder()
                 .productId(product.getId())
@@ -203,5 +295,19 @@ public class OrderService {
                         .receiverPhoneNumber(addr.getReceiverPhoneNumber())
                         .build())
                 .toList();
+    }
+
+
+    private Map<MarketEntity, List<CheckoutItem>> divideCheckoutItemsByMarket(Map<Long, CheckoutItem> itemMap) {
+        Map<MarketEntity, List<CheckoutItem>> itemsByMarket = new HashMap<>();
+
+        for (CheckoutItem item : itemMap.values()) {
+            ProductEntity product = productRepository.getReferenceById(item.productId());
+            MarketEntity market = product.getMarket();
+
+            itemsByMarket.computeIfAbsent(market, k -> new ArrayList<>()).add(item);
+        }
+
+        return itemsByMarket;
     }
 }
