@@ -74,4 +74,13 @@ public class CouponService {
 
         userCouponRepository.save(userCoupon);
     }
+
+    @Transactional
+    public void useCoupons(List<Long> userCouponIds) {
+        List<UserCouponEntity> userCoupons = userCouponRepository.findAllById(userCouponIds);
+        for (UserCouponEntity userCoupon : userCoupons) {
+            userCoupon.markAsUsed();
+        }
+        userCouponRepository.saveAll(userCoupons);
+    }
 }
