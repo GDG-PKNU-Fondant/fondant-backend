@@ -53,4 +53,16 @@ public class OrderEntity {
         this.totalPrice = totalPrice;
         this.status = status;
     }
+
+    public void markPaid() {
+        this.status = OrderStatus.PAID;
+    }
+
+    public void markFail() {
+        this.status = OrderStatus.FAILED;
+    }
+
+    public void markCanceled() {
+        this.status = OrderStatus.CANCELLED;
+    }
 }
