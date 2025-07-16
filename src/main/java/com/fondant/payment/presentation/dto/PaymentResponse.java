@@ -4,6 +4,8 @@ import lombok.Builder;
 
 @Builder
 public record PaymentResponse(
-
+        Integer amount,
+        String status,
+        String paymentMethod
 ) {
 }
