@@ -20,4 +20,10 @@ public class ProductUtil {
         if (product.getMaxCount() < quantity) throw new ApiException(ProductError.OUT_OF_STOCK);
         product.decreaseStock(quantity);
     }
+
+    @Transactional
+    public void rollbackReservedStockWithLock(Long productId, Integer quantity) {
+        ProductEntity product = productRepository.findByIdWithPessimisticLock(productId);
+        product.increaseStock(quantity);
+    }
 }
