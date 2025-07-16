@@ -3,6 +3,7 @@ package com.fondant.order.application;
 import com.fondant.coupon.domain.entity.CouponEntity;
 import com.fondant.coupon.domain.entity.UserCouponEntity;
 import com.fondant.coupon.domain.repository.UserCouponRepository;
+import com.fondant.coupon.util.CouponUtil;
 import com.fondant.global.exception.ApiException;
 import com.fondant.market.domain.entity.MarketEntity;
 import com.fondant.order.domain.entity.OrderDetailEntity;
@@ -53,6 +54,7 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final OrderDetailRepository orderDetailRepository;
     private final ProductUtil productUtil;
+    private final CouponUtil couponUtil;
 
     @Transactional
     public OrderPrepareResponse prepareOrder(Long userId, OrderPrepareRequest request) {
@@ -115,7 +117,7 @@ public class OrderService {
         List<OrderDetailEntity> orderDetails = orderDetailRepository.findAllByOrder(order);
 
         for (OrderDetailEntity detail : orderDetails) {
-            productUtil.rollbackReservedStockWithLock(detail.getProduct().getId(), detail.getQuantity());
+            productUtil.rollbackReservedStockWithLock(detail.getProduct().getId(),detail.getQuantity());
         }
     }
 
@@ -269,7 +271,7 @@ public class OrderService {
             if (subTotal < coupon.getMinOrderAmount())
                 throw new ApiException(OrderError.MIN_PRICE_NOT_MET);
 
-            totalDiscount += coupon.calcDiscount(subTotal);
+            totalDiscount += couponUtil.calcDiscount(coupon, subTotal);
 
             couponToItem.put(coupon.getId(), apply.targetItemId());
         }

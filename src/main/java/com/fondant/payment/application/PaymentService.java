@@ -1,12 +1,11 @@
 package com.fondant.payment.application;
 
-import com.fondant.coupon.domain.entity.UserCouponEntity;
+import com.fondant.coupon.application.CouponService;
 import com.fondant.coupon.domain.repository.UserCouponRepository;
 import com.fondant.order.application.OrderService;
 import com.fondant.order.domain.entity.OrderDetailEntity;
 import com.fondant.order.domain.repository.OrderDetailRepository;
 import com.fondant.order.presentation.dto.CouponApplyDto;
-import com.fondant.coupon.exception.CouponError;
 import com.fondant.infra.portone.util.PortOneApiClient;
 import com.fondant.order.domain.entity.OrderEntity;
 import com.fondant.order.domain.repository.OrderRepository;
@@ -41,10 +40,10 @@ public class PaymentService {
     private final PaymentRepository paymentRepository;
     private final OrderRepository orderRepository;
     private final PortOneApiClient portOneApiClient;
-    private final UserCouponRepository userCouponRepository;
     private final OrderDetailRepository orderDetailRepository;
     private final UserService userService;
     private final OrderService orderService;
+    private final CouponService couponService;
 
     @Transactional
     public PaymentResponse completePayment(CustomUserDetails userDetails, PaymentRequest request) {
@@ -131,11 +130,7 @@ public class PaymentService {
         }
 
         if (usedCouponIds != null && !usedCouponIds.isEmpty()) {
-            for (Long userCouponId : usedCouponIds) {
-                UserCouponEntity userCoupon = userCouponRepository.findById(userCouponId)
-                        .orElseThrow(() -> new ApiException(CouponError.COUPON_NOT_FOUND));
-                userCoupon.markAsUsed();
-            }
+            couponService.useCoupons(usedCouponIds);
         }
 
         List<OrderDetailEntity> orderDetails = orderDetailRepository.findAllByOrder(order);
