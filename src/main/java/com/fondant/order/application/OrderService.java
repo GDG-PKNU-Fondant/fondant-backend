@@ -109,6 +109,17 @@ public class OrderService {
         return new OrderResponse(orderId);
     }
 
+    @Transactional
+    public void rollbackOrderAndStock(Long orderId) {
+        OrderEntity order = orderRepository.findById(orderId).orElseThrow(() -> new ApiException(OrderError.ORDER_NOT_FOUND));
+        List<OrderDetailEntity> orderDetails = orderDetailRepository.findAllByOrder(order);
+
+        for (OrderDetailEntity detail : orderDetails) {
+            productUtil.rollbackReservedStockWithLock(detail.getProduct().getId(), detail.getQuantity());
+        }
+    }
+
+
     private Long saveAllOrder(UserEntity userEntity, OrderRequest request, Integer expected) {
         OrderEntity order = OrderEntity.builder()
                 .user(userEntity)
