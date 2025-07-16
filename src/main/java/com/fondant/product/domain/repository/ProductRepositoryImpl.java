@@ -9,6 +9,7 @@ import com.fondant.product.domain.entity.QProductEntity;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -197,6 +198,16 @@ public class ProductRepositoryImpl implements ProductRepositoryCustom {
         Long total = fetchFilteredProductsCount(filterInfo);
 
         return new PageImpl<>(content, pageable, total != null ? total : 0L);
+    }
+
+    @Override
+    public ProductEntity findByIdWithPessimisticLock(Long productId) {
+        QProductEntity product = QProductEntity.productEntity;
+        return queryFactory
+                .selectFrom(product)
+                .where(product.id.eq(productId))
+                .setLockMode(LockModeType.PESSIMISTIC_WRITE)
+                .fetchOne();
     }
 
     private List<ProductEntity> fetchFilteredProducts(FilterInfo filterInfo, Pageable pageable, Optional<SortType> sortType) {

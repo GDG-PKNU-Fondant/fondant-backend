@@ -12,4 +12,6 @@ public interface ProductRepositoryCustom {
     Page<ProductEntity> findProductsByMarketAndCategory(Long marketId, Long categoryId, Pageable pageable);
     Long countProductsByFilter(FilterInfo filterInfo);
     Page<ProductEntity> findFilteredProducts(FilterInfo filterInfo, Pageable pageable, Optional<SortType> sortType);
+
+    ProductEntity findByIdWithPessimisticLock(Long productId);
 }
