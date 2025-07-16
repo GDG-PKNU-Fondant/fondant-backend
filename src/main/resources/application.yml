@@ -5,7 +5,7 @@ spring:
     caller-number: ${COOL_SMS_CALLER_NUMBER}
 
   cors:
-    allowed_origins: ${ALLOWED_ORIGINS}
+    allowed-origins: ${ALLOWED_ORIGINS}
 
   datasource:
     url: ${SPRING_DATASOURCE_URL}
@@ -50,3 +50,9 @@ spring:
 
 server:
   forward-headers-strategy: native
+
+portone:
+  api-secret: ${PORTONE_API_SECRET}
+  api-base:   ${PORTONE_API_BASE}
+  webhook:
+    secret:  ${WEBHOOK_V2_SECRET}
