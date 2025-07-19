@@ -27,9 +27,9 @@ public class PaymentController {
                 paymentService.completePayment(user, request)));
     }
 
-    @DeleteMapping("/api/payment/{paymentId}")
-    public ResponseEntity<Void> cancelPayment(@PathVariable String paymentId) {
+    @DeleteMapping("/{paymentId}")
+    public ResponseEntity<ResponseDto<Void>> cancelPayment(@PathVariable String paymentId) {
         paymentService.cancelPayment(paymentId);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(ResponseDto.ofSuccess(SuccessMessage.OPERATION_SUCCESS));
     }
 }

@@ -62,10 +62,12 @@ public class UserEntity {
     private LocalDate createAt;
 
     @Column(name = "gender")
+    @Enumerated(EnumType.STRING)
     private Gender gender;
 
     @NotNull
     @Column(name = "role")
+    @Enumerated(EnumType.STRING)
     private UserRole role;
 
     @NotNull

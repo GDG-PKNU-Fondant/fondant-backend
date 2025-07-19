@@ -18,7 +18,7 @@ public class OptionEntity {
     private Long id;
 
     @NotNull
-    @Column(name="productId")
+    @Column(name="product_id")
     private Long productId;
 
     @NotNull
