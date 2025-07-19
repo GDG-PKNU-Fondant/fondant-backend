@@ -58,7 +58,6 @@ public class MarketRestDocsTest {
     @Autowired
     private MarketLikeTestRepository marketLikeRepository;
 
-
     private CategoryEntity categoryCookie;
     private CategoryEntity categoryBread;
     private CategoryEntity categoryBakedGoods;
@@ -68,20 +67,23 @@ public class MarketRestDocsTest {
     @BeforeEach
     void setUp() {
         marketCategoryRepository.deleteAll();
-        categoryRepository.deleteAll();
+        marketHashtagRepository.deleteAll();
+        marketLikeRepository.deleteAll();
         marketRepository.deleteAll();
+        categoryRepository.deleteAll();
+        userRepository.deleteAll();
 
-        CategoryEntity categoryCookie = CategoryEntity.builder()
+        categoryCookie = CategoryEntity.builder()
                 .name("쿠키")
                 .iconUrl("domain/icon-url/cookie")
                 .build();
 
-        CategoryEntity categoryBread = CategoryEntity.builder()
+        categoryBread = CategoryEntity.builder()
                 .name("빵")
                 .iconUrl("domain/icon-url/bread")
                 .build();
 
-        CategoryEntity categoryBakedGoods = CategoryEntity.builder()
+        categoryBakedGoods = CategoryEntity.builder()
                 .name("구움과자")
                 .iconUrl("domain/icon-url/baked")
                 .build();
@@ -95,9 +97,10 @@ public class MarketRestDocsTest {
         categoryBakedGoods.addChild(CategoryEntity.builder().name("마들렌").build());
         categoryBakedGoods.addChild(CategoryEntity.builder().name("휘낭시에").build());
 
-        categoryRepository.save(categoryCookie);
-        categoryRepository.save(categoryBread);
-        categoryRepository.save(categoryBakedGoods);
+        categoryCookie = categoryRepository.save(categoryCookie);
+        categoryBread = categoryRepository.save(categoryBread);
+        categoryBakedGoods = categoryRepository.save(categoryBakedGoods);
+
 
         int marketCount = 1;
         for (CategoryEntity category : List.of(categoryCookie, categoryBread, categoryBakedGoods)) {
@@ -133,7 +136,9 @@ public class MarketRestDocsTest {
     @Test
     @WithMockCustomUser
     void getMarketsByCategory() throws Exception {
-        mockMvc.perform(get(BASE_URL + "/categories/{categoryId}", categoryBread.getId())
+        CategoryEntity subCategory = categoryBread.getChildren().get(0);
+
+        mockMvc.perform(get(BASE_URL + "/categories/{categoryId}", subCategory.getId())
                         .param("page", "0")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -235,7 +240,9 @@ public class MarketRestDocsTest {
     @Test
     @WithMockCustomUser
     void getTop30MarketsByCategory() throws Exception {
-        mockMvc.perform(get(BASE_URL + "/{categoryId}/top30", categoryCookie.getId())
+        CategoryEntity subCategory = categoryCookie.getChildren().get(0);
+
+        mockMvc.perform(get(BASE_URL + "/{categoryId}/top30", subCategory.getId())
                         .param("page", "0")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -264,10 +271,13 @@ public class MarketRestDocsTest {
                         })));
     }
 
+
     @Test
     @WithMockCustomUser
     void getRandomTop5MarketsByCategory() throws Exception {
-        mockMvc.perform(get(BASE_URL + "/{categoryId}/top5", categoryCookie.getId())
+        CategoryEntity subCategory = categoryCookie.getChildren().get(0);
+
+        mockMvc.perform(get(BASE_URL + "/{categoryId}/top5", subCategory.getId())
                         .param("page", "0")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())

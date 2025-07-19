@@ -4,6 +4,8 @@
 :source-highlighter: highlightjs
 :toc: left
 :sectnums:
+:toclevels: 2
+:sectlinks:
 
 == 개요
 
@@ -15,6 +17,8 @@ include::ProductRestDocs.adoc[]
 include::MarketRestDocs.adoc[]
 include::WishListRestDocs.adoc[]
 include::SmsVerificationRestDocs.adoc[]
+include::ReivewRestDocs.adoc[]
+include::WishListRestDocs.adoc[]
 include::CouponRestDocs.adoc[]
 include::CategoryRestDocs.adoc[]
 include::CartRestDocs.adoc[]
