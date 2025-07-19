@@ -39,7 +39,7 @@ public class OrderEntity {
     @NotNull
     private Double totalPrice;
 
-    @Enumerated()
+    @Enumerated(EnumType.STRING)
     private OrderStatus status;
 
     @Builder

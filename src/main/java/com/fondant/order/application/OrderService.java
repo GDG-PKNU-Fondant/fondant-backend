@@ -12,7 +12,7 @@ import com.fondant.order.domain.entity.OrderStatus;
 import com.fondant.order.domain.repository.OrderDetailRepository;
 import com.fondant.order.domain.repository.OrderRepository;
 import com.fondant.order.exception.OrderError;
-import com.fondant.order.presentation.OrderResponse;
+import com.fondant.order.presentation.dto.response.OrderResponse;
 import com.fondant.order.presentation.dto.CheckoutItem;
 import com.fondant.order.presentation.dto.CouponApplyDto;
 import com.fondant.order.presentation.dto.CouponValidationResult;
@@ -29,11 +29,8 @@ import com.fondant.user.application.dto.CustomUserDetails;
 import com.fondant.user.domain.entity.UserEntity;
 import com.fondant.user.exception.UserError;
 import com.fondant.coupon.application.CouponService;
-import com.fondant.coupon.application.dto.CouponInfo;
-import com.fondant.coupon.presentation.dto.response.CouponListResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -76,9 +73,6 @@ public class OrderService {
             preparedItems.add(toPreparedOrderItemDto(product, option, item, discountedPrice));
         }
 
-        CouponListResponse couponResponse = couponService.getIssuedCoupons(userId, Pageable.unpaged());
-        List<CouponInfo> availableCoupons = couponResponse.coupons();
-
         int userPoint = user.getPoint();
 
         List<OrderPrepareResponse.DeliveryAddressDto> deliveryAddresses = toDeliveryAddressDtos(user);
@@ -87,7 +81,6 @@ public class OrderService {
                 .orderItems(preparedItems)
                 .totalOrderPrice(totalOrderPrice)
                 .deliveryAddresses(deliveryAddresses)
-                .availableCoupons(availableCoupons)
                 .point(userPoint)
                 .build();
     }
@@ -182,7 +175,8 @@ public class OrderService {
 
             double marketTotal = items.stream()
                     .mapToDouble(item -> {
-                        ProductEntity product = productRepository.getReferenceById(item.productId());
+                        ProductEntity product = productRepository.findById(item.productId())
+                                .orElseThrow(() -> new ApiException(ProductError.PRODUCT_NOT_FOUND));
                         return product.getPrice() * item.quantity();
                     })
                     .sum();
@@ -263,7 +257,8 @@ public class OrderService {
             if (checkoutItem == null)
                 throw new ApiException(OrderError.COUPON_ITEM_NOT_MATCH);
 
-            ProductEntity product = productRepository.getReferenceById(checkoutItem.productId());
+            ProductEntity product = productRepository.findById(checkoutItem.productId())
+                    .orElseThrow(() -> new ApiException(ProductError.PRODUCT_NOT_FOUND));
             if (!coupon.isGlobal() && !product.getMarket().getId().equals(coupon.getCouponMarkets().get(0).getMarket().getId()))
                 throw new ApiException(OrderError.INVALID_COUPON_SCOPE);
 
@@ -307,7 +302,7 @@ public class OrderService {
                         .receiverName(addr.getReceiverName())
                         .receiverPhoneNumber(addr.getReceiverPhoneNumber())
                         .build())
-                .toList();
+                .collect(Collectors.toList());
     }
 
 
@@ -315,7 +310,8 @@ public class OrderService {
         Map<MarketEntity, List<CheckoutItem>> itemsByMarket = new HashMap<>();
 
         for (CheckoutItem item : itemMap.values()) {
-            ProductEntity product = productRepository.getReferenceById(item.productId());
+            ProductEntity product = productRepository.findById(item.productId())
+                    .orElseThrow(() -> new ApiException(ProductError.PRODUCT_NOT_FOUND));
             MarketEntity market = product.getMarket();
 
             itemsByMarket.computeIfAbsent(market, k -> new ArrayList<>()).add(item);

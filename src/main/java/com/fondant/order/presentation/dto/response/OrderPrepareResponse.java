@@ -1,6 +1,5 @@
 package com.fondant.order.presentation.dto.response;
 
-import com.fondant.coupon.application.dto.CouponInfo;
 import lombok.Builder;
 import java.util.List;
 
@@ -9,7 +8,6 @@ public record OrderPrepareResponse(
         List<PreparedOrderItemDto> orderItems,
         Double totalOrderPrice,
         List<DeliveryAddressDto> deliveryAddresses,
-        List<CouponInfo> availableCoupons,
         int point
 ) {
     @Builder

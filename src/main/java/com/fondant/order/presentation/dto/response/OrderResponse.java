@@ -1,6 +1,6 @@
-package com.fondant.order.presentation;
+package com.fondant.order.presentation.dto.response;
 
 public record OrderResponse(
-        Long OrderId
+        Long orderId
 ) {
 }
