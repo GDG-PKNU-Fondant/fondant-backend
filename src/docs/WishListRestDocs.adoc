@@ -1,14 +1,7 @@
-= API 문서
-Fondant Backend Team
-2025-01-26
-:toc: left
-:toclevels: 2
-:source-highlighter: highlightjs
-:sectlinks:
 
-== Product API
+== WishList API
 
-=== 1. 관심상품 등록
+=== 관심상품 등록
 
 ==== HTTP request
 
@@ -26,7 +19,7 @@ include::{snippets}/wishlist/post-wishlist/http-response.adoc[]
 
 include::{snippets}/wishlist/post-wishlist/response-fields.adoc[]
 
-=== 2. 관심상품 조회
+=== 관심상품 조회
 
 ==== HTTP request
 
