@@ -34,7 +34,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.payload.FieldDescriptor;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -61,15 +60,30 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Transactional
 public class PaymentRestDocsTest {
 
-    @Autowired private MockMvc mockMvc;
-    @Autowired private JWTUtil jwtUtil;
-    @Autowired private ProductRepository productRepository;
-    @Autowired private OptionRepository optionRepository;
-    @Autowired private UserRepository userRepository;
-    @Autowired private OrderRepository orderRepository;
-    @Autowired private PaymentRepository paymentRepository;
-    @Autowired private ObjectMapper objectMapper;
-    @Autowired private UserService userService;
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Autowired
+    private JWTUtil jwtUtil;
+
+    @Autowired
+    private ProductRepository productRepository;
+
+    @Autowired
+    private OptionRepository optionRepository;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private OrderRepository orderRepository;
+
+    @Autowired
+    private PaymentRepository paymentRepository;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
     @MockBean
     private PortOneApiClient portOneApiClient;
 
@@ -81,7 +95,6 @@ public class PaymentRestDocsTest {
 
     @BeforeEach
     void setUp() {
-        /* ---------- 사용자 ---------- */
         user = userRepository.save(UserEntity.builder()
                 .snsType(SNSType.LOCAL)
                 .name("테스트유저")
@@ -93,7 +106,6 @@ public class PaymentRestDocsTest {
                 .point(10000)
                 .build());
 
-        /* ---------- 상품 ---------- */
         product = productRepository.save(ProductEntity.builder()
                 .name("테스트상품")
                 .description("테스트 상품 설명")
@@ -104,34 +116,30 @@ public class PaymentRestDocsTest {
                 .maxCount(10)
                 .build());
 
-        /* ---------- 옵션 ---------- */
         option = optionRepository.save(OptionEntity.builder()
                 .productId(product.getId())
                 .name("테스트옵션")
                 .price(0.0)
                 .build());
 
-        /* ---------- 배송지 ---------- */
         DeliveryAddressEntity addr = new DeliveryAddressEntity(
                 "서울시 강남구", true, "12345", "집", "홍길동", "010-1234-5678");
         user.getDeliveryAddresses().add(addr);
-        userRepository.save(user);   // 배송지 함께 저장
+        userRepository.save(user);
         deliveryAddress = userRepository.findById(user.getId())
                 .orElseThrow()
                 .getDeliveryAddresses()
                 .get(0);
 
-        /* ---------- 주문 ---------- */
         order = orderRepository.save(OrderEntity.builder()
                 .user(user)
                 .orderDate(LocalDateTime.now())
                 .deliveryAddress(deliveryAddress.getDeliveryAddress())
                 .totalPrice(10000.0)
-                .status(null)               // 필요 시 RESERVED 등으로 변경
+                .status(null)
                 .build());
         Long orderId = order.getId();
 
-        /* ---------- 결제(READY) 선등록 ---------- */
         paymentRepository.save(PaymentEntity.builder()
                 .amount(10000.0)
                 .method("CARD")
@@ -142,28 +150,26 @@ public class PaymentRestDocsTest {
                 .failReason(null)
                 .build());
 
-        /* ---------- 포트원 Mock ---------- */
         given(portOneApiClient.getPaymentDetails("test-payment-id"))
                 .willReturn(new PaymentDetails(
                         "test-payment-id",
-                        orderId, // 실제 저장된 주문 ID
+                        orderId,
                         "테스트주문",
                         10000,
                         "CARD",
                         new PaymentDetails.PayCustomer(user.getId().toString(), user.getEmail()),
                         new OrderDetails(
-                                List.of(new CheckoutItem(option.getId(), product.getId(), 1)), // 실제 저장된 id 사용
+                                List.of(new CheckoutItem(option.getId(), product.getId(), 1)),
                                 List.of(),
                                 0,
                                 PaymentMethod.TOSS,
-                                deliveryAddress.getId(), // 실제 저장된 배송지 id 사용
+                                deliveryAddress.getId(),
                                 10000,
                                 1L
                         )
                 ));
     }
 
-    /* ---------- RestDocs 공통 필드 ---------- */
     private static FieldDescriptor[] commonResponseFields() {
         return new FieldDescriptor[]{
                 fieldWithPath("code").description("요청 성공 여부"),
@@ -175,10 +181,9 @@ public class PaymentRestDocsTest {
     @Test
     @DisplayName("결제 완료")
     void completePayment() throws Exception {
-        /* ---------- 토큰 발급: 실제 DB 사용자 ID 사용 ---------- */
         String accessToken = jwtUtil.generateToken(
                 "access",
-                user.getId(),                // 실제 사용자 ID
+                user.getId(),
                 UserRole.USER.toString(),
                 100_000L);
 

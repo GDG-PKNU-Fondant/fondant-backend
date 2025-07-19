@@ -5,7 +5,6 @@ import com.fondant.global.annotation.WithMockCustomUser;
 import com.fondant.infra.jwt.application.JWTUtil;
 import com.fondant.market.domain.entity.MarketEntity;
 import com.fondant.order.presentation.dto.CheckoutItem;
-import com.fondant.order.presentation.dto.CouponApplyDto;
 import com.fondant.order.presentation.dto.request.OrderPrepareRequest;
 import com.fondant.order.presentation.dto.request.OrderRequest;
 import com.fondant.order.presentation.dto.request.PaymentMethod;
@@ -43,31 +42,37 @@ import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.docu
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-/**
- * Order API RestDocs 통합 테스트.
- * <p>
- * UnsupportedOperationException 이 발생했던 원인은 테스트 픽스처에서
- * Option → Product 매핑이 제대로 되지 않아, Service 레이어가 옵션을 찾지
- * 못했기 때문이다. 아래 setUp() 에서 반드시 <b>product(product)</b> 로 연관관계를
- * 걸어주고, 요청 JSON 에도 <b>option.getId()</b> 를 사용하도록 수정했다.
- */
 @SpringBootTest
 @AutoConfigureMockMvc
 @AutoConfigureRestDocs(uriScheme = "http", uriHost = "localhost", uriPort = 8080)
 @Transactional
 public class OrderRestDocsTest {
 
-    @Autowired private MockMvc mockMvc;
-    @Autowired private JWTUtil jwtUtil;
-    @Autowired private UserRepository userRepository;
-    @Autowired private MarketRepository marketRepository;
-    @Autowired private ProductRepository productRepository;
-    @Autowired private OptionRepository optionRepository;
-    @Autowired private ObjectMapper objectMapper;
-    @Autowired private UserService userService;
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Autowired
+    private JWTUtil jwtUtil;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private MarketRepository marketRepository;
+
+    @Autowired
+    private ProductRepository productRepository;
+
+    @Autowired
+    private OptionRepository optionRepository;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    @Autowired
+    private UserService userService;
 
     private DeliveryAddressEntity deliveryAddress;
     private ProductEntity product;
@@ -118,12 +123,10 @@ public class OrderRestDocsTest {
     @WithMockCustomUser
     @DisplayName("주문 생성")
     void createOrder() throws Exception {
-        // --- 인증 토큰 생성 ---
         CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext()
                 .getAuthentication().getPrincipal();
         String access = jwtUtil.generateToken("access", userDetails.getUserId(), UserRole.USER.toString(), 100_000L);
 
-        // --- 배송지 ---
         UserEntity user = userService.getUserEntityById(userDetails.getUserId());
         deliveryAddress = new DeliveryAddressEntity(
                 "서울시 강남구", true, "12345", "집", "홍길동", "010-1234-5678");
@@ -132,7 +135,7 @@ public class OrderRestDocsTest {
         deliveryAddress = userRepository.findById(user.getId()).orElseThrow()
                 .getDeliveryAddresses().get(0);
 
-        int expectedAmount = 12_000 * 2 + 2_500; // 26,500
+        int expectedAmount = 12_000 * 2 + 2_500;
 
         OrderRequest request = new OrderRequest(
                 List.of(new CheckoutItem(product.getId(), option.getId(), 2)),
@@ -176,12 +179,10 @@ public class OrderRestDocsTest {
     @WithMockCustomUser
     @DisplayName("주문 준비")
     void prepareOrder() throws Exception {
-        // --- 인증 토큰 생성 ---
         CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext()
                 .getAuthentication().getPrincipal();
         String access = jwtUtil.generateToken("access", userDetails.getUserId(), UserRole.USER.toString(), 100_000L);
 
-        // --- 배송지 ---
         UserEntity user = userService.getUserEntityById(userDetails.getUserId());
         deliveryAddress = new DeliveryAddressEntity(
                 "서울시 강남구", true, "12345", "집", "홍길동", "010-1234-5678");
@@ -190,7 +191,6 @@ public class OrderRestDocsTest {
         deliveryAddress = userRepository.findById(user.getId()).orElseThrow()
                 .getDeliveryAddresses().get(0);
 
-        // --- 주문 준비 요청 ---
         OrderPrepareRequest request = new OrderPrepareRequest(
                 List.of(new CheckoutItem(option.getId(), product.getId(), 2))
         );
@@ -199,10 +199,6 @@ public class OrderRestDocsTest {
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + access)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andDo(result -> {                       // ← 추가
-                    if (result.getResolvedException() != null)
-                        result.getResolvedException().printStackTrace();
-                })
                 .andExpect(status().isOk())
                 .andDo(document("order-prepare",
                         preprocessRequest(prettyPrint()),
