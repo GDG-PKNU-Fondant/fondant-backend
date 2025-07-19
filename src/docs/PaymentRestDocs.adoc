@@ -1,0 +1,58 @@
+
+== Payment API
+
+=== 결제 완료
+
+==== HTTP Request
+
+include::{snippets}/payment-complete/http-request.adoc[]
+
+==== Request Header
+
+include::{snippets}/payment-complete/request-headers.adoc[]
+
+==== Request Body
+
+include::{snippets}/payment-complete/request-body.adoc[]
+
+==== Request Field
+
+include::{snippets}/payment-complete/request-fields.adoc[]
+
+==== HTTP Response
+
+include::{snippets}/payment-complete/http-response.adoc[]
+
+==== Request Body
+
+include::{snippets}/payment-complete/response-body.adoc[]
+
+==== Response Field
+
+include::{snippets}/payment-complete/response-fields.adoc[]
+
+=== 주문 생성
+
+==== HTTP Request
+
+include::{snippets}/payment-cancel/http-request.adoc[]
+
+==== Request Header
+
+include::{snippets}/payment-cancel/request-headers.adoc[]
+
+==== Request Body
+
+include::{snippets}/payment-cancel/path-parameters.adoc[]
+
+==== HTTP Response
+
+include::{snippets}/payment-cancel/http-response.adoc[]
+
+==== Response Body
+
+include::{snippets}/payment-cancel/response-body.adoc[]
+
+==== Response Field
+
+include::{snippets}/payment-cancel/response-fields.adoc[]

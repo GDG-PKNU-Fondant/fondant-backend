@@ -200,7 +200,7 @@ include::{snippets}/user/delete-user-delivery-address/response-body.adoc[]
 
 include::{snippets}/user/delete-user-delivery-address/response-fields.adoc[]
 
-=== 9. 유저 포인트 조회
+=== 유저 포인트 조회
 
 ==== HTTP Request
 
