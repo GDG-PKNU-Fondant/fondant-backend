@@ -53,8 +53,9 @@ public class PaymentEntity {
 
     @Builder
     public PaymentEntity (Double amount, PaymentStatus status,
-                        String method, String paymentId,
-                        String failReason, LocalDateTime paidAt
+                          String method, String paymentId,
+                          String failReason, LocalDateTime paidAt,
+                          OrderEntity order
     ) {
         this.amount = amount;
         this.status = status;
@@ -63,6 +64,7 @@ public class PaymentEntity {
         this.failReason = failReason;
         this.createdAt = LocalDateTime.now();
         this.paidAt = paidAt;
+        this.order = order;
     }
 
     public void markSuccess() {

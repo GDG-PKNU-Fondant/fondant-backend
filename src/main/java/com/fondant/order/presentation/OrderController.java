@@ -7,6 +7,7 @@ import com.fondant.order.application.OrderService;
 import com.fondant.order.presentation.dto.request.OrderPrepareRequest;
 import com.fondant.order.presentation.dto.request.OrderRequest;
 import com.fondant.order.presentation.dto.response.OrderPrepareResponse;
+import com.fondant.order.presentation.dto.response.OrderResponse;
 import com.fondant.user.application.dto.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -26,7 +27,7 @@ public class OrderController {
         return ResponseEntity.ok(ResponseDto.ofSuccess(SuccessMessage.OPERATION_SUCCESS, orderService.createOrder(user, orderRequest)));
     }
 
-    @GetMapping("/page-info")
+    @PostMapping("/page-info")
     public ResponseEntity<ResponseDto<OrderPrepareResponse>> prepareOrder(
             @CurrentUser CustomUserDetails user,
             @RequestBody OrderPrepareRequest request

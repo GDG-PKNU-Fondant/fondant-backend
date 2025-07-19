@@ -11,7 +11,7 @@ public record PaymentDetails(
     PayCustomer customer,
     OrderDetails orderDetails
 ) {
-    private record PayCustomer(
+    public record PayCustomer(
             String userId,
             String userEmail
     ){

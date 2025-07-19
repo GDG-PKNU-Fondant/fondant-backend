@@ -1,7 +1,6 @@
 package com.fondant.payment.application;
 
 import com.fondant.coupon.application.CouponService;
-import com.fondant.coupon.domain.repository.UserCouponRepository;
 import com.fondant.order.application.OrderService;
 import com.fondant.order.domain.entity.OrderDetailEntity;
 import com.fondant.order.domain.repository.OrderDetailRepository;
@@ -67,12 +66,12 @@ public class PaymentService {
         }
 
         if (!Objects.equals(Double.valueOf(paymentDetails.totalAmount()), order.getTotalPrice())) {
-            PaymentEntity payment = createPayment(paymentDetails, PaymentStatus.FAILED, "결제 금액 불일치");
+            PaymentEntity payment = createPayment(paymentDetails, PaymentStatus.FAILED, "결제 금액 불일치", order);
             paymentRepository.save(payment);
             throw new ApiException(PaymentError.PAYMENT_AMOUNT_MISMATCH);
         }
 
-        PaymentEntity payment = createPayment(paymentDetails, PaymentStatus.SUCCESS, null);
+        PaymentEntity payment = createPayment(paymentDetails, PaymentStatus.SUCCESS, null, order);
         paymentRepository.save(payment);
 
         order.markPaid();
@@ -146,7 +145,7 @@ public class PaymentService {
         payment.markSuccess();
     }
 
-    private PaymentEntity createPayment(PaymentDetails details, PaymentStatus status, String failReason) {
+    private PaymentEntity createPayment(PaymentDetails details, PaymentStatus status, String failReason, OrderEntity order) {
         return PaymentEntity.builder()
                 .amount(Double.valueOf(details.totalAmount()))
                 .method(details.method())
@@ -154,6 +153,7 @@ public class PaymentService {
                 .status(status)
                 .failReason(failReason)
                 .paidAt(LocalDateTime.now())
+                .order(order)
                 .build();
     }
 }
