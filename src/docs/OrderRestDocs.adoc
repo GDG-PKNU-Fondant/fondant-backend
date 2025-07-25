@@ -1,0 +1,62 @@
+
+== Order API
+
+=== 주문 페이지 조회
+
+==== HTTP Request
+
+include::{snippets}/order-prepare/http-request.adoc[]
+
+==== Request Header
+
+include::{snippets}/order-prepare/request-headers.adoc[]
+
+==== Request Body
+
+include::{snippets}/order-prepare/request-body.adoc[]
+
+==== Request Field
+
+include::{snippets}/order-prepare/request-fields.adoc[]
+
+==== HTTP Response
+
+include::{snippets}/order-prepare/http-response.adoc[]'
+
+==== Request Body
+
+include::{snippets}/order-prepare/response-body.adoc[]
+
+==== Response Field
+
+include::{snippets}/order-prepare/response-fields.adoc[]
+
+=== 주문 생성
+
+==== HTTP Request
+
+include::{snippets}/order-create/http-request.adoc[]
+
+==== Request Header
+
+include::{snippets}/order-create/request-headers.adoc[]
+
+==== Request Body
+
+include::{snippets}/order-create/request-body.adoc[]
+
+==== Request Field
+
+include::{snippets}/order-create/request-fields.adoc[]
+
+==== HTTP Response
+
+include::{snippets}/order-create/http-response.adoc[]
+
+==== Response Body
+
+include::{snippets}/order-create/response-body.adoc[]
+
+==== Response Field
+
+include::{snippets}/order-create/request-fields.adoc[]

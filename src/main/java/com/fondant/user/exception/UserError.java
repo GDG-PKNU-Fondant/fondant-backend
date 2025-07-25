@@ -12,7 +12,8 @@ public enum UserError implements ErrorCode {
     VERIFICATION_NOT_DELETED(HttpStatus.BAD_REQUEST, "인증번호를 삭제하지 못했습니다.", "VERIFICATION_NOT_DELETED"),
     SMS_SEND_FAILED(HttpStatus.INTERNAL_SERVER_ERROR,"SMS 전송에 실패했습니다.", "SMS_SEND_FAILED"),
     REFRESH_EXPIRED(HttpStatus.UNAUTHORIZED, "리프레시 토큰이 만료되었습니다.", "REFRESH_EXPIRED"),
-    REFRESH_INVALID(HttpStatus.BAD_REQUEST,  "리프레시 토큰이 유효하지 않습니다.", "REFRESH_INVALID");
+    REFRESH_INVALID(HttpStatus.BAD_REQUEST,  "리프레시 토큰이 유효하지 않습니다.", "REFRESH_INVALID"),
+    INVALID_POINT(HttpStatus.BAD_REQUEST,"포인트가 부족합니다." , "INVALID_POINT");
 
     private final HttpStatus httpStatus;
     private final String message;

@@ -1,6 +1,8 @@
 package com.fondant.product.domain.entity;
 
+import com.fondant.global.exception.ApiException;
 import com.fondant.market.domain.entity.MarketEntity;
+import com.fondant.product.exception.ProductError;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
@@ -64,5 +66,21 @@ public class ProductEntity {
 
     public void updateDiscountRate(double discountRate) {
         this.discountRate = discountRate;
+    }
+
+    public void decreaseStock(int quantity) {
+        int newStock = this.maxCount - quantity;
+        if (newStock < 0) {
+            throw new ApiException(ProductError.OUT_OF_STOCK);
+        }
+        this.maxCount = newStock;
+    }
+
+    public void increaseStock(int quantity) {
+        int newStock = this.maxCount - quantity;
+        if (newStock < 0) {
+            throw new ApiException(ProductError.OUT_OF_STOCK);
+        }
+        this.maxCount = newStock;
     }
 }

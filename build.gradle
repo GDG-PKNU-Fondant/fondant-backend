@@ -20,8 +20,15 @@ java {
 	}
 }
 
+configurations {
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
+}
+
 repositories {
 	mavenCentral()
+	maven { url 'https://jitpack.io' }
 }
 
 dependencyManagement {
@@ -32,8 +39,9 @@ dependencyManagement {
 
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.boot:spring-boot-starter-webflux'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-	testImplementation 'com.h2database:h2:2.2.224'
+	testImplementation 'com.h2database:h2'
 
 	//OAUTH2
 	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
@@ -79,9 +87,12 @@ dependencies {
 	//PARAMETER_STORE_STARTER
 	implementation 'io.awspring.cloud:spring-cloud-aws-starter-parameter-store'
 
+	//IAMPORT
+	implementation "io.portone:server-sdk:0.19.0"
+
 	//S3
 	implementation 'software.amazon.awssdk:s3:2.25.3'
-
+  
 }
 
 

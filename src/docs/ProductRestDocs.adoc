@@ -1,11 +1,3 @@
-= API 문서
-Fondant Backend Team
-2025-01-26
-:toc: left
-:toclevels: 2
-:source-highlighter: highlightjs
-:sectlinks:
-
 == Product API
 
 === 마켓, 카테고리별 상품 목록 조회

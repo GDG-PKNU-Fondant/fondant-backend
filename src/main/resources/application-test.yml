@@ -55,4 +55,10 @@ spring:
 
   jpa:
     hibernate.ddl-auto: create-drop
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    database-platform: org.hibernate.dialect.H2Dialect
+
+portone:
+  api-secret: RM4Ug3uFxTHRWu4nguQiJ2PDT8KXrsanBV3CEEWr8rW7Je6TnGtT6EKOnhNbrsYP4iobPe9cEr0vtJuz
+  api-base: https://api.sandbox.portone.io
+  webhook:
+    secret: whsec_q2tykBu9jWmKK0VCZZVMEtLFwcAQgbqxcdKG4prMN9U=
