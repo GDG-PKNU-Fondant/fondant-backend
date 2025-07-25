@@ -12,6 +12,7 @@ import com.fondant.product.domain.entity.OptionEntity;
 import com.fondant.product.domain.entity.ProductEntity;
 import com.fondant.product.domain.repository.OptionRepository;
 import com.fondant.product.domain.repository.ProductRepository;
+import com.fondant.product.util.ProductUtil;
 import com.fondant.user.application.UserService;
 import com.fondant.user.application.dto.CustomUserDetails;
 import com.fondant.user.domain.entity.DeliveryAddressEntity;
@@ -35,7 +36,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
 import static org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
@@ -47,7 +52,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @AutoConfigureRestDocs(uriScheme = "http", uriHost = "localhost", uriPort = 8080)
-@Transactional
 public class OrderRestDocsTest {
 
     @Autowired
@@ -74,6 +78,10 @@ public class OrderRestDocsTest {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private ProductUtil productUtil;
+
+
     private DeliveryAddressEntity deliveryAddress;
     private ProductEntity product;
     private OptionEntity option;
@@ -98,7 +106,7 @@ public class OrderRestDocsTest {
                         .price(12_000.0)
                         .market(market)
                         .startDate(LocalDate.now())
-                        .maxCount(10)
+                        .maxCount(100)
                         .build()
         );
 
@@ -121,6 +129,7 @@ public class OrderRestDocsTest {
 
     @Test
     @WithMockCustomUser
+    @Transactional
     @DisplayName("주문 생성")
     void createOrder() throws Exception {
         CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext()
@@ -177,6 +186,7 @@ public class OrderRestDocsTest {
 
     @Test
     @WithMockCustomUser
+    @Transactional
     @DisplayName("주문 준비")
     void prepareOrder() throws Exception {
         CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext()
@@ -237,5 +247,30 @@ public class OrderRestDocsTest {
                                         fieldWithPath("point").description("사용자 보유 포인트")
                                 })
                 ));
+    }
+
+    @Test
+    @DisplayName("상품 구매시 재고 Locking 검사")
+    void lockOrder() throws Exception {
+        // given
+        final int threadCount = 100;
+        final ExecutorService executorService = Executors.newFixedThreadPool(32);
+        final CountDownLatch countDownLatch = new CountDownLatch(threadCount);
+
+        // when
+        for (int i = 0; i < threadCount; i++) {
+            executorService.submit(() -> {
+                try {
+                    productUtil.reserveStock(product.getId(), 1);
+                } finally {
+                    countDownLatch.countDown();
+                }
+            });
+        }
+        countDownLatch.await();
+        final ProductEntity product1 = productRepository.findById(product.getId()).orElseThrow();
+
+        // then
+        assertThat(product1.getMaxCount()).isEqualTo(0);
     }
 }
