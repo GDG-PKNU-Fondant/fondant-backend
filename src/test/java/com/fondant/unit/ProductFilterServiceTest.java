@@ -7,6 +7,7 @@ import com.fondant.product.application.dto.FilterInfo;
 import com.fondant.product.application.dto.SortType;
 import com.fondant.product.category.domain.CategoryEntity;
 import com.fondant.product.category.domain.repository.CategoryRepository;
+import com.fondant.product.domain.entity.PackagingType;
 import com.fondant.product.domain.entity.ProductCategoryEntity;
 import com.fondant.product.domain.entity.ProductEntity;
 import com.fondant.product.domain.repository.ProductCategoryRepository;
@@ -63,8 +64,8 @@ public class ProductFilterServiceTest{
         category2 = createCategoryWithSubCategories("쿠키", "domain/icon/cookie", List.of("르뱅쿠키", "비건쿠키"));
 
         // 상품 생성
-        product1 = createProduct("다크초콜릿 바", 12000.0, "box", "free_shipping", market);
-        product2 = createProduct("르뱅 쿠키", 8000.0, "bag", "discount", market);
+        product1 = createProduct("다크초콜릿 바", 12000.0, PackagingType.ROOM_TEMP, "free_shipping", market);
+        product2 = createProduct("르뱅 쿠키", 8000.0, PackagingType.ROOM_TEMP, "discount", market);
 
         // 상품과 소분류 연결
         linkProductToSubCategory(product1, category1.getChildren().get(0)); // 다크초콜릿
@@ -97,7 +98,7 @@ public class ProductFilterServiceTest{
         return categoryRepository.save(mainCategory);
     }
 
-    private ProductEntity createProduct(String name, Double price, String packagingType, String benefit, MarketEntity market) {
+    private ProductEntity createProduct(String name, Double price, PackagingType packagingType, String benefit, MarketEntity market) {
         return productRepository.save(ProductEntity.builder()
                 .name(name)
                 .description(name + " 설명입니다.")
@@ -106,7 +107,7 @@ public class ProductFilterServiceTest{
                 .market(market)
                 .startDate(LocalDate.of(2025, 1, 1))
                 .maxCount(100)
-                //.packagingType(packagingType)
+                .packagingType(packagingType)
                 //.benefit(benefit)
                 .build());
     }
@@ -138,7 +139,7 @@ public class ProductFilterServiceTest{
     }
 
     // 사용예정 : 포장타입 및 혜택 추가 예정
-    /*
+
     @Test
     @DisplayName("포장 타입으로 상품 수 필터링")
     void countProductsByPackagingTypeFilter_success() {
@@ -147,7 +148,7 @@ public class ProductFilterServiceTest{
                 Optional.empty(),
                 Optional.empty(),
                 List.of(),
-                List.of("bag"),
+                List.of(PackagingType.ROOM_TEMP),
                 List.of()
         );
 
@@ -155,9 +156,9 @@ public class ProductFilterServiceTest{
         Long count = productFilterService.getFilteredProductCounts(filterInfo).count();
 
         // then
-        assertThat(count).isEqualTo(1L);
+        assertThat(count).isEqualTo(2L);
     }
-
+/*
     @Test
     @DisplayName("혜택으로 상품 수 필터링")
     void countProductsByBenefitFilter_success() {
@@ -223,7 +224,7 @@ public class ProductFilterServiceTest{
                 Optional.of(10000.0),
                 Optional.of(13000.0),
                 List.of(category1.getId()),
-                List.of("box"),
+                List.of(PackagingType.ROOM_TEMP),
                 List.of("free_shipping")
         );
 
@@ -242,7 +243,7 @@ public class ProductFilterServiceTest{
                 Optional.of(10000.0),
                 Optional.of(13000.0),
                 List.of(category1.getId()),
-                List.of("box"),
+                List.of(PackagingType.ROOM_TEMP),
                 List.of("free_shipping")
         );
 
@@ -265,7 +266,7 @@ public class ProductFilterServiceTest{
     @DisplayName("가격 낮은순 정렬 테스트")
     void getFilteredProducts_sortByPriceAsc_success() {
         // given
-        product3 = createProduct("비건 쿠키", 15000.0, "bag", "discount", market);
+        product3 = createProduct("비건 쿠키", 15000.0, PackagingType.ROOM_TEMP, "discount", market);
         linkProductToSubCategory(product3, category2.getChildren().get(1));
 
         FilterInfo filterInfo = new FilterInfo(
@@ -291,7 +292,7 @@ public class ProductFilterServiceTest{
     @DisplayName("할인율 높은순 정렬 테스트")
     void getFilteredProducts_sortByDiscount_success() {
         // given
-        product3 = createProduct("비건 쿠키", 15000.0, "bag", "discount", market);
+        product3 = createProduct("비건 쿠키", 15000.0, PackagingType.ROOM_TEMP, "discount", market);
         linkProductToSubCategory(product3, category2.getChildren().get(1));
 
         product1.updateDiscountRate(0.0);

@@ -3,6 +3,7 @@ package com.fondant.product.domain.repository;
 import com.fondant.product.application.dto.FilterInfo;
 import com.fondant.product.application.dto.SortType;
 import com.fondant.product.category.domain.QCategoryEntity;
+import com.fondant.product.domain.entity.PackagingType;
 import com.fondant.product.domain.entity.ProductEntity;
 import com.fondant.product.domain.entity.QProductCategoryEntity;
 import com.fondant.product.domain.entity.QProductEntity;
@@ -144,11 +145,12 @@ public class ProductRepositoryImpl implements ProductRepositoryCustom {
         filterInfo.endPrice().ifPresent(end -> builder.and(product.price.loe(end)));
 
         // 사용 예정 : packingType 및 coupon 도메인 추가 필요
-        /*
-        if (filterInfo.packingTypes() != null && !filterInfo.packingTypes().isEmpty()) {
-            builder.and(product.packagingType.in(filterInfo.packingTypes()));
+
+        if (filterInfo.packagingTypes() != null && !filterInfo.packagingTypes().isEmpty()) {
+            builder.and(product.packagingType.in(filterInfo.packagingTypes()));
         }
 
+        /*
         if (filterInfo.benefitTypes() != null && !filterInfo.benefitTypes().isEmpty()) {
             builder.and(product.benefit.in(filterInfo.benefitTypes()));
         }

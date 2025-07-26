@@ -146,6 +146,7 @@ public class ProductRestDocsTest {
                 .market(market)
                 .startDate(LocalDate.of(2025, 1, 1))
                 .maxCount(50)
+                .packagingType(PackagingType.ROOM_TEMP)
                 .build());
 
         product2 = productRepository.save(ProductEntity.builder()
@@ -156,6 +157,7 @@ public class ProductRestDocsTest {
                 .market(market)
                 .startDate(LocalDate.of(2025, 1, 1))
                 .maxCount(50)
+                .packagingType(PackagingType.REFRIGERATION)
                 .build());
 
         categoryProduct1 = productCategoryRepository.save(ProductCategoryEntity.builder()
@@ -325,7 +327,7 @@ public class ProductRestDocsTest {
                         .param("startPrice", "10000")
                         .param("endPrice", "20000")
                         .param("categoryIds", String.valueOf(category1.getId()))
-                        .param("packingTypes", "box")
+                        .param("packingTypes", "ROOM_TEMP")
                         .param("benefitTypes", "free_shipping")
                         .param("sortType", "PRICE_ASC")
                         .param("page", "0")
