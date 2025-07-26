@@ -3,6 +3,7 @@ package com.fondant.product.application;
 import com.fondant.global.dto.PageInfo;
 import com.fondant.global.exception.ApiException;
 import com.fondant.market.application.MarketService;
+import com.fondant.market.application.dto.MarketInfo;
 import com.fondant.market.application.dto.MarketInfoForProductDetail;
 import com.fondant.market.domain.entity.MarketEntity;
 import com.fondant.product.application.dto.*;
@@ -67,6 +68,8 @@ public class ProductService {
                                 .thumbnailUrl(product.getThumbnail())
                                 .discountRate(product.getDiscountRate())
                                 .discountPrice(getDiscountedPrice(product.getPrice(),product.getDiscountRate()))
+                                .marketName(product.getMarket().getName())
+                                .marketId(product.getMarket().getId())
                                 .build()
                 ).toList();
     }

@@ -246,7 +246,9 @@ public class ProductRestDocsTest {
                                 fieldWithPath("products[].score").description("리뷰 평점"),
                                 fieldWithPath("products[].thumbnailUrl").description("상품 썸네일 URL"),
                                 fieldWithPath("products[].discountRate").description("상품 할인율"),
-                                fieldWithPath("products[].discountPrice").description("상품 할인 후 가격")
+                                fieldWithPath("products[].discountPrice").description("상품 할인 후 가격"),
+                                fieldWithPath("products[].marketName").description("해당 상품 판매 마켓 이름"),
+                                fieldWithPath("products[].marketId").description("해당 상품 판매 마켓 ID")
                         })));
     }
 
@@ -372,7 +374,9 @@ public class ProductRestDocsTest {
                                 fieldWithPath("products[].score").description("리뷰 평점"),
                                 fieldWithPath("products[].thumbnailUrl").description("상품 썸네일 URL"),
                                 fieldWithPath("products[].discountRate").description("상품 할인율"),
-                                fieldWithPath("products[].discountPrice").description("상품 할인 후 가격")
+                                fieldWithPath("products[].discountPrice").description("상품 할인 후 가격"),
+                                fieldWithPath("products[].marketName").description("해당 상품 판매 마켓 이름"),
+                                fieldWithPath("products[].marketId").description("해당 상품 판매 마켓 ID")
                         })
                 ));
     }
