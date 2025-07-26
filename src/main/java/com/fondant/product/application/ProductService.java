@@ -88,6 +88,7 @@ public class ProductService {
                 .detailPages(getImageUrlsByProductIdAndType(productId,ImageType.DETAIL_PAGE))
                 .marketInfo(getMarketInfo(product.getMarket()))
                 .basePrice(product.getPrice())
+                .packagingType(product.getPackagingType())
                 .build();
     }
 

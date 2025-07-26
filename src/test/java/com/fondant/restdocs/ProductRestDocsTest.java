@@ -286,6 +286,13 @@ public class ProductRestDocsTest {
                                 fieldWithPath("marketInfo.totalReviews").description("총 리뷰 개수"),
                                 fieldWithPath("marketInfo.freeDeliveryLimit").description("무료배송 기준"),
                                 fieldWithPath("basePrice").description("상품 기본 가격 (옵션 가격 추가 전)"),
+                                fieldWithPath("packagingType").description(
+                                        "상품 포장 타입 :" + "\n" +
+                                                "- ROOM_TEMP : 할인순 +" + "\n" +
+                                                "- REFRIGERATION : 리뷰 많은순 +" + "\n" +
+                                                "- FROZEN : 판매량순 +" + "\n" +
+                                                "※ 요청 시 위 enum 값을 그대로 입력해야 합니다."
+                                )
                         })));
     }
 
