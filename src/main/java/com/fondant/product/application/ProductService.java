@@ -149,4 +149,9 @@ public class ProductService {
                 .products(getProductInfos(products.getContent()))
                 .build();
     }
+
+    public void incrementReviewCount(Long productId) {
+        ProductEntity product = getProductById(productId);
+        product.incrementReviewCount();
+    }
 }

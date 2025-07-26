@@ -55,6 +55,10 @@ public class ProductEntity {
     @Column(name="packaging_type")
     private PackagingType packagingType;
 
+    @NotNull
+    @Column(name="total_reviews")
+    private int totalReviews = 0;
+
     @Builder
     public ProductEntity(PackagingType packagingType, String name, String description, String thumbnail, Double price, MarketEntity market, LocalDate startDate, int maxCount) {
         this.name = name;
@@ -69,5 +73,9 @@ public class ProductEntity {
 
     public void updateDiscountRate(double discountRate) {
         this.discountRate = discountRate;
+    }
+
+    public void incrementReviewCount() {
+        this.totalReviews += 1;
     }
 }

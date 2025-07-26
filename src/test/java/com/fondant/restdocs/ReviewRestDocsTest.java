@@ -4,6 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fondant.global.annotation.WithMockCustomUser;
 import com.fondant.infra.jwt.application.JWTUtil;
 import com.fondant.infra.s3.application.S3Service;
+import com.fondant.product.domain.entity.PackagingType;
+import com.fondant.product.domain.entity.ProductEntity;
+import com.fondant.product.domain.repository.ProductRepository;
 import com.fondant.review.domain.entity.ReviewEntity;
 import com.fondant.review.domain.repository.ReviewRepository;
 import com.fondant.review.presentation.dto.request.ReviewCreateRequest;
@@ -62,6 +65,9 @@ public class ReviewRestDocsTest {
     private ReviewRepository reviewRepository;
 
     @Autowired
+    private ProductRepository productRepository;
+
+    @Autowired
     private UserTestRepository userRepository;
 
     @MockitoSpyBean
@@ -70,6 +76,7 @@ public class ReviewRestDocsTest {
     private String token;
     private UserEntity user;
     private Long reviewId;
+    private ProductEntity product;
 
     @BeforeEach
     void setUp() {
@@ -95,6 +102,15 @@ public class ReviewRestDocsTest {
                 .score(4.5)
                 .build());
 
+        product = productRepository.save(ProductEntity.builder()
+                .name("헤이즐넛 쿠키")
+                .description("헤이즐넛 쿠키 입니다.")
+                .thumbnail("product-thumbnail.png")
+                .price(15000.0)
+                .startDate(LocalDate.of(2025, 1, 1))
+                .maxCount(50)
+                .packagingType(PackagingType.REFRIGERATION)
+                .build());
 
         reviewId = saved.getId();
     }
@@ -112,7 +128,7 @@ public class ReviewRestDocsTest {
         MockMultipartFile imagePart = new MockMultipartFile("files", "photo.jpg", "image/jpeg", "test-image".getBytes());
 
         //when & then
-        mockMvc.perform(multipart("/api/reviews/{productId}", 1L)
+        mockMvc.perform(multipart("/api/reviews/{productId}", product.getId())
                         .file(jsonPart)
                         .file(imagePart)
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
@@ -187,17 +203,16 @@ public class ReviewRestDocsTest {
     @DisplayName("리뷰 조회 API - 정렬 기준별")
     void getReviews_withSortType() throws Exception {
         // given
-        Long productId = 1L;
 
-        reviewRepository.save(ReviewEntity.builder().productId(productId).userId(user.getId()).score(3.0).content("보통").build());
+        reviewRepository.save(ReviewEntity.builder().productId(product.getId()).userId(user.getId()).score(3.0).content("보통").build());
         Thread.sleep(10);
-        reviewRepository.save(ReviewEntity.builder().productId(productId).userId(user.getId()).score(5.0).content("최고").build());
+        reviewRepository.save(ReviewEntity.builder().productId(product.getId()).userId(user.getId()).score(5.0).content("최고").build());
         Thread.sleep(10);
-        reviewRepository.save(ReviewEntity.builder().productId(productId).userId(user.getId()).score(1.0).content("별로").build());
+        reviewRepository.save(ReviewEntity.builder().productId(product.getId()).userId(user.getId()).score(1.0).content("별로").build());
 
         // when & then
         mockMvc.perform(get("/api/reviews")
-                        .param("productId", String.valueOf(productId))
+                        .param("productId", String.valueOf(product.getId()))
                         .param("sortType", "HIGH_SCORE")
                         .param("page", "0")
                         .param("size", "10")
@@ -217,6 +232,7 @@ public class ReviewRestDocsTest {
                                         fieldWithPath("pageInfo.currentPage").description("현재 페이지 번호"),
                                         fieldWithPath("pageInfo.totalPage").description("전체 페이지 수"),
                                         fieldWithPath("productId").description("리뷰를 조회한 상품 ID"),
+                                        fieldWithPath("totalCount").description("전체 상품 리뷰수"),
                                         fieldWithPath("reviews[].userId").description("리뷰 작성자의 ID"),
                                         fieldWithPath("reviews[].imageUrls").description("리뷰에 첨부된 이미지 URL 목록"),
                                         fieldWithPath("reviews[].content").description("리뷰 본문 내용"),
