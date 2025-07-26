@@ -4,6 +4,9 @@ import com.fondant.global.dto.PageInfo;
 import com.fondant.global.exception.ApiException;
 import com.fondant.infra.s3.application.S3Service;
 import com.fondant.product.application.ProductService;
+import com.fondant.product.domain.entity.ProductEntity;
+import com.fondant.product.domain.repository.ProductRepository;
+import com.fondant.product.exception.ProductError;
 import com.fondant.review.domain.entity.ReviewEntity;
 import com.fondant.review.domain.entity.ReviewPhotoEntity;
 import com.fondant.review.domain.entity.ReviewTagEntity;
@@ -34,13 +37,15 @@ public class ReviewService {
     private final ReviewTagRepository reviewTagRepository;
     private final ReviewPhotoRepository reviewPhotoRepository;
     private final TagRepository tagRepository;
+    private final ProductRepository productRepository;
     private final S3Service s3Service;
 
-    public ReviewService(ReviewRepository reviewRepository, ProductService productService, ReviewTagRepository reviewTagRepository, ReviewPhotoRepository reviewPhotoRepository, TagRepository tagRepository, S3Service s3Service) {
+    public ReviewService(ReviewRepository reviewRepository, ProductService productService, ReviewTagRepository reviewTagRepository, ReviewPhotoRepository reviewPhotoRepository, TagRepository tagRepository, ProductRepository productRepository, S3Service s3Service) {
         this.reviewRepository = reviewRepository;
         this.reviewTagRepository = reviewTagRepository;
         this.reviewPhotoRepository = reviewPhotoRepository;
         this.tagRepository = tagRepository;
+        this.productRepository = productRepository;
         this.s3Service = s3Service;
     }
 
@@ -55,6 +60,9 @@ public class ReviewService {
                         .productId(productId)
                         .build()
         );
+
+        ProductEntity product = getProductOrThrow(productId);
+        product.incrementReviewCount();
 
         savePhotos(photoFiles,review.getId());
     }
@@ -87,7 +95,9 @@ public class ReviewService {
 
         List<ReviewInfo> reviewInfos = toReviewInfoList(reviewPage.getContent(), imageMap, tagMap);
 
-        return new ReviewsResponse(PageInfo.of(reviewPage.getNumber(),reviewPage.getTotalPages()),productId, reviewInfos);
+        ProductEntity product = getProductOrThrow(productId);
+
+        return new ReviewsResponse(PageInfo.of(reviewPage.getNumber(),reviewPage.getTotalPages()),productId,product.getTotalReviews(),reviewInfos);
     }
 
     public Map<Long, List<String>> getImageMapByReviewIds(List<Long> reviewIds) {
@@ -186,5 +196,10 @@ public class ReviewService {
     private ReviewEntity getReviewOrThrow(Long id) {
         return reviewRepository.findById(id)
                 .orElseThrow(() -> new ApiException(ReviewError.REVIEW_NOT_FOUND));
+    }
+
+    private ProductEntity getProductOrThrow(Long id) {
+        return productRepository.findById(id)
+                .orElseThrow(() -> new ApiException(ProductError.PRODUCT_NOT_FOUND));
     }
 }

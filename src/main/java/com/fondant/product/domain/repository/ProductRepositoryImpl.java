@@ -3,6 +3,7 @@ package com.fondant.product.domain.repository;
 import com.fondant.product.application.dto.FilterInfo;
 import com.fondant.product.application.dto.SortType;
 import com.fondant.product.category.domain.QCategoryEntity;
+import com.fondant.product.domain.entity.PackagingType;
 import com.fondant.product.domain.entity.ProductEntity;
 import com.fondant.product.domain.entity.QProductCategoryEntity;
 import com.fondant.product.domain.entity.QProductEntity;
@@ -143,12 +144,12 @@ public class ProductRepositoryImpl implements ProductRepositoryCustom {
         filterInfo.startPrice().ifPresent(start -> builder.and(product.price.goe(start)));
         filterInfo.endPrice().ifPresent(end -> builder.and(product.price.loe(end)));
 
-        // 사용 예정 : packingType 및 coupon 도메인 추가 필요
-        /*
-        if (filterInfo.packingTypes() != null && !filterInfo.packingTypes().isEmpty()) {
-            builder.and(product.packagingType.in(filterInfo.packingTypes()));
+        // 사용 예정 : coupon 필터링 추가 필요
+        if (filterInfo.packagingTypes() != null && !filterInfo.packagingTypes().isEmpty()) {
+            builder.and(product.packagingType.in(filterInfo.packagingTypes()));
         }
 
+        /*
         if (filterInfo.benefitTypes() != null && !filterInfo.benefitTypes().isEmpty()) {
             builder.and(product.benefit.in(filterInfo.benefitTypes()));
         }
@@ -246,8 +247,8 @@ public class ProductRepositoryImpl implements ProductRepositoryCustom {
 
         switch (sortType.get()) {
             case DISCOUNT -> query.orderBy(product.discountRate.desc());
-            //case REVIEW -> query.orderBy(product.market.totalReviews.desc());
-            //case SALES -> query.orderBy(product.market.totalSales.desc());
+            case REVIEW -> query.orderBy(product.totalReviews.desc());
+            //case SALES -> query.orderBy(product.totalSales.desc());
             case PRICE_ASC -> query.orderBy(product.price.asc());
             case PRICE_DESC -> query.orderBy(product.price.desc());
         }

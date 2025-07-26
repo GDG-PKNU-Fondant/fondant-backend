@@ -146,6 +146,7 @@ public class ProductRestDocsTest {
                 .market(market)
                 .startDate(LocalDate.of(2025, 1, 1))
                 .maxCount(50)
+                .packagingType(PackagingType.ROOM_TEMP)
                 .build());
 
         product2 = productRepository.save(ProductEntity.builder()
@@ -156,6 +157,7 @@ public class ProductRestDocsTest {
                 .market(market)
                 .startDate(LocalDate.of(2025, 1, 1))
                 .maxCount(50)
+                .packagingType(PackagingType.REFRIGERATION)
                 .build());
 
         categoryProduct1 = productCategoryRepository.save(ProductCategoryEntity.builder()
@@ -244,7 +246,9 @@ public class ProductRestDocsTest {
                                 fieldWithPath("products[].score").description("리뷰 평점"),
                                 fieldWithPath("products[].thumbnailUrl").description("상품 썸네일 URL"),
                                 fieldWithPath("products[].discountRate").description("상품 할인율"),
-                                fieldWithPath("products[].discountPrice").description("상품 할인 후 가격")
+                                fieldWithPath("products[].discountPrice").description("상품 할인 후 가격"),
+                                fieldWithPath("products[].marketName").description("해당 상품 판매 마켓 이름"),
+                                fieldWithPath("products[].marketId").description("해당 상품 판매 마켓 ID")
                         })));
     }
 
@@ -284,6 +288,13 @@ public class ProductRestDocsTest {
                                 fieldWithPath("marketInfo.totalReviews").description("총 리뷰 개수"),
                                 fieldWithPath("marketInfo.freeDeliveryLimit").description("무료배송 기준"),
                                 fieldWithPath("basePrice").description("상품 기본 가격 (옵션 가격 추가 전)"),
+                                fieldWithPath("packagingType").description(
+                                        "상품 포장 타입 :" + "\n" +
+                                                "- ROOM_TEMP : 할인순 +" + "\n" +
+                                                "- REFRIGERATION : 리뷰 많은순 +" + "\n" +
+                                                "- FROZEN : 판매량순 +" + "\n" +
+                                                "※ 요청 시 위 enum 값을 그대로 입력해야 합니다."
+                                )
                         })));
     }
 
@@ -325,7 +336,7 @@ public class ProductRestDocsTest {
                         .param("startPrice", "10000")
                         .param("endPrice", "20000")
                         .param("categoryIds", String.valueOf(category1.getId()))
-                        .param("packingTypes", "box")
+                        .param("packingTypes", "ROOM_TEMP")
                         .param("benefitTypes", "free_shipping")
                         .param("sortType", "PRICE_ASC")
                         .param("page", "0")
@@ -363,7 +374,9 @@ public class ProductRestDocsTest {
                                 fieldWithPath("products[].score").description("리뷰 평점"),
                                 fieldWithPath("products[].thumbnailUrl").description("상품 썸네일 URL"),
                                 fieldWithPath("products[].discountRate").description("상품 할인율"),
-                                fieldWithPath("products[].discountPrice").description("상품 할인 후 가격")
+                                fieldWithPath("products[].discountPrice").description("상품 할인 후 가격"),
+                                fieldWithPath("products[].marketName").description("해당 상품 판매 마켓 이름"),
+                                fieldWithPath("products[].marketId").description("해당 상품 판매 마켓 ID")
                         })
                 ));
     }

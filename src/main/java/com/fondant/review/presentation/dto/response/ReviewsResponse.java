@@ -7,6 +7,7 @@ import java.util.List;
 public record ReviewsResponse(
     PageInfo pageInfo,
     Long productId,
+    int totalCount,
     List<ReviewInfo> reviews
 ) {
 }

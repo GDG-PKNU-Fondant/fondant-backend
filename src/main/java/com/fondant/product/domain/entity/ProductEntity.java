@@ -51,8 +51,16 @@ public class ProductEntity {
     @Column(name="discount_rate")
     private Double discountRate = 0.0;
 
+    @NotNull
+    @Column(name="packaging_type")
+    private PackagingType packagingType;
+
+    @NotNull
+    @Column(name="total_reviews")
+    private int totalReviews = 0;
+
     @Builder
-    public ProductEntity(String name, String description, String thumbnail, Double price, MarketEntity market, LocalDate startDate, int maxCount) {
+    public ProductEntity(PackagingType packagingType, String name, String description, String thumbnail, Double price, MarketEntity market, LocalDate startDate, int maxCount) {
         this.name = name;
         this.description = description;
         this.thumbnail = thumbnail;
@@ -60,9 +68,14 @@ public class ProductEntity {
         this.market = market;
         this.startDate = startDate;
         this.maxCount = maxCount;
+        this.packagingType = packagingType;
     }
 
     public void updateDiscountRate(double discountRate) {
         this.discountRate = discountRate;
+    }
+
+    public void incrementReviewCount() {
+        this.totalReviews += 1;
     }
 }

@@ -3,6 +3,7 @@ package com.fondant.product.application;
 import com.fondant.global.dto.PageInfo;
 import com.fondant.global.exception.ApiException;
 import com.fondant.market.application.MarketService;
+import com.fondant.market.application.dto.MarketInfo;
 import com.fondant.market.application.dto.MarketInfoForProductDetail;
 import com.fondant.market.domain.entity.MarketEntity;
 import com.fondant.product.application.dto.*;
@@ -67,6 +68,8 @@ public class ProductService {
                                 .thumbnailUrl(product.getThumbnail())
                                 .discountRate(product.getDiscountRate())
                                 .discountPrice(getDiscountedPrice(product.getPrice(),product.getDiscountRate()))
+                                .marketName(product.getMarket().getName())
+                                .marketId(product.getMarket().getId())
                                 .build()
                 ).toList();
     }
@@ -88,6 +91,7 @@ public class ProductService {
                 .detailPages(getImageUrlsByProductIdAndType(productId,ImageType.DETAIL_PAGE))
                 .marketInfo(getMarketInfo(product.getMarket()))
                 .basePrice(product.getPrice())
+                .packagingType(product.getPackagingType())
                 .build();
     }
 
@@ -144,5 +148,10 @@ public class ProductService {
                 .pageInfo(PageInfo.of(products.getNumber(), products.getTotalPages()))
                 .products(getProductInfos(products.getContent()))
                 .build();
+    }
+
+    public void incrementReviewCount(Long productId) {
+        ProductEntity product = getProductById(productId);
+        product.incrementReviewCount();
     }
 }

@@ -6,6 +6,7 @@ import com.fondant.global.dto.SuccessMessage;
 import com.fondant.product.application.ProductService;
 import com.fondant.product.application.dto.FilterInfo;
 import com.fondant.product.application.dto.SortType;
+import com.fondant.product.domain.entity.PackagingType;
 import com.fondant.product.presentation.dto.response.FilteredProductCountResponse;
 import com.fondant.product.presentation.dto.response.ProductDetailResponse;
 import com.fondant.product.presentation.dto.response.ProductsResponse;
@@ -49,7 +50,7 @@ public class ProductController {
             @RequestParam(name="minPrice") Optional<Double> minPrice,
             @RequestParam(name="maxPrice") Optional<Double> maxPrice,
             @RequestParam(name="categoryIds" ,required = false) List<Long> categoryIds,
-            @RequestParam(name="packagingTypes", required = false) List<String> packagingTypes,
+            @RequestParam(name="packagingTypes", required = false) List<PackagingType> packagingTypes,
             @RequestParam(name="benefits", required = false) List<String> benefits) {
         FilterInfo filterinfo = new FilterInfo(minPrice,maxPrice,categoryIds,packagingTypes,benefits);
 
@@ -62,7 +63,7 @@ public class ProductController {
             @RequestParam(name="minPrice") Optional<Double> minPrice,
             @RequestParam(name="maxPrice") Optional<Double> maxPrice,
             @RequestParam(name="categoryIds" ,required = false) List<Long> categoryIds,
-            @RequestParam(name="packagingTypes", required = false) List<String> packagingTypes,
+            @RequestParam(name="packagingTypes", required = false) List<PackagingType> packagingTypes,
             @RequestParam(name="benefits", required = false) List<String> benefits,
             @RequestParam(value = "sortType", required = false) Optional<SortType> sortType,
             @RequestParam(name="page") int page) {

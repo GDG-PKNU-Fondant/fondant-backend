@@ -4,6 +4,7 @@ import com.fondant.market.application.dto.MarketInfo;
 import com.fondant.market.application.dto.MarketInfoForProductDetail;
 import com.fondant.product.application.dto.ImageInfo;
 import com.fondant.product.application.dto.OptionInfo;
+import com.fondant.product.domain.entity.PackagingType;
 import lombok.Builder;
 
 import java.util.List;
@@ -16,6 +17,7 @@ public record ProductDetailResponse(
         String description,
         List<ImageInfo> detailPages,
         MarketInfoForProductDetail marketInfo,
-        Double basePrice
+        Double basePrice,
+        PackagingType packagingType
 ) {
 }
